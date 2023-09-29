@@ -8,9 +8,9 @@ Port 8000
 ```shell
 $ docker exec keycloak /bin/sh 
     -c "/opt/keycloak/bin/kc.sh export
-    --file /tmp/uma-realm.json --realm=uma"
+    --file /tmp/uma-realm.json --realm=ums"
 
-$ docker exec keycloak cat /tmp/uma-realm.json > uma-realm.json
+$ docker exec keycloak cat /tmp/uma-realm.json > ums-realm.json
 ```
 
 or from Administrator Console `Realm settings > Action > Partial export`
@@ -19,5 +19,3 @@ or from Administrator Console `Realm settings > Action > Partial export`
 ```
 $ docker compose up -d
 ```
-
-/opt/keycloak/bin/kc.sh export --file /tmp/uma-realm.json --realm=uma-realm
