@@ -1,6 +1,6 @@
 {
   "id" : "5e042c54-b3ee-4af7-ab34-1c3a1aba2286",
-  "realm" : "uma",
+  "realm" : "ums",
   "displayName" : "",
   "displayNameHtml" : "",
   "notBefore" : 0,
@@ -48,11 +48,11 @@
   "roles" : {
     "realm" : [ {
       "id" : "83cefd21-4327-453f-a1cc-bb3fc125de06",
-      "name" : "default-roles-uma-realm",
+      "name" : "default-roles-ums-realm",
       "description" : "${role_default-roles}",
       "composite" : true,
       "composites" : {
-        "realm" : [ "offline_access", "uma_authorization" ],
+        "realm" : [ "offline_access", "ums_authorization" ],
         "client" : {
           "account" : [ "view-profile", "manage-account" ]
         }
@@ -70,8 +70,8 @@
       "attributes" : { }
     }, {
       "id" : "de2732da-68a6-4805-bd88-155b047cb547",
-      "name" : "uma_authorization",
-      "description" : "${role_uma_authorization}",
+      "name" : "ums_authorization",
+      "description" : "${role_ums_authorization}",
       "composite" : false,
       "clientRole" : false,
       "containerId" : "5e042c54-b3ee-4af7-ab34-1c3a1aba2286",
@@ -246,7 +246,7 @@
         "containerId" : "95389391-f724-44e5-8896-c2a4b038defc",
         "attributes" : { }
       } ],
-      "uma-client-webapp" : [ ],
+      "ums-client-webapp" : [ ],
       "security-admin-console" : [ ],
       "admin-cli" : [ ],
       "account-console" : [ ],
@@ -339,7 +339,7 @@
   "groups" : [ ],
   "defaultRole" : {
     "id" : "83cefd21-4327-453f-a1cc-bb3fc125de06",
-    "name" : "default-roles-uma-realm",
+    "name" : "default-roles-ums-realm",
     "description" : "${role_default-roles}",
     "composite" : true,
     "clientRole" : false,
@@ -394,7 +394,7 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ "UPDATE_PASSWORD" ],
-    "realmRoles" : [ "default-roles-uma-realm" ],
+    "realmRoles" : [ "default-roles-ums-realm" ],
     "notBefore" : 0,
     "groups" : [ ]
   } ],
@@ -413,12 +413,12 @@
     "clientId" : "account",
     "name" : "${client_account}",
     "rootUrl" : "${authBaseUrl}",
-    "baseUrl" : "/realms/uma/account/",
+    "baseUrl" : "/realms/ums/account/",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "redirectUris" : [ "/realms/uma/account/*" ],
+    "redirectUris" : [ "/realms/ums/account/*" ],
     "webOrigins" : [ ],
     "notBefore" : 0,
     "bearerOnly" : false,
@@ -443,12 +443,12 @@
     "clientId" : "account-console",
     "name" : "${client_account-console}",
     "rootUrl" : "${authBaseUrl}",
-    "baseUrl" : "/realms/uma-realm/account/",
+    "baseUrl" : "/realms/ums-realm/account/",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "redirectUris" : [ "/realms/uma-realm/account/*" ],
+    "redirectUris" : [ "/realms/ums-realm/account/*" ],
     "webOrigins" : [ ],
     "notBefore" : 0,
     "bearerOnly" : false,
@@ -566,12 +566,12 @@
     "clientId" : "security-admin-console",
     "name" : "${client_security-admin-console}",
     "rootUrl" : "${authAdminUrl}",
-    "baseUrl" : "/admin/uma/console/",
+    "baseUrl" : "/admin/ums/console/",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "redirectUris" : [ "/admin/uma/console/*" ],
+    "redirectUris" : [ "/admin/ums/console/*" ],
     "webOrigins" : [ "+" ],
     "notBefore" : 0,
     "bearerOnly" : false,
@@ -609,7 +609,7 @@
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
     "id" : "1cb69f30-c24c-42ce-bf95-a6e28093823a",
-    "clientId" : "uma-client-webapp",
+    "clientId" : "ums-client-webapp",
     "name" : "",
     "description" : "",
     "rootUrl" : "http://localhost:8080",
