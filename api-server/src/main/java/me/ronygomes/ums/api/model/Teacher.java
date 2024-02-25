@@ -2,12 +2,18 @@ package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serial;
+
 @Entity
 @Table(name = "teachers")
 public class Teacher extends AbstractEntity {
 
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "teacher_seq")
+    @SequenceGenerator(name = "teachers_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "teachers_seq")
     private Long id;
 
     @Column(nullable = false, length = 200)
@@ -22,13 +28,15 @@ public class Teacher extends AbstractEntity {
     @Column(length = 14)
     private String contactNumber;
 
+    private float assignedCredit;
+
     @ManyToOne
+    @JoinColumn(name = "designation_id", nullable = false, foreignKey = @ForeignKey(name = "fk_teachers_designation_id"))
     private Designation designation;
 
     @ManyToOne
+    @JoinColumn(name = "department_id", nullable = false, foreignKey = @ForeignKey(name = "fk_teachers_department_id"))
     private Department department;
-
-    private float assignedCredit;
 
     @Override
     public Long getId() {
@@ -71,6 +79,14 @@ public class Teacher extends AbstractEntity {
         this.contactNumber = contactNumber;
     }
 
+    public float getAssignedCredit() {
+        return assignedCredit;
+    }
+
+    public void setAssignedCredit(float assignedCredit) {
+        this.assignedCredit = assignedCredit;
+    }
+
     public Designation getDesignation() {
         return designation;
     }
@@ -85,13 +101,5 @@ public class Teacher extends AbstractEntity {
 
     public void setDepartment(Department department) {
         this.department = department;
-    }
-
-    public float getAssignedCredit() {
-        return assignedCredit;
-    }
-
-    public void setAssignedCredit(float assignedCredit) {
-        this.assignedCredit = assignedCredit;
     }
 }

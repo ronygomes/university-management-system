@@ -1,12 +1,14 @@
 package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
 
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+@MappedSuperclass
 public abstract class AbstractEntity implements Serializable {
 
     private static final int UUID_LENGTH = 36;

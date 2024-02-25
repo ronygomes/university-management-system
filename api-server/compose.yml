@@ -7,8 +7,12 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345}
       POSTGRES_DB: ${POSTGRES_DATABASE_NAME:-ums}
       PGDATA: /data/postgres
+      # TZ is for GNU/Linux and PGTZ is for PostgreSQL
+      TZ: 'UTC'
+      PGTZ: 'UTC'
     volumes:
       - postgres:/data/postgres
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - '5432:5432'
 

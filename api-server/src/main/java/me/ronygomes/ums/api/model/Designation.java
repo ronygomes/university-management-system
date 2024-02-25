@@ -2,18 +2,25 @@ package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Objects;
+
 @Entity
 @Table(name = "teacher_designations")
-public class Designation extends AbstractEntity {
+public class Designation implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "teacher_designation_seq")
+    @SequenceGenerator(name = "teacher_designations_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "teacher_designations_seq")
     private Long id;
 
-    @Column(unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 100)
     private String title;
 
-    @Override
     public Long getId() {
         return id;
     }
@@ -28,5 +35,18 @@ public class Designation extends AbstractEntity {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Designation that = (Designation) o;
+        return title.equals(that.title);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title);
     }
 }

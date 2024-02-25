@@ -2,8 +2,9 @@ package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serial;
 import java.time.DayOfWeek;
-import java.time.LocalTime;
+import java.util.Date;
 
 import static jakarta.persistence.EnumType.STRING;
 
@@ -11,33 +12,41 @@ import static jakarta.persistence.EnumType.STRING;
 @Table(name = "course_schedules")
 public class CourseSchedule extends AbstractEntity {
 
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "course_schedule_seq")
+    @SequenceGenerator(name = "course_schedules_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "course_schedules_seq")
     private Long id;
 
     @ManyToOne
     private Department department;
 
     @Enumerated(STRING)
+    @Column(nullable = false, length = 30)
     private Semester semester;
 
     @OneToOne
+    @JoinColumn(name = "course_id", nullable = false, unique = true)
     private Course course;
 
     @Enumerated(STRING)
+    @Column(nullable = false, length = 30)
     private Building building;
 
     @Column(nullable = false, length = 100)
     private String roomNumber;
 
     @Enumerated(STRING)
+    @Column(nullable = false, length = 20)
     private DayOfWeek day;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalTime startTime;
+    private Date startTime;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalTime endTime;
+    private Date endTime;
 
     @Override
     public Long getId() {
@@ -96,19 +105,19 @@ public class CourseSchedule extends AbstractEntity {
         this.day = day;
     }
 
-    public LocalTime getStartTime() {
+    public Date getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalTime startTime) {
+    public void setStartTime(Date startTime) {
         this.startTime = startTime;
     }
 
-    public LocalTime getEndTime() {
+    public Date getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalTime endTime) {
+    public void setEndTime(Date endTime) {
         this.endTime = endTime;
     }
 }

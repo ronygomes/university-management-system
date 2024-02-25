@@ -2,15 +2,21 @@ package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serial;
+
 @Entity
 @Table(name = "departments")
 public class Department extends AbstractEntity {
 
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "department_seq")
+    @SequenceGenerator(name = "departments_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "departments_seq")
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(nullable = false, unique = true, length = 10)
     private String code;
 
     @Column(nullable = false, unique = true, length = 100)

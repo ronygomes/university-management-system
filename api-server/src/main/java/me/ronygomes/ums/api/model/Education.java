@@ -2,6 +2,7 @@ package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -11,20 +12,37 @@ import static jakarta.persistence.EnumType.STRING;
 @Table(name = "student_educations")
 public class Education implements Serializable {
 
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @SequenceGenerator(name = "student_educations_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "student_educations_seq")
+    private Long id;
+
     @Column(nullable = false, length = 10)
     @Enumerated(STRING)
     private ExamType examType;
 
-    @Column(length = 5)
+    @Column(nullable = false, length = 10)
     @Enumerated(STRING)
     private Grade grade;
 
     private float cgpa;
 
-    // Save as <student-id>-<exam-type>-<grade-cgpa-hash>-<file-name>,
-    // Discard entry with same values
-    @Column(length = 150, updatable = false)
+    @Column(nullable = false, updatable = false, length = 100)
     private String certificateFileName;
+
+    @Column(nullable = false, updatable = false, length = 150)
+    private String certificatePath;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public ExamType getExamType() {
         return examType;
@@ -56,6 +74,14 @@ public class Education implements Serializable {
 
     public void setCertificateFileName(String certificateFileName) {
         this.certificateFileName = certificateFileName;
+    }
+
+    public String getCertificatePath() {
+        return certificatePath;
+    }
+
+    public void setCertificatePath(String certificatePath) {
+        this.certificatePath = certificatePath;
     }
 
     @Override

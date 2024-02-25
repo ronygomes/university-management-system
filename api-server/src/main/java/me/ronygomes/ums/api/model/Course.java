@@ -2,20 +2,26 @@ package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serial;
+
 import static jakarta.persistence.EnumType.STRING;
 
 @Entity
 @Table(name = "courses")
 public class Course extends AbstractEntity {
 
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "course_seq")
+    @SequenceGenerator(name = "courses_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "courses_seq")
     private Long id;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, unique = true, length = 20)
     private String title;
 
-    @Column(nullable = false, length = 200)
+    @Column(nullable = false, unique = true, length = 200)
     private String name;
     private float credit;
 
@@ -23,16 +29,16 @@ public class Course extends AbstractEntity {
     private String description;
 
     @ManyToOne
+    @JoinColumn(name = "department_id", nullable = false, foreignKey = @ForeignKey(name = "fk_courses_department_id"))
     private Department department;
 
     @Enumerated(STRING)
+    @Column(nullable = false, length = 30)
     private Semester semester;
 
     @ManyToOne
+    @JoinColumn(name = "instructor_id", foreignKey = @ForeignKey(name = "fk_courses_instructor_id"))
     private Teacher instructor;
-
-    @OneToOne
-    private CourseSchedule scheduleDetail;
 
     @Override
     public Long getId() {
@@ -97,13 +103,5 @@ public class Course extends AbstractEntity {
 
     public void setInstructor(Teacher instructor) {
         this.instructor = instructor;
-    }
-
-    public CourseSchedule getScheduleDetail() {
-        return scheduleDetail;
-    }
-
-    public void setScheduleDetail(CourseSchedule scheduleDetail) {
-        this.scheduleDetail = scheduleDetail;
     }
 }
