@@ -1,0 +1,14 @@
+package me.ronygomes.ums.api.model;
+
+public enum Semester {
+    FIRST_YEAR_FIRST,
+    FIRST_YEAR_SECOND,
+    SECOND_YEAR_FIRST,
+    SECOND_YEAR_SECOND,
+    THIRD_YEAR_FIRST,
+    THIRD_YEAR_SECOND,
+    FOURTH_YEAR_FIRST,
+    FOURTH_YEAR_SECOND,
+    FIFTH_YEAR_FIRST,
+    FIFTH_YEAR_SECOND
+}
