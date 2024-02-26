@@ -104,3 +104,12 @@ CREATE TABLE IF NOT EXISTS course_schedules (
     CONSTRAINT fk_course_schedules_department_id FOREIGN KEY (department_id) REFERENCES departments(id),
     CONSTRAINT fk_course_schedules_course_id FOREIGN KEY (course_id) REFERENCES courses(id)
 );
+
+INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'CE', 'Civil Engineering', gen_random_uuid(), 0);
+INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'CSE', 'Computer Science & Engineering', gen_random_uuid(), 0);
+INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'EEE', 'Electrical & Electronic Engineering', gen_random_uuid(), 0);
+INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'MPE', 'Mechanical and Production Engineering', gen_random_uuid(), 0);
+INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'TE', 'Textile Engineering', gen_random_uuid(), 0);
+INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'A&S', 'Arts and Sciences', gen_random_uuid(), 0);
+INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'ARCH', 'Architecture', gen_random_uuid(), 0);
+INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'SoB', 'School of Business', gen_random_uuid(), 0);

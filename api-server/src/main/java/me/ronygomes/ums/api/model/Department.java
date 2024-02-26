@@ -1,6 +1,8 @@
 package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.io.Serial;
 
@@ -16,9 +18,13 @@ public class Department extends AbstractEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "departments_seq")
     private Long id;
 
+    @NotNull
+    @Size(min = 1, max = 10)
     @Column(nullable = false, unique = true, length = 10)
     private String code;
 
+    @NotNull
+    @Size(min = 1, max = 100)
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
