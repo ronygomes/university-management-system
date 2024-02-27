@@ -113,3 +113,8 @@ INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'TE', 'Textile Engine
 INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'A&S', 'Arts and Sciences', gen_random_uuid(), 0);
 INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'ARCH', 'Architecture', gen_random_uuid(), 0);
 INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'SoB', 'School of Business', gen_random_uuid(), 0);
+
+INSERT INTO teacher_designations VALUES(NEXTVAL('teacher_designations_seq'), 'Lecturer', 0);
+INSERT INTO teacher_designations VALUES(NEXTVAL('teacher_designations_seq'), 'Assistant Professor', 0);
+INSERT INTO teacher_designations VALUES(NEXTVAL('teacher_designations_seq'), 'Associate Professor', 0);
+INSERT INTO teacher_designations VALUES(NEXTVAL('teacher_designations_seq'), 'Professor', 0);

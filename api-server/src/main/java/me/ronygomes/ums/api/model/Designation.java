@@ -1,6 +1,8 @@
 package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -18,6 +20,8 @@ public class Designation implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "teacher_designations_seq")
     private Long id;
 
+    @NotNull
+    @Size(min = 1, max = 100)
     @Column(nullable = false, unique = true, length = 100)
     private String title;
 
