@@ -3,6 +3,8 @@ package me.ronygomes.ums.api.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -12,7 +14,10 @@ import java.util.UUID;
 public abstract class AbstractEntity implements Serializable {
 
     private static final int UUID_LENGTH = 36;
+    private static final String UUID_REGEX = "([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})";
 
+    @NotNull
+    @Pattern(regexp = UUID_REGEX, message = "invalid uuid")
     @Column(nullable = false, updatable = false, unique = true, length = UUID_LENGTH)
     private String uuid = UUID.randomUUID().toString();
 

@@ -1,5 +1,6 @@
 package me.ronygomes.ums.api.repository;
 
+import jakarta.validation.ConstraintViolation;
 import me.ronygomes.ums.api.helper.DataHelper;
 import me.ronygomes.ums.api.model.AbstractEntity;
 import me.ronygomes.ums.api.model.Department;
@@ -8,9 +9,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.TransactionSystemException;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
+
+import static me.ronygomes.ums.api.helper.TestHelper.extractConstraintViolation;
 
 @SpringBootTest
 @ActiveProfiles("integration-test")
@@ -43,13 +49,43 @@ public class AbstractEntityTest {
         Assertions.assertTrue(dbDepartmentOpt.isPresent());
         Department dbDepartment = dbDepartmentOpt.get();
 
+        String newGenerateUuid = UUID.randomUUID().toString();
         Assertions.assertEquals(generatedUuid, dbDepartment.getUuid());
-        dbDepartment.setUuid("ABC");
+        dbDepartment.setUuid(newGenerateUuid);
         repository.save(dbDepartment);
 
         Optional<Department> dbDepartmentOpt1 = repository.findById(dbDepartment.getId());
         Assertions.assertTrue(dbDepartmentOpt1.isPresent());
         Department dbDepartment1 = dbDepartmentOpt1.get();
         Assertions.assertEquals(generatedUuid, dbDepartment1.getUuid());
+
+        repository.delete(department1);
+    }
+
+    @Test
+    void testRequiresValidUuid() {
+        Department department1 = DataHelper.validPersistableDepartment();
+        department1.setUuid(null);
+
+        Throwable exceptionNullTest = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(department1));
+        Set<ConstraintViolation<?>> nullTestViolations = extractConstraintViolation(exceptionNullTest);
+        Assertions.assertEquals(1, nullTestViolations.size());
+        nullTestViolations.forEach(v -> {
+            Assertions.assertEquals("must not be null", v.getMessage());
+            Assertions.assertEquals("uuid", v.getPropertyPath().toString());
+            Assertions.assertNull(v.getInvalidValue());
+        });
+
+        Department department2 = DataHelper.validPersistableDepartment();
+        department2.setUuid("ABC");
+
+        Throwable invalidPatternTest = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(department2));
+        Set<ConstraintViolation<?>> invalidPatternViolations = extractConstraintViolation(invalidPatternTest);
+        Assertions.assertEquals(1, invalidPatternViolations.size());
+        invalidPatternViolations.forEach(v -> {
+            Assertions.assertEquals("invalid uuid", v.getMessage());
+            Assertions.assertEquals("uuid", v.getPropertyPath().toString());
+            Assertions.assertEquals("ABC", v.getInvalidValue());
+        });
     }
 }
