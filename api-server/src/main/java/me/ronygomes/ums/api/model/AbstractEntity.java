@@ -40,6 +40,7 @@ public abstract class AbstractEntity implements Serializable {
         this.version = version;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AbstractEntity other)) {
@@ -51,6 +52,7 @@ public abstract class AbstractEntity implements Serializable {
         return uuid.equals(other.getUuid());
     }
 
+    @Override
     public int hashCode() {
         if (uuid != null) {
             return uuid.hashCode();

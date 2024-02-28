@@ -141,4 +141,23 @@ public class DesignationRepositoryTest {
             Assertions.assertEquals("#".repeat(101), v.getInvalidValue());
         });
     }
+
+    @Test
+    void testFindByTitle() {
+        Designation designation1 = repository.findByTitle("Lecturer").orElseThrow();
+        Assertions.assertEquals("Lecturer", designation1.getTitle());
+
+        Optional<Designation> designation2Opt = repository.findByTitle("NonExistent");
+        Assertions.assertTrue(designation2Opt.isEmpty());
+    }
+
+    @Test
+    void testFindAllByOrderByTitleAsc() {
+        List<String> designations = repository.findAllByOrderByTitleAsc()
+                .stream()
+                .map(Designation::getTitle)
+                .toList();
+
+        Assertions.assertEquals(PRE_POPULATED_DESIGNATION, designations);
+    }
 }

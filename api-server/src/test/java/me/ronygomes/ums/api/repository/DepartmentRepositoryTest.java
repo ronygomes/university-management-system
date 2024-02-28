@@ -161,4 +161,18 @@ public class DepartmentRepositoryTest {
             Assertions.assertEquals("#".repeat(101), v.getInvalidValue());
         });
     }
+
+    @Test
+    void testFindByCode() {
+        Optional<Department> cseOpt = repository.findByCode("CSE");
+        Assertions.assertTrue(cseOpt.isPresent());
+
+        Department cseDept = cseOpt.get();
+        Assertions.assertEquals("CSE", cseDept.getCode());;
+        Assertions.assertEquals(PRE_POPULATED_DEPARTMENT.get("CSE"), cseDept.getName());
+        Assertions.assertNotNull(cseDept.getUuid());
+
+        Optional<Department> invalidDeptOpt = repository.findByCode("INVALID");
+        Assertions.assertFalse(invalidDeptOpt.isPresent());
+    }
 }
