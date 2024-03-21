@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS teachers (
     id BIGINT PRIMARY KEY,
     full_name VARCHAR(200) NOT NULL,
     address VARCHAR(1000),
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     contact_number VARCHAR(14),
     assigned_credit real NOT NULL,
     designation_id BIGINT NOT NULL,

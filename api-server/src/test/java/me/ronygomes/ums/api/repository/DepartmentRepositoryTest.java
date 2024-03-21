@@ -168,7 +168,7 @@ public class DepartmentRepositoryTest {
         Assertions.assertTrue(cseOpt.isPresent());
 
         Department cseDept = cseOpt.get();
-        Assertions.assertEquals("CSE", cseDept.getCode());;
+        Assertions.assertEquals("CSE", cseDept.getCode());
         Assertions.assertEquals(PRE_POPULATED_DEPARTMENT.get("CSE"), cseDept.getName());
         Assertions.assertNotNull(cseDept.getUuid());
 

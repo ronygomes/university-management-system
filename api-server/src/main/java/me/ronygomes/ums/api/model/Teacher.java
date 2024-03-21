@@ -1,6 +1,7 @@
 package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 import java.io.Serial;
 
@@ -11,23 +12,36 @@ public class Teacher extends AbstractEntity {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private static final String EMAIL_REGEX_PATTERN = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+    private static final String PHONE_REGEX_PATTERN = "^\\+\\d{13}$";
+
     @Id
     @SequenceGenerator(name = "teachers_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "teachers_seq")
     private Long id;
 
+    @NotNull
+    @Size(min = 1, max = 200)
     @Column(nullable = false, length = 200)
     private String fullName;
 
+    @Size(max = 1000)
     @Column(length = 1000)
     private String address;
 
+    @NotNull
+    @Size(max = 100)
+    @Pattern(regexp = EMAIL_REGEX_PATTERN, message = "invalid email format")
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
+    @Size(max = 14)
+    @Pattern(regexp = PHONE_REGEX_PATTERN, message = "invalid contact number format")
     @Column(length = 14)
     private String contactNumber;
 
+    @Min(0)
+    @Max(100)
     private float assignedCredit;
 
     @ManyToOne

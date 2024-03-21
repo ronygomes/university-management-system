@@ -24,12 +24,12 @@ public abstract class AbstractEntity implements Serializable {
     @Version
     private Integer version;
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
     public String getUuid() {
         return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public Integer getVersion() {
