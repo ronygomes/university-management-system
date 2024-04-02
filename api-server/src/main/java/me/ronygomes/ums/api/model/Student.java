@@ -3,6 +3,7 @@ package me.ronygomes.ums.api.model;
 import jakarta.persistence.*;
 
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -45,6 +46,10 @@ public class Student extends AbstractEntity {
     @OrderColumn(name = "idx")
     @JoinColumn(name = "student_id", nullable = false, foreignKey = @ForeignKey(name = "fk_student_educations_student_id"))
     private List<Education> educations;
+
+    public Student() {
+        this.educations = new ArrayList<>();
+    }
 
     @Override
     public Long getId() {
