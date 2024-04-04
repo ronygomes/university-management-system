@@ -3,7 +3,7 @@ package me.ronygomes.ums.api.service;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import me.ronygomes.ums.api.dto.DepartmentDto;
-import me.ronygomes.ums.api.exception.UmsServiceException;
+import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.Department;
 import me.ronygomes.ums.api.repository.DepartmentRepository;
@@ -15,8 +15,8 @@ import org.springframework.validation.annotation.Validated;
 import java.util.List;
 import java.util.Objects;
 
-import static me.ronygomes.ums.api.exception.ServiceErrorType.DATA_VALIDATION_FAILED;
-import static me.ronygomes.ums.api.exception.ServiceErrorType.ENTITY_NOT_FOUND;
+import static me.ronygomes.ums.api.exception.ExceptionType.DATA_VALIDATION_FAILED;
+import static me.ronygomes.ums.api.exception.ExceptionType.ENTITY_NOT_FOUND;
 
 @Service
 @Validated
@@ -76,14 +76,14 @@ public class DepartmentService {
             // TODO: Extract flush() from service. Write exception handler for these exception
             departmentRepository.flush();
         } catch (TransactionSystemException | DataIntegrityViolationException tse) {
-            throw new UmsServiceException(DATA_VALIDATION_FAILED,
+            throw new UmsDataException(DATA_VALIDATION_FAILED,
                     DATA_VALIDATION_ERROR_DETAILS_TEMPLATE, exceptionHelper.extractConstraintViolation(tse));
         }
     }
 
     private Department findByCodeOrThrow(String code) {
         return departmentRepository.findByCode(code)
-                .orElseThrow(() -> new UmsServiceException(ENTITY_NOT_FOUND,
+                .orElseThrow(() -> new UmsDataException(ENTITY_NOT_FOUND,
                         FIND_BY_CODE_ERROR_DETAILS_TEMPLATE.formatted(code)));
     }
 }

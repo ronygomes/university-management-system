@@ -1,7 +1,7 @@
 package me.ronygomes.ums.api.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
-import me.ronygomes.ums.api.exception.UmsServiceException;
+import me.ronygomes.ums.api.exception.UmsDataException;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,12 +13,12 @@ import java.net.URI;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UmsServiceException.class)
+    @ExceptionHandler(UmsDataException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public Problem handleUmsServiceException(UmsServiceException ex, HttpServletRequest request) {
+    public Problem handleUmsServiceException(UmsDataException ex, HttpServletRequest request) {
         return Problem.create()
-                .withType(ex.getServiceErrorType().getDocumentationUrl())
-                .withTitle(ex.getServiceErrorType().getTitle())
+                .withType(ex.getExceptionType().getDocumentationUrl())
+                .withTitle(ex.getExceptionType().getTitle())
                 .withDetail(ex.getErrorDetails())
                 .withInstance(URI.create(request.getRequestURI()))
                 .withProperties(m -> {

@@ -2,7 +2,7 @@ package me.ronygomes.ums.api.exception;
 
 import java.net.URI;
 
-public enum ServiceErrorType {
+public enum ExceptionType {
 
     ENTITY_NOT_FOUND("entity-not-found", "Requested object not found"),
     DATA_VALIDATION_FAILED("data-validation-failed", "Provided data is not valid");
@@ -10,7 +10,7 @@ public enum ServiceErrorType {
     private final String id;
     private final String title;
 
-    ServiceErrorType(String id, String title) {
+    ExceptionType(String id, String title) {
         this.id = id;
         this.title = title;
     }
