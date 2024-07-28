@@ -233,9 +233,20 @@ public class TeacherRepositoryTest {
         Set<ConstraintViolation<?>> exceptionMaxLengthEmailViolations = extractConstraintViolation(exceptionMaxLengthEmail);
         Assertions.assertEquals(1, exceptionMaxLengthEmailViolations.size());
         exceptionMaxLengthEmailViolations.forEach(v -> {
-            Assertions.assertEquals("size must be between 0 and 100", v.getMessage());
+            Assertions.assertEquals("size must be between 5 and 100", v.getMessage());
             Assertions.assertEquals("email", v.getPropertyPath().toString());
             Assertions.assertEquals(101, v.getInvalidValue().toString().length());
+        });
+
+        Teacher teacherMinLengthEmail = DataHelper.validPersistableTeacher1(designation, department);
+        teacherMinLengthEmail.setEmail("a@b");
+        Throwable exceptionMinLengthEmail = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(teacherMinLengthEmail));
+        Set<ConstraintViolation<?>> exceptionMinLengthEmailViolations = extractConstraintViolation(exceptionMinLengthEmail);
+        Assertions.assertEquals(2, exceptionMinLengthEmailViolations.size());
+        exceptionMinLengthEmailViolations.forEach(v -> {
+            Assertions.assertTrue(Arrays.asList("invalid email format", "size must be between 5 and 100").contains(v.getMessage()));
+            Assertions.assertEquals("email", v.getPropertyPath().toString());
+            Assertions.assertEquals(3, v.getInvalidValue().toString().length());
         });
 
         Teacher teacherPatternEmail = DataHelper.validPersistableTeacher1(designation, department);

@@ -15,6 +15,8 @@ public abstract class AbstractEntity implements Serializable {
 
     private static final int UUID_LENGTH = 36;
     private static final String UUID_REGEX = "([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})";
+    protected static final String EMAIL_REGEX_PATTERN = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+    protected static final String PHONE_REGEX_PATTERN = "^\\+\\d{13}$";
 
     @NotNull
     @Pattern(regexp = UUID_REGEX, message = "invalid uuid")

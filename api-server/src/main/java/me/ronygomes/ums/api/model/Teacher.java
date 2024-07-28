@@ -12,9 +12,6 @@ public class Teacher extends AbstractEntity {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private static final String EMAIL_REGEX_PATTERN = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-    private static final String PHONE_REGEX_PATTERN = "^\\+\\d{13}$";
-
     @Id
     @SequenceGenerator(name = "teachers_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "teachers_seq")
@@ -30,7 +27,7 @@ public class Teacher extends AbstractEntity {
     private String address;
 
     @NotNull
-    @Size(max = 100)
+    @Size(min = 5, max = 100)
     @Pattern(regexp = EMAIL_REGEX_PATTERN, message = "invalid email format")
     @Column(nullable = false, unique = true, length = 100)
     private String email;

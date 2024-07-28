@@ -4,7 +4,6 @@ import jakarta.validation.ConstraintViolationException;
 import me.ronygomes.ums.api.exception.ErrorMessage;
 import org.springframework.core.NestedExceptionUtils;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionSystemException;
 

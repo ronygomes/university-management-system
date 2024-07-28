@@ -116,4 +116,28 @@ public class DataHelper {
 
         return s;
     }
+
+    public static Student validPersistableStudentWithoutEducation(Department department) {
+        Student s = new Student();
+        s.setFullName("Student 3");
+        s.setAddress("Some Student 3 Address");
+        s.setEmail("student3@example.com");
+        s.setContactNumber("+8801325738961");
+        s.setDepartment(department);
+        s.setRegistrationDate(new Date());
+        s.setRegistrationNumber("2024-CSE-0003");
+
+        return s;
+    }
+
+    public static Education educationWithGrade(Float cgpa) {
+        Education e = new Education();
+        e.setExamType(ExamType.SSC);
+        e.setGrade(Grade.A_PLUS);
+        e.setCgpa(cgpa);
+        e.setCertificateFileName("ssc-certificate.pdf");
+        e.setCertificatePath("some-random-path/2024-CSE-0002/ssc-certificate.pdf");
+
+        return e;
+    }
 }

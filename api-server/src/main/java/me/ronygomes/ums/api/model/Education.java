@@ -1,9 +1,14 @@
 package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 import static jakarta.persistence.EnumType.STRING;
@@ -20,21 +25,35 @@ public class Education implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "student_educations_seq")
     private Long id;
 
+    @NotNull
     @Column(nullable = false, length = 10)
     @Enumerated(STRING)
     private ExamType examType;
 
+    @NotNull
     @Column(nullable = false, length = 10)
     @Enumerated(STRING)
     private Grade grade;
 
-    private float cgpa;
+    @NotNull
+    @DecimalMin(value = "0.0")
+    @DecimalMax(value = "5.0")
+    @Column(nullable = false)
+    private BigDecimal cgpa;
 
+    @NotNull
+    @Size(min = 1, max = 100)
     @Column(nullable = false, updatable = false, length = 100)
     private String certificateFileName;
 
+    @NotNull
+    @Size(min = 1, max = 150)
     @Column(nullable = false, updatable = false, length = 150)
     private String certificatePath;
+
+    public Education() {
+        this.cgpa = new BigDecimal(0);
+    }
 
     public Long getId() {
         return id;
@@ -61,11 +80,11 @@ public class Education implements Serializable {
     }
 
     public float getCgpa() {
-        return cgpa;
+        return cgpa.floatValue();
     }
 
     public void setCgpa(float cgpa) {
-        this.cgpa = cgpa;
+        this.cgpa = new BigDecimal(cgpa);
     }
 
     public String getCertificateFileName() {
@@ -90,14 +109,15 @@ public class Education implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
 
         Education education = (Education) o;
-        return Float.compare(education.cgpa, cgpa) == 0
+        return education.cgpa.compareTo(cgpa) == 0
                 && examType == education.examType
                 && grade == education.grade
-                && certificateFileName.equals(education.certificateFileName);
+                && certificateFileName.equals(education.certificateFileName)
+                && certificatePath.equals(education.certificatePath);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(examType, grade, cgpa, certificateFileName);
+        return Objects.hash(examType, grade, cgpa, certificateFileName, certificatePath);
     }
 }

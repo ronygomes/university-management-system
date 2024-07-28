@@ -18,12 +18,12 @@ CREATE TABLE IF NOT EXISTS departments (
 CREATE TABLE IF NOT EXISTS students (
     id BIGINT PRIMARY KEY,
     full_name VARCHAR(200) NOT NULL,
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     contact_number VARCHAR(14),
     address VARCHAR(1000),
     department_id BIGINT NOT NULL,
     registration_date TIMESTAMP(6) WITH TIME ZONE NOT NULL,
-    registration_number VARCHAR(20) NOT NULL,
+    registration_number VARCHAR(20) NOT NULL UNIQUE,
     uuid CHAR(36) NOT NULL UNIQUE,
     version INTEGER DEFAULT 0,
     CONSTRAINT fk_students_department_id FOREIGN KEY (department_id) REFERENCES departments(id)
@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS students (
 
 CREATE TABLE IF NOT EXISTS student_educations (
     id BIGINT PRIMARY KEY,
+    idx INT NOT NULL,
     exam_type VARCHAR(10) NOT NULL CHECK (exam_type IN ('SSC', 'HSC', 'A_LEVEL', 'O_LEVEL')),
     grade VARCHAR(10) NOT NULL CHECK (grade IN ('A_PLUS', 'A', 'A_MINUS', 'B_PLUS', 'B', 'B_MINUS', 'C_PLUS', 'C', 'C_MINUS', 'F')),
     cgpa REAL NOT NULL,
