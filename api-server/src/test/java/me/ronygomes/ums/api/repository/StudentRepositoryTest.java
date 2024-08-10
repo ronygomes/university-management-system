@@ -457,6 +457,8 @@ public class StudentRepositoryTest {
     void testConstrainsEducation_cgpa() {
         Department department = departmentRepository.findByCode("CSE").orElseThrow();
 
+        Assertions.assertEquals(0.0, new Education().getCgpa());
+
         Student minCgpa = validPersistableStudentWithoutEducation(department);
         Education e = educationWithGrade(-1.0f);
         minCgpa.getEducations().add(e);

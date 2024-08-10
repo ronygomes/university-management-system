@@ -1,8 +1,13 @@
 package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.io.Serial;
+import java.math.BigDecimal;
 
 import static jakarta.persistence.EnumType.STRING;
 
@@ -18,20 +23,32 @@ public class Course extends AbstractEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "courses_seq")
     private Long id;
 
+    @NotNull
+    @Size(min = 1, max = 20)
     @Column(nullable = false, unique = true, length = 20)
     private String title;
 
+    @NotNull
+    @Size(min = 1, max = 200)
     @Column(nullable = false, unique = true, length = 200)
     private String name;
-    private float credit;
 
+    @NotNull
+    @DecimalMin(value = "0.0")
+    @DecimalMax(value = "5.0")
+    @Column(nullable = false)
+    private BigDecimal credit;
+
+    @Size(max = 2000)
     @Column(length = 2000)
     private String description;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = false, foreignKey = @ForeignKey(name = "fk_courses_department_id"))
     private Department department;
 
+    @NotNull
     @Enumerated(STRING)
     @Column(nullable = false, length = 30)
     private Semester semester;
@@ -39,6 +56,10 @@ public class Course extends AbstractEntity {
     @ManyToOne
     @JoinColumn(name = "instructor_id", foreignKey = @ForeignKey(name = "fk_courses_instructor_id"))
     private Teacher instructor;
+
+    public Course() {
+        this.credit = new BigDecimal(0);
+    }
 
     @Override
     public Long getId() {
@@ -66,11 +87,11 @@ public class Course extends AbstractEntity {
     }
 
     public float getCredit() {
-        return credit;
+        return credit.floatValue();
     }
 
     public void setCredit(float credit) {
-        this.credit = credit;
+        this.credit = new BigDecimal(credit);
     }
 
     public String getDescription() {

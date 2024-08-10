@@ -140,4 +140,30 @@ public class DataHelper {
 
         return e;
     }
+
+    public static Course validPersistableCourse1(Department department, Teacher teacher) {
+        Course c = new Course();
+        c.setTitle("CSE-101");
+        c.setName("Introduction to Programming Language in Java");
+        c.setCredit(3.0f);
+        c.setDescription("Java Description");
+        c.setDepartment(department);
+        c.setSemester(Semester.FIRST_YEAR_FIRST);
+        c.setInstructor(teacher);
+
+        return c;
+    }
+
+    public static Course validPersistableCourse2(Department department, Teacher teacher) {
+        Course c = new Course();
+        c.setTitle("CSE-201");
+        c.setName("Introduction to Algorithm");
+        c.setCredit(4.0f);
+        c.setDescription("Algorithm Description");
+        c.setDepartment(department);
+        c.setSemester(Semester.SECOND_YEAR_FIRST);
+        c.setInstructor(teacher);
+
+        return c;
+    }
 }
