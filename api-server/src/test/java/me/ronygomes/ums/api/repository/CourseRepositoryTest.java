@@ -65,6 +65,10 @@ public class CourseRepositoryTest {
         assertCourseEqual(course, dbCourse);
 
         repository.delete(course);
+
+        Course courseWithoutTeacher = DataHelper.validPersistableCourse1(d, null);
+        Assertions.assertDoesNotThrow(() -> repository.save(courseWithoutTeacher));
+        repository.delete(courseWithoutTeacher);
     }
 
     @Test

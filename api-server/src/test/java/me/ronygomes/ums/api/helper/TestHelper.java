@@ -1,8 +1,12 @@
 package me.ronygomes.ums.api.helper;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
+import java.lang.reflect.Field;
+import java.util.Objects;
 import java.util.Set;
 
 public class TestHelper {
@@ -17,5 +21,21 @@ public class TestHelper {
         }
 
         throw new RuntimeException("Not a ConstraintViolation");
+    }
+
+    public static boolean isEnumFieldStoredAsString(Class<?> clazz, String fieldName) {
+        try {
+            Field field = clazz.getDeclaredField(fieldName);
+            Enumerated annotation = field.getAnnotation(Enumerated.class);
+            if (Objects.isNull(annotation)) {
+                return false;
+            }
+
+            return annotation.value().equals(EnumType.STRING);
+
+        } catch (NoSuchFieldException e) {
+            throw new IllegalArgumentException(String.format("Field '%s' doesn't exists in %s",
+                    fieldName, clazz.getCanonicalName()));
+        }
     }
 }

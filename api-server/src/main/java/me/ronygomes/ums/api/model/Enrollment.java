@@ -1,6 +1,8 @@
 package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 
 import java.io.Serial;
 import java.util.Date;
@@ -19,15 +21,21 @@ public class Enrollment extends AbstractEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "course_enrollments_seq")
     private Long id;
 
-    @ManyToOne
+    @NotNull
+    @ManyToOne(optional = false)
     private Student student;
 
-    @ManyToOne
+    @NotNull
+    @ManyToOne(optional = false)
     private Course course;
 
+    @NotNull
+    @PastOrPresent
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
     private Date enrollmentDate;
 
+    @NotNull
     @Enumerated(STRING)
     @Column(nullable = false, length = 10)
     private EnrollmentStatus status;

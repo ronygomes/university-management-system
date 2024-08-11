@@ -166,4 +166,15 @@ public class DataHelper {
 
         return c;
     }
+
+    public static Enrollment validPersistableEnrollment1(Student student, Course course) {
+        Enrollment e = new Enrollment();
+        e.setCourse(course);
+        e.setStudent(student);
+        e.setGrade(Grade.A);
+        e.setStatus(EnrollmentStatus.ON_GOING);
+        e.setEnrollmentDate(new Date());
+
+        return e;
+    }
 }
