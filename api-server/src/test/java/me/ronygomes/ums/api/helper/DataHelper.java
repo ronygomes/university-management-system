@@ -2,6 +2,9 @@ package me.ronygomes.ums.api.helper;
 
 import me.ronygomes.ums.api.model.*;
 
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -176,5 +179,33 @@ public class DataHelper {
         e.setEnrollmentDate(new Date());
 
         return e;
+    }
+
+    public static CourseSchedule validPersistableCourseSchedule1(Department department, Course course) {
+        CourseSchedule cs = new CourseSchedule();
+        cs.setDepartment(department);
+        cs.setSemester(Semester.FIRST_YEAR_SECOND);
+        cs.setCourse(course);
+        cs.setBuilding(Building.BUILDING_1);
+        cs.setRoomNumber("F7-102");
+        cs.setDay(DayOfWeek.MONDAY);
+        cs.setStartTime(Date.from(Instant.now().plus(Duration.ofDays(1))));
+        cs.setEndTime(Date.from(Instant.now().plus(Duration.ofDays(30 * 3))));
+
+        return cs;
+    }
+
+    public static CourseSchedule validPersistableCourseSchedule2(Department department, Course course) {
+        CourseSchedule cs = new CourseSchedule();
+        cs.setDepartment(department);
+        cs.setSemester(Semester.SECOND_YEAR_FIRST);
+        cs.setCourse(course);
+        cs.setBuilding(Building.BUILDING_2);
+        cs.setRoomNumber("F7-202");
+        cs.setDay(DayOfWeek.TUESDAY);
+        cs.setStartTime(Date.from(Instant.now().plus(Duration.ofDays(10))));
+        cs.setEndTime(Date.from(Instant.now().plus(Duration.ofDays(20))));
+
+        return cs;
     }
 }

@@ -1,6 +1,8 @@
 package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.io.Serial;
 import java.time.DayOfWeek;
@@ -20,24 +22,31 @@ public class CourseSchedule extends AbstractEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "course_schedules_seq")
     private Long id;
 
-    @ManyToOne
+    @NotNull
+    @ManyToOne(optional = false)
     private Department department;
 
+    @NotNull
     @Enumerated(STRING)
     @Column(nullable = false, length = 30)
     private Semester semester;
 
-    @OneToOne
+    @NotNull
+    @OneToOne(optional = false)
     @JoinColumn(name = "course_id", nullable = false, unique = true)
     private Course course;
 
+    @NotNull
     @Enumerated(STRING)
     @Column(nullable = false, length = 30)
     private Building building;
 
+    @NotNull
+    @Size(min = 1, max = 100)
     @Column(nullable = false, length = 100)
     private String roomNumber;
 
+    @NotNull
     @Enumerated(STRING)
     @Column(nullable = false, length = 20)
     private DayOfWeek day;
