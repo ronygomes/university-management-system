@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.TransactionSystemException;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -24,6 +25,7 @@ import static me.ronygomes.ums.api.helper.TestHelper.isEnumFieldStoredAsString;
 
 @SpringBootTest
 @ActiveProfiles("integration-test")
+@Testcontainers(disabledWithoutDocker = true)
 public class EnrollmentRepositoryTest {
 
     @Autowired

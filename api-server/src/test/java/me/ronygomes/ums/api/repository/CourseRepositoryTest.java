@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.TransactionSystemException;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -17,6 +18,7 @@ import static me.ronygomes.ums.api.helper.TestHelper.extractConstraintViolation;
 
 @SpringBootTest
 @ActiveProfiles("integration-test")
+@Testcontainers(disabledWithoutDocker = true)
 public class CourseRepositoryTest {
 
     @Autowired

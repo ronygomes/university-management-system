@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.TransactionSystemException;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +21,7 @@ import static me.ronygomes.ums.api.helper.TestHelper.extractConstraintViolation;
 
 @SpringBootTest
 @ActiveProfiles("integration-test")
+@Testcontainers(disabledWithoutDocker = true)
 public class DesignationRepositoryTest {
 
     private static final List<String> PRE_POPULATED_DESIGNATION = Arrays.asList("Assistant Professor",

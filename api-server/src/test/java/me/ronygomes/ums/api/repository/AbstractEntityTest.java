@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.TransactionSystemException;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Optional;
 import java.util.Set;
@@ -20,6 +21,7 @@ import static me.ronygomes.ums.api.helper.TestHelper.extractConstraintViolation;
 
 @SpringBootTest
 @ActiveProfiles("integration-test")
+@Testcontainers(disabledWithoutDocker = true)
 public class AbstractEntityTest {
 
     private static final Pattern UUID_PATTERN = Pattern.compile("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
