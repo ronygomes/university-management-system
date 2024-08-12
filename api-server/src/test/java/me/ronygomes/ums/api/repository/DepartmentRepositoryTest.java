@@ -12,7 +12,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.*;
 
-import static me.ronygomes.ums.api.helper.DataHelper.validPersistableDepartment;
+import static me.ronygomes.ums.api.helper.DataHelper.validPersistableDepartment1;
 import static me.ronygomes.ums.api.helper.TestHelper.extractConstraintViolation;
 
 @SpringBootTest
@@ -54,7 +54,7 @@ public class DepartmentRepositoryTest {
 
     @Test
     void testCanCreateNewDepartment() {
-        Department d = validPersistableDepartment();
+        Department d = validPersistableDepartment1();
         repository.save(d);
 
         List<Department> allDepartments = repository.findAll();
@@ -88,7 +88,7 @@ public class DepartmentRepositoryTest {
 
     @Test
     void testDepartmentCodeFieldConstraints() {
-        Department nullTest = validPersistableDepartment();
+        Department nullTest = validPersistableDepartment1();
         nullTest.setCode(null);
 
         Throwable exceptionNullTest = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(nullTest));
@@ -100,7 +100,7 @@ public class DepartmentRepositoryTest {
             Assertions.assertNull(v.getInvalidValue());
         });
 
-        Department minLengthTest = validPersistableDepartment();
+        Department minLengthTest = validPersistableDepartment1();
         minLengthTest.setCode("");
 
         Throwable exceptionMinLengthTest = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(minLengthTest));
@@ -112,7 +112,7 @@ public class DepartmentRepositoryTest {
             Assertions.assertEquals("", v.getInvalidValue());
         });
 
-        Department maxLengthTest = validPersistableDepartment();
+        Department maxLengthTest = validPersistableDepartment1();
         maxLengthTest.setCode("12345678901");
 
         Throwable exceptionMaxLengthTest = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(maxLengthTest));
@@ -127,7 +127,7 @@ public class DepartmentRepositoryTest {
 
     @Test
     void testDepartmentNameFieldConstraints() {
-        Department nullTest = validPersistableDepartment();
+        Department nullTest = validPersistableDepartment1();
         nullTest.setName(null);
 
         Throwable exceptionNullTest = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(nullTest));
@@ -139,7 +139,7 @@ public class DepartmentRepositoryTest {
             Assertions.assertNull(v.getInvalidValue());
         });
 
-        Department minLengthTest = validPersistableDepartment();
+        Department minLengthTest = validPersistableDepartment1();
         minLengthTest.setName("");
 
         Throwable exceptionMinLengthTest = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(minLengthTest));
@@ -151,7 +151,7 @@ public class DepartmentRepositoryTest {
             Assertions.assertEquals("", v.getInvalidValue());
         });
 
-        Department maxLengthTest = validPersistableDepartment();
+        Department maxLengthTest = validPersistableDepartment1();
         maxLengthTest.setName("#".repeat(101));
 
         Throwable exceptionMaxLengthTest = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(maxLengthTest));

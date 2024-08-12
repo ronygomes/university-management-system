@@ -42,7 +42,7 @@ public class AbstractEntityTest {
 
     @Test
     void testUuidIsPersistedAndNotModifiable() {
-        Department department1 = DataHelper.validPersistableDepartment();
+        Department department1 = DataHelper.validPersistableDepartment1();
 
         String generatedUuid = department1.getUuid();
         repository.save(department1);
@@ -66,7 +66,7 @@ public class AbstractEntityTest {
 
     @Test
     void testRequiresValidUuid() {
-        Department department1 = DataHelper.validPersistableDepartment();
+        Department department1 = DataHelper.validPersistableDepartment1();
         department1.setUuid(null);
 
         Throwable exceptionNullTest = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(department1));
@@ -78,7 +78,7 @@ public class AbstractEntityTest {
             Assertions.assertNull(v.getInvalidValue());
         });
 
-        Department department2 = DataHelper.validPersistableDepartment();
+        Department department2 = DataHelper.validPersistableDepartment1();
         department2.setUuid("ABC");
 
         Throwable invalidPatternTest = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(department2));

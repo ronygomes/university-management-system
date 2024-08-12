@@ -11,10 +11,17 @@ import java.util.List;
 
 public class DataHelper {
 
-    public static Department validPersistableDepartment() {
+    public static Department validPersistableDepartment1() {
         Department department = new Department();
         department.setCode("CODE-1");
         department.setName("Name-1");
+        return department;
+    }
+
+    public static Department validPersistableDepartment2() {
+        Department department = new Department();
+        department.setCode("CODE-2");
+        department.setName("Name-2");
         return department;
     }
 

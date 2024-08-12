@@ -18,7 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.Arrays;
 import java.util.Set;
 
-import static me.ronygomes.ums.api.helper.DataHelper.validPersistableDepartment;
+import static me.ronygomes.ums.api.helper.DataHelper.validPersistableDepartment1;
 import static me.ronygomes.ums.api.helper.TestHelper.extractConstraintViolation;
 
 @SpringBootTest
@@ -95,7 +95,7 @@ public class TeacherRepositoryTest {
 
     @Test
     void testMustUseExistingDepartment() {
-        Department departmentNew = validPersistableDepartment();
+        Department departmentNew = validPersistableDepartment1();
         Designation designation = designationRepository.findAll().get(0);
 
         Teacher teacher = DataHelper.validPersistableTeacher1(designation, departmentNew);
