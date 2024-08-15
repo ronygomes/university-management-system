@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 @Component
 public class ExceptionHelper {
 
-    private static final Pattern CONSTRAINT_VIOLATION_PATTERN = Pattern.compile("Detail: ([^]]+).*");
+    private static final Pattern DATABASE_INTEGRITY_EXCEPTION_MESSAGE_PATTERN = Pattern.compile("Detail: ([^]]+).*");
 
     public List<ErrorMessage> extractConstraintViolation(Throwable throwable) {
         List<ErrorMessage> errors = new ArrayList<>();
@@ -33,7 +33,7 @@ public class ExceptionHelper {
                 throwable = throwable.getCause();
             }
         } else if (throwable instanceof DataIntegrityViolationException) {
-            Matcher m = CONSTRAINT_VIOLATION_PATTERN
+            Matcher m = DATABASE_INTEGRITY_EXCEPTION_MESSAGE_PATTERN
                     .matcher(NestedExceptionUtils.getMostSpecificCause(throwable).getMessage());
 
             if (m.find()) {
