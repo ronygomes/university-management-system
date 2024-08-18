@@ -1,6 +1,7 @@
 package me.ronygomes.ums.api.service;
 
 import me.ronygomes.ums.api.dto.DepartmentDto;
+import me.ronygomes.ums.api.exception.ErrorMessage;
 import me.ronygomes.ums.api.exception.ExceptionType;
 import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.helper.DataHelper;
@@ -17,6 +18,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.TransactionSystemException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -97,14 +99,17 @@ public class DepartmentServiceTest {
         TransactionSystemException tex = new TransactionSystemException("Dummy");
         Mockito.doThrow(tex).when(departmentRepository).flush();
 
+        List<ErrorMessage> errors = new ArrayList<>();
+        Mockito.when(exceptionHelper.extractConstraintViolation(tex)).thenReturn(errors);
+
         UmsDataException umsEx = Assertions.assertThrows(UmsDataException.class, () -> service.save(dto));
 
         Mockito.verify(departmentRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(departmentRepository, Mockito.times(1)).flush();
-        Mockito.verify(exceptionHelper, Mockito.times(1)).extractConstraintViolation(tex);
 
         Assertions.assertEquals(ExceptionType.DATA_VALIDATION_FAILED, umsEx.getExceptionType());
         Assertions.assertEquals("Not a valid Department. See 'error' field for details", umsEx.getErrorDetails());
+        Assertions.assertSame(errors, umsEx.getErrors());
     }
 
     @Test
