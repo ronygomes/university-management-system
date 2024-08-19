@@ -1,11 +1,13 @@
 package me.ronygomes.ums.api.helper;
 
+import me.ronygomes.ums.api.dto.DepartmentDto;
 import me.ronygomes.ums.api.model.*;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -23,6 +25,16 @@ public class DataHelper {
         department.setCode("CODE-2");
         department.setName("Name-2");
         return department;
+    }
+
+    public static List<DepartmentDto> mockDBDepartments() {
+        Department d1 = validPersistableDepartment1();
+        d1.setId(1L);
+
+        Department d2 = validPersistableDepartment2();
+        d2.setId(2L);
+
+        return Arrays.asList(new DepartmentDto(d1), new DepartmentDto(d2));
     }
 
     public static Designation validPersistableDesignation() {
