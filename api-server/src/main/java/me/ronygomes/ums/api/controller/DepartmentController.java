@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
@@ -42,8 +43,6 @@ public class DepartmentController {
         return CollectionModel.of(models, Collections.singleton(link));
     }
 
-    // For accessing HAL forms, need to add `application/prs.hal-forms+json` as Accept header
-    // $ curl -H "Accept: application/prs.hal-forms+json" http://localhost:8100/v1/departments/CSE
     @GetMapping("/{code}")
     public EntityModel<DepartmentDto> department(@PathVariable String code) {
         EntityModel<DepartmentDto> model = EntityModel.of(departmentService.findByCode(code));
@@ -62,28 +61,32 @@ public class DepartmentController {
     }
 
     @PostMapping
-    public ResponseEntity<EntityModel<DepartmentDto>> create(@RequestBody DepartmentDto department) {
+    public ResponseEntity<?> create(@RequestBody DepartmentDto department) {
         departmentService.save(department);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(linkTo(DepartmentController.class).slash(department.getCode()).toUri());
-
-        return new ResponseEntity<>(department(department.getCode()), headers, HttpStatus.CREATED);
+        return ResponseEntity.created(createDepartmentUri(department)).build();
     }
 
     @PutMapping("/{code}")
-    public EntityModel<DepartmentDto> updateAll(@PathVariable String code, @RequestBody DepartmentDto department) {
+    public ResponseEntity<?> updateAll(@PathVariable String code, @RequestBody DepartmentDto department) {
         departmentService.updateAll(code, department);
-        return department(department.getCode());
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .header(HttpHeaders.LOCATION, createDepartmentUri(department).toASCIIString())
+                .build();
     }
 
     @PatchMapping("/{code}")
-    public EntityModel<DepartmentDto> updateOne(@PathVariable String code, @RequestBody DepartmentDto department) {
+    public ResponseEntity<?> updateOne(@PathVariable String code, @RequestBody DepartmentDto department) {
         departmentService.updateOne(code, department);
-        return department(department.getCode());
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .header(HttpHeaders.LOCATION, createDepartmentUri(department).toASCIIString())
+                .build();
     }
 
     private Link createDepartmentLinks(DepartmentDto department) {
         return linkTo(methodOn(DepartmentController.class).department(department.getCode())).withRel("department");
+    }
+
+    private URI createDepartmentUri(DepartmentDto department) {
+        return linkTo(DepartmentController.class).slash(department.getCode()).toUri();
     }
 }

@@ -34,3 +34,8 @@ ums=# \quit
 $ docker exec -it ums_postgres \
      pg_dump -h ums_postgres -U postgres ums | tee ums_dump.sql
 ```
+
+```shell
+# For accessing HAL forms, need to add `application/prs.hal-forms+json` as Accept header
+$ curl -H "Accept: application/prs.hal-forms+json" http://localhost:8100/v1/departments/CSE
+```

@@ -91,7 +91,7 @@ public class DesignationControllerTest {
 
         DesignationModel model = new DesignationModel();
         model.setTitle("Create");
-        ResponseEntity<DesignationModel> res = controller.create(model);
+        ResponseEntity<?> res = controller.create(model);
 
         Assertions.assertEquals(model.getTitle(), ac.getValue().getTitle());
         Assertions.assertEquals(HttpStatus.CREATED, res.getStatusCode());
@@ -124,13 +124,15 @@ public class DesignationControllerTest {
 
         DesignationModel input = new DesignationModel();
         input.setTitle("Updated");
-        controller.update(1L, input);
+        ResponseEntity<?> res = controller.update(1L, input);
 
         Designation capture = ac.getValue();
         Assertions.assertEquals(input.getTitle(), capture.getTitle());
         Assertions.assertEquals(dbData.getId(), capture.getId());
 
-        Mockito.verify(designationModelAssembler, Mockito.times(1)).toModel(capture);
+        Assertions.assertEquals(HttpStatus.ACCEPTED, res.getStatusCode());
+        Assertions.assertNotNull(res.getHeaders().getLocation());
+        Assertions.assertEquals("/v1/designations/1", res.getHeaders().getLocation().toASCIIString());
     }
 
     @Test

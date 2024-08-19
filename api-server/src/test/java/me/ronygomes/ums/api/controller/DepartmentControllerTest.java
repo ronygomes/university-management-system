@@ -135,12 +135,7 @@ public class DepartmentControllerTest {
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.CREATED.value()))
                 .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/departments/CODE-1"))
-
-                .andExpect(jsonPath("$.length()").value(4))
-                .andExpect(jsonPath("$.code").value("CODE-DB"))
-                .andExpect(jsonPath("$.name").value("Name DB"))
-                .andExpect(jsonPath("$._links.self.href").value("http://localhost/v1/departments/CODE-1"))
-                .andExpectAll(templateMatchers());
+                .andExpect(jsonPath("$").doesNotExist());
 
         DepartmentDto input = ac.getValue();
         Assertions.assertEquals("CODE-1", input.getCode());
@@ -184,12 +179,13 @@ public class DepartmentControllerTest {
         Mockito.doNothing().when(departmentService).updateAll(Mockito.eq("CODE-OLD"), ac.capture());
 
         mockMvc.perform(put("/v1/departments/CODE-OLD")
-                .accept("application/prs.hal-forms+json")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JSON_DATE))
+                        .accept("application/prs.hal-forms+json")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE))
                 .andDo(print())
-                .andExpect(status().is(HttpStatus.OK.value()))
-                .andExpect(jsonPath("$._links.self.href").value("http://localhost/v1/departments/CODE-1"));
+                .andExpect(status().is(HttpStatus.ACCEPTED.value()))
+                .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/departments/CODE-1"))
+                .andExpect(jsonPath("$").doesNotExist());
 
         Assertions.assertEquals("CODE-1", ac.getValue().getCode());
         Assertions.assertEquals("Name 1", ac.getValue().getName());
@@ -207,8 +203,9 @@ public class DepartmentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JSON_DATE))
                 .andDo(print())
-                .andExpect(status().is(HttpStatus.OK.value()))
-                .andExpect(jsonPath("$._links.self.href").value("http://localhost/v1/departments/CODE-1"));
+                .andExpect(status().is(HttpStatus.ACCEPTED.value()))
+                .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/departments/CODE-1"))
+                .andExpect(jsonPath("$").doesNotExist());
 
         Assertions.assertEquals("CODE-1", ac.getValue().getCode());
         Assertions.assertEquals("Name 1", ac.getValue().getName());

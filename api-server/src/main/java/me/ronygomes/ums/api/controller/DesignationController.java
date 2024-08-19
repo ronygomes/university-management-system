@@ -44,26 +44,26 @@ public class DesignationController {
     }
 
     @PostMapping
-    public ResponseEntity<DesignationModel> create(@RequestBody DesignationModel designation) {
+    public ResponseEntity<?> create(@RequestBody DesignationModel designation) {
         Designation dBDesignation = new Designation();
         dBDesignation.setTitle(designation.getTitle());
 
         designationRepository.save(dBDesignation);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(linkTo(DesignationController.class).slash(dBDesignation.getId()).toUri());
-
-        return new ResponseEntity<>(designationModelAssembler.toModel(dBDesignation), headers, HttpStatus.CREATED);
+        return ResponseEntity.created(linkTo(DesignationController.class).slash(dBDesignation.getId()).toUri())
+                .build();
     }
 
     @PutMapping("/{id}")
-    public DesignationModel update(@PathVariable Long id, @RequestBody DesignationModel designation) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody DesignationModel designation) {
         Designation dBDesignation = findDesignationOrThrow(id);
         dBDesignation.setTitle(designation.getTitle());
 
         designationRepository.save(dBDesignation);
 
-        return designationModelAssembler.toModel(dBDesignation);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .header(HttpHeaders.LOCATION, linkTo(DesignationController.class).slash(dBDesignation.getId()).toString())
+                .build();
     }
 
     private Designation findDesignationOrThrow(Long id) {
