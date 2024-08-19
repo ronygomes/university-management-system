@@ -82,6 +82,12 @@ public class DepartmentController {
                 .build();
     }
 
+    @DeleteMapping("/{code}")
+    public ResponseEntity<?> delete(@PathVariable String code) {
+        departmentService.delete(code);
+        return ResponseEntity.accepted().build();
+    }
+
     private Link createDepartmentLinks(DepartmentDto department) {
         return linkTo(methodOn(DepartmentController.class).department(department.getCode())).withRel("department");
     }

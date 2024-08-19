@@ -70,6 +70,12 @@ public class DepartmentService {
         save(department);
     }
 
+    @Transactional
+    public void delete(String code) {
+        Department department = findByCodeOrThrow(code);
+        departmentRepository.delete(department);
+    }
+
     private void save(Department department) {
         try {
             departmentRepository.save(department);

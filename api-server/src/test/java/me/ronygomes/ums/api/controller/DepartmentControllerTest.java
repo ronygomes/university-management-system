@@ -211,6 +211,16 @@ public class DepartmentControllerTest {
         Assertions.assertEquals("Name 1", ac.getValue().getName());
     }
 
+    @Test
+    void testPatchDepartmentDelete() throws Exception {
+        mockMvc.perform(delete("/v1/departments/CODE-X")
+                        .accept("application/prs.hal-forms+json"))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.ACCEPTED.value()));
+
+        Mockito.verify(departmentService, Mockito.times(1)).delete("CODE-X");
+    }
+
     private ResultMatcher[] templateMatchers() {
         return new ResultMatcher[]{
                 jsonPath("$._templates.length()").value(2),

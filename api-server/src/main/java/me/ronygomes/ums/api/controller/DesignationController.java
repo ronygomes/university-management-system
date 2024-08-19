@@ -66,6 +66,12 @@ public class DesignationController {
                 .build();
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        designationRepository.delete(findDesignationOrThrow(id));
+        return ResponseEntity.accepted().build();
+    }
+
     private Designation findDesignationOrThrow(Long id) {
         return designationRepository.findById(id)
                 .orElseThrow(() -> new UmsDataException(ExceptionType.ENTITY_NOT_FOUND,

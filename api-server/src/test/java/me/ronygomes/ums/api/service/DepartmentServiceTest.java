@@ -197,6 +197,18 @@ public class DepartmentServiceTest {
         Mockito.verify(departmentRepository, Mockito.times(1)).save(d1);
     }
 
+    @Test
+    void testDelete() {
+        Department d1 = DataHelper.validPersistableDepartment1();
+        d1.setId(1L);
+        d1.setCode("CODE-X");
+
+        Mockito.when(departmentRepository.findByCode(d1.getCode())).thenReturn(Optional.of(d1));
+        service.delete("CODE-X");
+
+        Mockito.verify(departmentRepository, Mockito.times(1)).delete(d1);
+    }
+
     private void assertDepartmentDataEqual(Department department, DepartmentDto dto) {
         Assertions.assertEquals(department.getCode(), dto.getCode());
         Assertions.assertEquals(department.getName(), dto.getName());

@@ -160,4 +160,18 @@ public class DesignationControllerTest {
         Mockito.verify(designationRepository, Mockito.times(1)).findById(500L);
         Mockito.verifyNoInteractions(designationModelAssembler);
     }
+
+    @Test
+    void testDeleteSuccess() {
+        Designation dbData = new Designation();
+        dbData.setId(500L);
+        dbData.setTitle("For Delete");
+
+        Mockito.when(designationRepository.findById(500L)).thenReturn(Optional.of(dbData));
+        ResponseEntity<?> res = controller.delete(500L);
+
+        Assertions.assertEquals(HttpStatus.ACCEPTED, res.getStatusCode());
+        Assertions.assertNull(res.getBody());
+        Mockito.verify(designationRepository, Mockito.times(1)).delete(dbData);
+    }
 }
