@@ -8,16 +8,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.hateoas.*;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
-public class DesignationModelAssemblerTest {
+import static me.ronygomes.ums.api.helper.TestHelper.HAL_FORMS;
 
-    private static final MediaType HAL_FORMS = new MediaType("application", "prs.hal-forms+json");
+public class DesignationModelAssemblerTest {
 
     private DesignationModelAssembler assembler;
 

@@ -4,12 +4,14 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.MediaType;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Set;
 
 public class TestHelper {
+    public static final MediaType HAL_FORMS = new MediaType("application", "prs.hal-forms+json");
 
     public static Set<ConstraintViolation<?>> extractConstraintViolation(Throwable throwable) {
         while (throwable != null) {
