@@ -22,7 +22,7 @@ public class TeacherPatchDtoTest {
     @Test
     void testTeacherPatchDto_fullName() {
         dto.setFullName("Updated");
-        TeacherInputDto idto = dto.toInputDto(mockDBTeacher);
+        TeacherDto idto = dto.toInputDto(mockDBTeacher);
         assertEqualsExcept(mockDBTeacher, idto, "fullName");
         Assertions.assertEquals("Updated", idto.getFullName());
     }
@@ -30,7 +30,7 @@ public class TeacherPatchDtoTest {
     @Test
     void testTeacherPatchDto_address() {
         dto.setAddress("Updated");
-        TeacherInputDto idto = dto.toInputDto(mockDBTeacher);
+        TeacherDto idto = dto.toInputDto(mockDBTeacher);
         assertEqualsExcept(mockDBTeacher, idto, "address");
         Assertions.assertEquals("Updated", idto.getAddress());
     }
@@ -38,7 +38,7 @@ public class TeacherPatchDtoTest {
     @Test
     void testTeacherPatchDto_email() {
         dto.setEmail("Updated");
-        TeacherInputDto idto = dto.toInputDto(mockDBTeacher);
+        TeacherDto idto = dto.toInputDto(mockDBTeacher);
         assertEqualsExcept(mockDBTeacher, idto, "email");
         Assertions.assertEquals("Updated", idto.getEmail());
     }
@@ -46,7 +46,7 @@ public class TeacherPatchDtoTest {
     @Test
     void testTeacherPatchDto_contactNumber() {
         dto.setContactNumber("Updated");
-        TeacherInputDto idto = dto.toInputDto(mockDBTeacher);
+        TeacherDto idto = dto.toInputDto(mockDBTeacher);
         assertEqualsExcept(mockDBTeacher, idto, "contactNumber");
         Assertions.assertEquals("Updated", idto.getContactNumber());
     }
@@ -54,7 +54,7 @@ public class TeacherPatchDtoTest {
     @Test
     void testTeacherPatchDto_assignedCredit() {
         dto.setAssignedCredit(5.0f);
-        TeacherInputDto idto = dto.toInputDto(mockDBTeacher);
+        TeacherDto idto = dto.toInputDto(mockDBTeacher);
         assertEqualsExcept(mockDBTeacher, idto, "assignedCredit");
         Assertions.assertEquals(5.0f, idto.getAssignedCredit());
     }
@@ -63,7 +63,7 @@ public class TeacherPatchDtoTest {
     void testTeacherPatchDto_departmentCode() {
         dto.setDepartmentCode("RD");
 
-        TeacherInputDto idto = dto.toInputDto(mockDBTeacher);
+        TeacherDto idto = dto.toInputDto(mockDBTeacher);
         assertEqualsExcept(mockDBTeacher, idto, "departmentCode");
         Assertions.assertEquals("RD", idto.getDepartmentCode());
     }
@@ -72,12 +72,12 @@ public class TeacherPatchDtoTest {
     void testTeacherPatchDto_title() {
         dto.setTitle("Abc");
 
-        TeacherInputDto idto = dto.toInputDto(mockDBTeacher);
+        TeacherDto idto = dto.toInputDto(mockDBTeacher);
         assertEqualsExcept(mockDBTeacher, idto, "title");
         Assertions.assertEquals("Abc", idto.getTitle());
     }
 
-    private void assertEqualsExcept(Teacher original, TeacherInputDto updated, String field) {
+    private void assertEqualsExcept(Teacher original, TeacherDto updated, String field) {
         if (!"fullName".equals(field)) {
             Assertions.assertEquals(original.getFullName(), updated.getFullName());
         }

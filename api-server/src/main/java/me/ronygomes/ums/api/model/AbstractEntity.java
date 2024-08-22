@@ -1,5 +1,6 @@
 package me.ronygomes.ums.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
@@ -19,11 +20,13 @@ public abstract class AbstractEntity implements Serializable {
     public static final String PHONE_REGEX_PATTERN = "^\\+\\d{13}$";
 
     @NotNull
+    @JsonIgnore
     @Pattern(regexp = UUID_REGEX, message = "invalid uuid")
     @Column(nullable = false, updatable = false, unique = true, length = UUID_LENGTH)
     private String uuid = UUID.randomUUID().toString();
 
     @Version
+    @JsonIgnore
     private Integer version;
 
     public String getUuid() {
@@ -63,9 +66,11 @@ public abstract class AbstractEntity implements Serializable {
         }
     }
 
+    @JsonIgnore
     public boolean isNew() {
         return Objects.isNull(getId());
     }
 
+    @JsonIgnore
     public abstract Long getId();
 }

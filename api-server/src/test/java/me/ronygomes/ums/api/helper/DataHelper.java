@@ -1,7 +1,7 @@
 package me.ronygomes.ums.api.helper;
 
 import me.ronygomes.ums.api.dto.DepartmentDto;
-import me.ronygomes.ums.api.dto.TeacherInputDto;
+import me.ronygomes.ums.api.dto.TeacherDto;
 import me.ronygomes.ums.api.model.*;
 
 import java.time.DayOfWeek;
@@ -229,8 +229,8 @@ public class DataHelper {
         return cs;
     }
 
-    public static TeacherInputDto validTeacherInputDto() {
-        var teacherDto = new TeacherInputDto();
+    public static TeacherDto validTeacherInputDto() {
+        var teacherDto = new TeacherDto();
         teacherDto.setFullName("abc");
         teacherDto.setAddress("Address");
         teacherDto.setEmail("abc@def.com");

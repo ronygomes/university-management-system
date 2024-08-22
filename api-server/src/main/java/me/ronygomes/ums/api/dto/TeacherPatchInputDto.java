@@ -93,8 +93,8 @@ public class TeacherPatchInputDto implements Serializable {
         this.departmentCode = departmentCode;
     }
 
-    public TeacherInputDto toInputDto(Teacher dbData) {
-        TeacherInputDto res = new TeacherInputDto();
+    public TeacherDto toInputDto(Teacher dbData) {
+        TeacherDto res = new TeacherDto();
         if (Objects.nonNull(getFullName())) {
             res.setFullName(getFullName());
         } else {

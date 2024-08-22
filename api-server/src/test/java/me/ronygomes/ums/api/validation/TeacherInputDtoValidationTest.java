@@ -3,7 +3,7 @@ package me.ronygomes.ums.api.validation;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import me.ronygomes.ums.api.config.TestContextConfig;
-import me.ronygomes.ums.api.dto.TeacherInputDto;
+import me.ronygomes.ums.api.dto.TeacherDto;
 import me.ronygomes.ums.api.helper.DataHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,7 @@ public class TeacherInputDtoValidationTest {
     @Autowired
     private Validator validator;
 
-    private TeacherInputDto valid;
+    private TeacherDto valid;
 
     @BeforeEach
     void setup() {
@@ -129,11 +129,11 @@ public class TeacherInputDtoValidationTest {
         assertViolation(validator.validate(valid), "departmentCode", "size must be between 1 and 10", value);
     }
 
-    private void assertViolation(Set<ConstraintViolation<TeacherInputDto>> errors,
+    private void assertViolation(Set<ConstraintViolation<TeacherDto>> errors,
                                  String field, String message, Object expectedValue) {
         Assertions.assertEquals(1, errors.size());
 
-        for (ConstraintViolation<TeacherInputDto> violation : errors) {
+        for (ConstraintViolation<TeacherDto> violation : errors) {
             Assertions.assertEquals(field, violation.getPropertyPath().toString());
             Assertions.assertEquals(message, violation.getMessage());
 

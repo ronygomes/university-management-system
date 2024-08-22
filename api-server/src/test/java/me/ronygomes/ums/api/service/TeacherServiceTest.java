@@ -2,7 +2,7 @@ package me.ronygomes.ums.api.service;
 
 import jakarta.validation.Validator;
 import me.ronygomes.ums.api.config.TestContextConfig;
-import me.ronygomes.ums.api.dto.TeacherInputDto;
+import me.ronygomes.ums.api.dto.TeacherDto;
 import me.ronygomes.ums.api.dto.TeacherPatchInputDto;
 import me.ronygomes.ums.api.exception.ExceptionType;
 import me.ronygomes.ums.api.exception.UmsDataException;
@@ -25,7 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 import static me.ronygomes.ums.api.helper.DataHelper.validTeacherInputDto;
@@ -62,6 +64,14 @@ public class TeacherServiceTest {
     }
 
     @Test
+    void findByAll() {
+        List<Teacher> teachers = new ArrayList<>();
+
+        Mockito.when(teacherRepository.findAll()).thenReturn(teachers);
+        Assertions.assertSame(teachers, teacherService.findAll());
+    }
+
+    @Test
     void findById_success() {
         Teacher t = new Teacher();
         Mockito.when(teacherRepository.findById(1L)).thenReturn(Optional.of(t));
@@ -80,7 +90,7 @@ public class TeacherServiceTest {
 
     @Test
     void create_success() {
-        TeacherInputDto dto = validTeacherInputDto();
+        TeacherDto dto = validTeacherInputDto();
 
         Mockito.when(mockValidator.validate(dto)).thenReturn(new HashSet<>());
 
@@ -110,7 +120,7 @@ public class TeacherServiceTest {
         teacherService = new TeacherService(teacherRepository, departmentRepository,
                 designationRepository, validator, exceptionHelper);
 
-        TeacherInputDto dto = validTeacherInputDto();
+        TeacherDto dto = validTeacherInputDto();
         dto.setFullName(null);
 
         Department d = new Department();
@@ -132,7 +142,7 @@ public class TeacherServiceTest {
     @Test
     void create_validationErrorForDepartment() {
 
-        TeacherInputDto dto = validTeacherInputDto();
+        TeacherDto dto = validTeacherInputDto();
         Mockito.when(mockValidator.validate(dto)).thenReturn(new HashSet<>());
         Mockito.when(departmentRepository.findByCode(dto.getDepartmentCode())).thenReturn(Optional.empty());
 
@@ -153,7 +163,7 @@ public class TeacherServiceTest {
     @Test
     void create_validationErrorForTitle() {
 
-        TeacherInputDto dto = validTeacherInputDto();
+        TeacherDto dto = validTeacherInputDto();
         Mockito.when(mockValidator.validate(dto)).thenReturn(new HashSet<>());
 
         Department d = new Department();
@@ -173,7 +183,7 @@ public class TeacherServiceTest {
 
     @Test
     void updateAll_success() {
-        TeacherInputDto dto = validTeacherInputDto();
+        TeacherDto dto = validTeacherInputDto();
 
         Mockito.when(mockValidator.validate(dto)).thenReturn(new HashSet<>());
 
@@ -246,7 +256,7 @@ public class TeacherServiceTest {
         Mockito.verify(teacherRepository, Mockito.times(1)).flush();
     }
 
-    private void assertTeacherDataEquals(Teacher t, TeacherInputDto dto, Department expectedDept, Designation expectedTitle) {
+    private void assertTeacherDataEquals(Teacher t, TeacherDto dto, Department expectedDept, Designation expectedTitle) {
 
         Assertions.assertEquals(dto.getFullName(), t.getFullName());
         Assertions.assertEquals(dto.getAddress(), t.getAddress());

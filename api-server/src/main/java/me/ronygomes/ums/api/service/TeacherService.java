@@ -2,7 +2,7 @@ package me.ronygomes.ums.api.service;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Validator;
-import me.ronygomes.ums.api.dto.TeacherInputDto;
+import me.ronygomes.ums.api.dto.TeacherDto;
 import me.ronygomes.ums.api.dto.TeacherPatchInputDto;
 import me.ronygomes.ums.api.exception.ErrorMessage;
 import me.ronygomes.ums.api.exception.ExceptionType;
@@ -50,12 +50,16 @@ public class TeacherService {
         this.exceptionHelper = exceptionHelper;
     }
 
+    public List<Teacher> findAll() {
+        return teacherRepository.findAll();
+    }
+
     public Teacher findById(long id) {
         return findByIdOrThrow(id);
     }
 
     @Transactional
-    public long create(TeacherInputDto teacherDto) {
+    public long create(TeacherDto teacherDto) {
         Teacher teacher = new Teacher();
         validateThenCopy(teacherDto, teacher);
 
@@ -64,7 +68,7 @@ public class TeacherService {
     }
 
     @Transactional
-    public void updateAll(long id, TeacherInputDto teacherDto) {
+    public void updateAll(long id, TeacherDto teacherDto) {
         Teacher dbTeacher = findById(id);
         validateThenCopy(teacherDto, dbTeacher);
 
@@ -74,7 +78,7 @@ public class TeacherService {
     @Transactional
     public void updateProvided(long id, TeacherPatchInputDto patchDto) {
         Teacher dbTeacher = findById(id);
-        TeacherInputDto inputDto = patchDto.toInputDto(dbTeacher);
+        TeacherDto inputDto = patchDto.toInputDto(dbTeacher);
         validateThenCopy(inputDto, dbTeacher);
 
         save(dbTeacher);
@@ -85,7 +89,7 @@ public class TeacherService {
         teacherRepository.delete(findById(id));
     }
 
-    private void validateThenCopy(TeacherInputDto teacher, Teacher destination) {
+    private void validateThenCopy(TeacherDto teacher, Teacher destination) {
         var dataErrors = validator.validate(teacher);
         List<ErrorMessage> errors = new ArrayList<>(dataErrors
                 .stream()
