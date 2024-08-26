@@ -78,6 +78,8 @@ public class TeacherControllerTest {
                 .andExpect(jsonPath("$._embedded.teachers[0].email").value("john@example.com"))
                 .andExpect(jsonPath("$._embedded.teachers[0].title").value("Sample Title"))
                 .andExpect(jsonPath("$._embedded.teachers[0].departmentCode").value("CODE-1"))
+                .andExpect(jsonPath("$._embedded.teachers[0]._links.self.href")
+                        .value("http://localhost/v1/teachers/3"))
                 .andExpect(jsonPath("$._embedded.teachers[0]._links.department.href")
                         .value("http://localhost/v1/departments/CODE-1"))
                 .andExpect(jsonPath("$._embedded.teachers[0]._links.designation.href")

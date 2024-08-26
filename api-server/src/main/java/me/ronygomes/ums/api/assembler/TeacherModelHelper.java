@@ -50,6 +50,7 @@ public class TeacherModelHelper {
             TeacherDto dto = convertToOutputDto(entity, HalDataOutputType.EMBEDDED);
             dto.add(linkTo(departmentController.department(dto.getDepartmentCode())).withRel("department"));
             dto.add(linkTo(designationController.designation(entity.getDesignation().getId())).withRel("designation"));
+            dto.add(linkTo(teacherController.getById(entity.getId())).withSelfRel());
 
             teachers.add(dto);
         }

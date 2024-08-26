@@ -1,0 +1,201 @@
+package me.ronygomes.ums.api.controller;
+
+import me.ronygomes.ums.api.dto.CourseDto;
+import me.ronygomes.ums.api.dto.CoursePatchDto;
+import me.ronygomes.ums.api.exception.ExceptionType;
+import me.ronygomes.ums.api.exception.UmsDataException;
+import me.ronygomes.ums.api.helper.DataHelper;
+import me.ronygomes.ums.api.model.Course;
+import me.ronygomes.ums.api.model.Department;
+import me.ronygomes.ums.api.model.Semester;
+import me.ronygomes.ums.api.model.Teacher;
+import me.ronygomes.ums.api.service.CourseService;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.math.BigDecimal;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(CourseController.class)
+public class CourseControllerTest {
+
+    private static final String JSON_DATE = """
+            {
+              "title": "Title",
+              "name": "Course Name",
+              "credit": 3.5,
+              "description": "Awesome",
+              "semester": "FOURTH_YEAR_SECOND",
+              "departmentCode": "CSE",
+              "instructorId": 30
+            }
+            """;
+
+    @MockBean
+    private CourseService courseService;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testFindByIdSuccess() throws Exception {
+        CourseDto courseDto = CourseDto.toDto(createMockDBCourse());
+        Mockito.when(courseService.findById(1L)).thenReturn(courseDto);
+
+        mockMvc.perform(get("/v1/courses/1"))
+                .andDo(print())
+                .andExpect(jsonPath("$.title").value("CSE-101"))
+                .andExpect(jsonPath("$.name").value("Introduction to Programming Language in Java"))
+                .andExpect(jsonPath("$.credit").value("3.0"))
+                .andExpect(jsonPath("$.description").value("Java Description"))
+                .andExpect(jsonPath("$.departmentCode").value("CODE-1"))
+                .andExpect(jsonPath("$.semester").value("FIRST_YEAR_FIRST"))
+                .andExpect(jsonPath("$.instructorId").value("3"))
+                .andExpect(status().is(HttpStatus.OK.value()));
+    }
+
+    @Test
+    void testFindByIdFailure() throws Exception {
+        UmsDataException ex = new UmsDataException(ExceptionType.ENTITY_NOT_FOUND, "abc");
+        Mockito.when(courseService.findById(1L)).thenThrow(ex);
+
+        mockMvc.perform(get("/v1/courses/1"))
+                .andDo(print())
+                .andExpect(jsonPath("$.length()").value("4"))
+                .andExpect(jsonPath("$.type").value("https://documentation.com/errors/entity-not-found"))
+                .andExpect(jsonPath("$.title").value("Requested object not found"))
+                .andExpect(jsonPath("$.detail").value("abc"))
+                .andExpect(jsonPath("$.instance").value("/v1/courses/1"))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+    }
+
+    @Test
+    void testPostSuccess() throws Exception {
+        ArgumentCaptor<CourseDto> ac = ArgumentCaptor.forClass(CourseDto.class);
+        Mockito.when(courseService.create(ac.capture())).thenReturn(500L);
+
+        mockMvc.perform(post("/v1/courses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.CREATED.value()))
+                .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/courses/500"))
+                .andExpect(jsonPath("$").doesNotExist());
+
+        CourseDto received = ac.getValue();
+        Assertions.assertEquals("Title", received.getTitle());
+        Assertions.assertEquals("Course Name", received.getName());
+        Assertions.assertEquals(BigDecimal.valueOf(3.5), received.getCredit());
+        Assertions.assertEquals("Awesome", received.getDescription());
+        Assertions.assertEquals(Semester.FOURTH_YEAR_SECOND, received.getSemester());
+        Assertions.assertEquals("CSE", received.getDepartmentCode());
+        Assertions.assertEquals(30L, received.getInstructorId());
+    }
+
+    @Test
+    void testPutSuccess() throws Exception {
+        String updateJson = """
+                {
+                  "title": "Title 1",
+                  "name": "Course Name 2",
+                  "credit": 3.3,
+                  "description": "Awesome 4",
+                  "semester": "FOURTH_YEAR_FIRST",
+                  "departmentCode": "EEE",
+                  "instructorId": 31
+                }
+                """;
+
+        ArgumentCaptor<CourseDto> ac = ArgumentCaptor.forClass(CourseDto.class);
+        Mockito.doNothing().when(courseService).updateAll(Mockito.eq(5L), ac.capture());
+
+        mockMvc.perform(put("/v1/courses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.ACCEPTED.value()))
+                .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/courses/5"))
+                .andExpect(jsonPath("$").doesNotExist());
+
+        CourseDto received = ac.getValue();
+        Assertions.assertEquals("Title 1", received.getTitle());
+        Assertions.assertEquals("Course Name 2", received.getName());
+        Assertions.assertEquals(BigDecimal.valueOf(3.3), received.getCredit());
+        Assertions.assertEquals("Awesome 4", received.getDescription());
+        Assertions.assertEquals(Semester.FOURTH_YEAR_FIRST, received.getSemester());
+        Assertions.assertEquals("EEE", received.getDepartmentCode());
+        Assertions.assertEquals(31L, received.getInstructorId());
+    }
+
+    @Test
+    void testPatchSuccess() throws Exception {
+        String updateJson = """
+                {
+                  "title": "Title 1",
+                  "departmentCode": "EEE"
+                }
+                """;
+
+        ArgumentCaptor<CoursePatchDto> ac = ArgumentCaptor.forClass(CoursePatchDto.class);
+        Mockito.doNothing().when(courseService).updateProvided(Mockito.eq(5L), ac.capture());
+
+        mockMvc.perform(patch("/v1/courses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.ACCEPTED.value()))
+                .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/courses/5"))
+                .andExpect(jsonPath("$").doesNotExist());
+
+        CoursePatchDto received = ac.getValue();
+        Assertions.assertEquals("Title 1", received.getTitle());
+        Assertions.assertNull(received.getName());
+        Assertions.assertNull(received.getCredit());
+        Assertions.assertNull(received.getDescription());
+        Assertions.assertNull(received.getSemester());
+        Assertions.assertEquals("EEE", received.getDepartmentCode());
+        Assertions.assertNull(received.getInstructorId());
+    }
+
+    @Test
+    void testDeleteSuccess() throws Exception {
+        mockMvc.perform(delete("/v1/courses/1"))
+                .andDo(print())
+                .andExpect(jsonPath("$").doesNotExist())
+                .andExpect(status().is(HttpStatus.ACCEPTED.value()));
+
+        Mockito.verify(courseService, Mockito.times(1)).delete(1L);
+    }
+
+    private Course createMockDBCourse() {
+        Department d = DataHelper.validPersistableDepartment1();
+        d.setId(2L);
+
+        Teacher t = new Teacher();
+        t.setId(3L);
+
+        Course c = DataHelper.validPersistableCourse1(d, t);
+        c.setId(1L);
+
+        return c;
+    }
+}
