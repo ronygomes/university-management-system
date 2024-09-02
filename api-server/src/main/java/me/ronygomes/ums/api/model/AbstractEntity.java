@@ -71,6 +71,5 @@ public abstract class AbstractEntity implements Serializable {
         return Objects.isNull(getId());
     }
 
-    @JsonIgnore
     public abstract Long getId();
 }

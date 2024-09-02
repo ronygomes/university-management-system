@@ -2,12 +2,16 @@ package me.ronygomes.ums.api.helper;
 
 import jakarta.validation.ConstraintViolationException;
 import me.ronygomes.ums.api.exception.ErrorMessage;
+import me.ronygomes.ums.api.exception.ExceptionType;
+import me.ronygomes.ums.api.exception.UmsDataException;
 import org.springframework.core.NestedExceptionUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionSystemException;
+import org.springframework.validation.BindingResult;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,5 +48,20 @@ public class ExceptionHelper {
         }
 
         throw new RuntimeException("Not a ConstraintViolation or DataIntegrityViolationException");
+    }
+
+    public void throwErrorIfValidationError(BindingResult result, String message, String... ignoreFields) {
+        if (!result.hasErrors()) {
+            return;
+        }
+
+        List<ErrorMessage> errors = new ArrayList<>();
+        result.getFieldErrors().forEach(fe -> {
+            if (!Arrays.asList(ignoreFields).contains(fe.getField())) {
+                errors.add(new ErrorMessage(fe.getField(), fe.getDefaultMessage()));
+            }
+        });
+
+        throw new UmsDataException(ExceptionType.DATA_VALIDATION_FAILED, message, errors);
     }
 }

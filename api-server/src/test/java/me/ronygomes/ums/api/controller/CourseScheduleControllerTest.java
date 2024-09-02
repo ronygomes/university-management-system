@@ -1,0 +1,259 @@
+package me.ronygomes.ums.api.controller;
+
+import jakarta.validation.Validator;
+import me.ronygomes.ums.api.helper.DataHelper;
+import me.ronygomes.ums.api.helper.ExceptionHelper;
+import me.ronygomes.ums.api.model.Building;
+import me.ronygomes.ums.api.model.Course;
+import me.ronygomes.ums.api.model.CourseSchedule;
+import me.ronygomes.ums.api.model.Department;
+import me.ronygomes.ums.api.repository.CourseRepository;
+import me.ronygomes.ums.api.repository.CourseScheduleRepository;
+import me.ronygomes.ums.api.repository.DepartmentRepository;
+import me.ronygomes.ums.api.validator.CourseScheduleValidator;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.DayOfWeek;
+import java.util.Optional;
+
+import static me.ronygomes.ums.api.model.Semester.FOURTH_YEAR_SECOND;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(CourseScheduleController.class)
+public class CourseScheduleControllerTest {
+
+    // Note: @JsonIgnore disallows read+write but @JsonProperty(READ) will allow only read
+    private static final String JSON_DATE = """
+            {
+              "id": "3",
+              "course": {
+                "id": 100
+              },
+              "department": {
+                "code": "CSE"
+              },
+              "courseId": "100",
+              "departmentCode": "CSE",
+              "semester": "FOURTH_YEAR_SECOND",
+              "building": "BUILDING_1",
+              "roomNumber": "410-B",
+              "day": "MONDAY",
+              "startTime": "2024-09-03T10:16:00.000+00:00",
+              "endTime": "2024-10-03T11:16:17.000+00:00"
+            }
+            """;
+
+    @MockBean
+    private CourseScheduleRepository courseScheduleRepository;
+
+    @MockBean
+    private DepartmentRepository departmentRepository;
+
+    @MockBean
+    private CourseRepository courseRepository;
+
+    @MockBean
+    private ExceptionHelper exceptionHelper;
+
+    @MockBean
+    private CourseScheduleValidator courseScheduleValidator;
+
+    @MockBean
+    private Validator validator;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void testFindByIdSuccess() throws Exception {
+        CourseSchedule cs = mockCourseSchedule();
+        Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.of(cs));
+
+        mockMvc.perform(get("/v1/schedules/1"))
+                .andDo(print())
+                .andExpect(jsonPath("$.id").value("3"))
+                .andExpect(jsonPath("$.courseId").value("2"))
+                .andExpect(jsonPath("$.department.code").value("CODE-1"))
+                .andExpect(jsonPath("$.department.name").value("Name-1"))
+                .andExpect(jsonPath("$.semester").value("FIRST_YEAR_SECOND"))
+                .andExpect(jsonPath("$.building").value("BUILDING_1"))
+                .andExpect(jsonPath("$.roomNumber").value("F7-102"))
+                .andExpect(jsonPath("$.day").value("MONDAY"))
+                .andExpect(jsonPath("$.startTime").exists())
+                .andExpect(jsonPath("$.endTime").exists())
+                .andExpect(jsonPath("$.course").doesNotExist())
+                .andExpect(status().is(HttpStatus.OK.value()));
+    }
+
+    @Test
+    void testCreteSuccess() throws Exception {
+
+        Mockito.when(courseScheduleValidator.supports(Mockito.any())).thenReturn(true);
+        Mockito.doNothing().when(exceptionHelper).throwErrorIfValidationError(Mockito.any(), Mockito.any(), Mockito.any());
+
+        Department d = new Department();
+        Mockito.when(departmentRepository.findByCode("CSE")).thenReturn(Optional.of(d));
+
+        Course c = new Course();
+        Mockito.when(courseRepository.findById(100L)).thenReturn(Optional.of(c));
+
+        ArgumentCaptor<CourseSchedule> ac = ArgumentCaptor.forClass(CourseSchedule.class);
+        Mockito.doAnswer(i -> {
+            CourseSchedule sc = i.getArgument(0);
+
+            Assertions.assertNull(sc.getId());
+            sc.setId(100L);
+
+            return null;
+        }).when(courseScheduleRepository).save(ac.capture());
+
+        mockMvc.perform(post("/v1/schedules")
+                        .contentType("application/json")
+                        .content(JSON_DATE))
+                .andDo(print())
+                .andExpect(header().string("Location", "http://localhost/v1/schedules/100"))
+                .andExpect(status().is(HttpStatus.CREATED.value()));
+
+        CourseSchedule sc = ac.getValue();
+
+        // Disallowed fields
+        Assertions.assertSame(d, sc.getDepartment());
+        Assertions.assertSame(c, sc.getCourse());
+
+        Assertions.assertEquals("CSE", sc.getDepartmentCode());
+        Assertions.assertEquals(FOURTH_YEAR_SECOND, sc.getSemester());
+        Assertions.assertEquals(100L, sc.getCourseId());
+        Assertions.assertEquals(Building.BUILDING_1, sc.getBuilding());
+        Assertions.assertEquals("410-B", sc.getRoomNumber());
+        Assertions.assertEquals(DayOfWeek.MONDAY, sc.getDay());
+
+        Assertions.assertEquals(1725358560000L, sc.getStartTime().getTime());
+        Assertions.assertEquals(1727954177000L, sc.getEndTime().getTime());
+    }
+
+    @Test
+    void testFindByIdFailed() throws Exception {
+        Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.empty());
+        mockMvc.perform(get("/v1/schedules/1"))
+                .andDo(print())
+                .andExpect(jsonPath("$.type").value("https://documentation.com/errors/entity-not-found"))
+                .andExpect(jsonPath("$.title").value("Requested object not found"))
+                .andExpect(jsonPath("$.detail").value("Course Schedule with id '1' not found"))
+                .andExpect(jsonPath("$.instance").value("/v1/schedules/1"))
+                .andExpect(jsonPath("$.length()").value("4"))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+    }
+
+    @Test
+    void testUpdateSuccess() throws Exception {
+
+        Mockito.when(courseScheduleValidator.supports(Mockito.any())).thenReturn(true);
+        Mockito.doNothing().when(exceptionHelper).throwErrorIfValidationError(Mockito.any(), Mockito.any(), Mockito.any());
+
+        Department d = new Department();
+        Mockito.when(departmentRepository.findByCode("CSE")).thenReturn(Optional.of(d));
+
+        Course c = new Course();
+        Mockito.when(courseRepository.findById(100L)).thenReturn(Optional.of(c));
+
+        CourseSchedule cs = new CourseSchedule();
+        Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.of(cs));
+
+        ArgumentCaptor<CourseSchedule> ac = ArgumentCaptor.forClass(CourseSchedule.class);
+        Mockito.when(courseScheduleRepository.save(ac.capture())).thenReturn(null);
+
+        mockMvc.perform(put("/v1/schedules/1")
+                        .contentType("application/json")
+                        .content(JSON_DATE))
+                .andDo(print())
+                .andExpect(header().string("Location", "http://localhost/v1/schedules/1"))
+                .andExpect(status().is(HttpStatus.ACCEPTED.value()));
+
+        CourseSchedule sc = ac.getValue();
+
+        // Disallowed fields
+        Assertions.assertSame(d, sc.getDepartment());
+        Assertions.assertSame(c, sc.getCourse());
+
+        Assertions.assertEquals("CSE", sc.getDepartmentCode());
+        Assertions.assertEquals(FOURTH_YEAR_SECOND, sc.getSemester());
+        Assertions.assertEquals(100L, sc.getCourseId());
+        Assertions.assertEquals(Building.BUILDING_1, sc.getBuilding());
+        Assertions.assertEquals("410-B", sc.getRoomNumber());
+        Assertions.assertEquals(DayOfWeek.MONDAY, sc.getDay());
+
+        Assertions.assertEquals(1725358560000L, sc.getStartTime().getTime());
+        Assertions.assertEquals(1727954177000L, sc.getEndTime().getTime());
+    }
+
+    @Test
+    void testUpdatePatchSuccess() throws Exception {
+
+        Mockito.when(courseScheduleValidator.supports(Mockito.any())).thenReturn(true);
+        Mockito.doNothing().when(exceptionHelper).throwErrorIfValidationError(Mockito.any(), Mockito.any(), Mockito.any());
+
+        CourseSchedule cs = Mockito.mock(CourseSchedule.class);
+        Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.of(cs));
+
+        Course c = new Course();
+        c.setId(1L);
+        Mockito.when(cs.getCourse()).thenReturn(c);
+
+        Department d = new Department();
+        Mockito.when(cs.getDepartment()).thenReturn(d);
+        Mockito.when(departmentRepository.findByCode(Mockito.any())).thenReturn(Optional.of(d));
+        Mockito.when(courseRepository.findById(Mockito.any())).thenReturn(Optional.of(c));
+
+        String jsonData = """
+                {
+                  "roomNumber": "R123",
+                  "departmentCode": "CSE"
+                }
+                """;
+
+        mockMvc.perform(patch("/v1/schedules/1")
+                        .contentType("application/json")
+                        .content(jsonData))
+                .andDo(print())
+                .andExpect(header().string("Location", "http://localhost/v1/schedules/1"))
+                .andExpect(status().is(HttpStatus.ACCEPTED.value()));
+
+        Mockito.verify(cs, Mockito.times(1)).merge(Mockito.any());
+        Mockito.verify(courseScheduleRepository, Mockito.times(1)).save(cs);
+    }
+
+    @Test
+    void testDeleteSuccess() throws Exception {
+        CourseSchedule cs = new CourseSchedule();
+        Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.of(cs));
+
+        mockMvc.perform(delete("/v1/schedules/1"))
+                .andDo(print())
+                .andExpect(jsonPath("$").doesNotExist())
+                .andExpect(status().is(HttpStatus.ACCEPTED.value()));
+
+        Mockito.verify(courseScheduleRepository, Mockito.times(1)).delete(cs);
+    }
+
+    private CourseSchedule mockCourseSchedule() {
+        Department d = DataHelper.validPersistableDepartment1();
+        d.setId(1L);
+
+        Course c = DataHelper.validPersistableCourse1(d, null);
+        c.setId(2L);
+
+        CourseSchedule cs = DataHelper.validPersistableCourseSchedule1(d, c);
+        cs.setId(3L);
+        return cs;
+    }
+}

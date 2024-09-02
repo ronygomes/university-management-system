@@ -1,4 +1,4 @@
-package me.ronygomes.ums.api.validation;
+package me.ronygomes.ums.api.validator;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;

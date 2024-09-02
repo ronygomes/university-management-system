@@ -1,5 +1,6 @@
 package me.ronygomes.ums.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -28,6 +29,7 @@ public class Department extends AbstractEntity {
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
+    @JsonIgnore
     public Long getId() {
         return id;
     }
