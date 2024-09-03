@@ -1,0 +1,105 @@
+package me.ronygomes.ums.api.validator;
+
+import jakarta.validation.Validator;
+import me.ronygomes.ums.api.dto.EnrollmentDto;
+import me.ronygomes.ums.api.model.Course;
+import me.ronygomes.ums.api.model.Student;
+import me.ronygomes.ums.api.repository.CourseRepository;
+import me.ronygomes.ums.api.repository.StudentRepository;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.validation.BindingResult;
+
+import java.util.Optional;
+
+@ExtendWith(MockitoExtension.class)
+public class EnrollmentValidatorTest {
+
+    @Mock
+    private Validator validator;
+
+    @Mock
+    private CourseRepository courseRepository;
+
+    @Mock
+    private StudentRepository studentRepository;
+
+    private EnrollmentValidator enrollmentValidator;
+
+    @BeforeEach
+    void setup() {
+        enrollmentValidator = new EnrollmentValidator(validator, courseRepository, studentRepository);
+    }
+
+    @Test
+    void testSupports() {
+        Assertions.assertTrue(enrollmentValidator.supports(EnrollmentDto.class));
+    }
+
+    @Test
+    void testBeanValidationTriggersError() {
+        EnrollmentDto dto = new EnrollmentDto();
+        BindingResult errors = Mockito.mock(BindingResult.class);
+
+        Mockito.when(errors.hasFieldErrors("courseId")).thenReturn(true);
+        Mockito.when(errors.hasFieldErrors("studentId")).thenReturn(true);
+
+        enrollmentValidator.validate(dto, errors);
+        Mockito.verify(validator, Mockito.times(1)).validate(dto);
+        Assertions.assertEquals(0, errors.getErrorCount());
+
+        Mockito.verify(courseRepository, Mockito.never()).findById(Mockito.any());
+        Mockito.verify(studentRepository, Mockito.never()).findById(Mockito.any());
+    }
+
+    @Test
+    void testBeanValidationTriggersSuccess() {
+        EnrollmentDto dto = new EnrollmentDto();
+        dto.setCourseId(1L);
+        dto.setStudentId(2L);
+
+        BindingResult errors = Mockito.mock(BindingResult.class);
+
+        Mockito.when(errors.hasFieldErrors("courseId")).thenReturn(false);
+        Mockito.when(errors.hasFieldErrors("studentId")).thenReturn(false);
+        Mockito.when(courseRepository.findById(1L)).thenReturn(Optional.of(new Course()));
+        Mockito.when(studentRepository.findById(2L)).thenReturn(Optional.of(new Student()));
+
+        enrollmentValidator.validate(dto, errors);
+        Mockito.verify(validator, Mockito.times(1)).validate(dto);
+
+        Mockito.verify(courseRepository, Mockito.times(1)).findById(Mockito.any());
+        Mockito.verify(studentRepository, Mockito.times(1)).findById(Mockito.any());
+        Mockito.verify(errors, Mockito.never()).rejectValue(Mockito.any(), Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void testBeanValidationTriggersFailed() {
+        EnrollmentDto dto = new EnrollmentDto();
+        dto.setCourseId(1L);
+        dto.setStudentId(2L);
+
+        BindingResult errors = Mockito.mock(BindingResult.class);
+
+        Mockito.when(errors.hasFieldErrors("courseId")).thenReturn(false);
+        Mockito.when(errors.hasFieldErrors("studentId")).thenReturn(false);
+        Mockito.when(courseRepository.findById(1L)).thenReturn(Optional.empty());
+        Mockito.when(studentRepository.findById(2L)).thenReturn(Optional.empty());
+
+        enrollmentValidator.validate(dto, errors);
+        Mockito.verify(validator, Mockito.times(1)).validate(dto);
+
+        Mockito.verify(courseRepository, Mockito.times(1)).findById(Mockito.any());
+        Mockito.verify(studentRepository, Mockito.times(1)).findById(Mockito.any());
+
+        Mockito.verify(errors, Mockito.times(2)).rejectValue(
+                Mockito.argThat(m -> m.equals("courseId") || m.equals("studentId")),
+                Mockito.isNull(),
+                Mockito.argThat(m -> m.equals("course not found") || m.equals("student not found")));
+    }
+}

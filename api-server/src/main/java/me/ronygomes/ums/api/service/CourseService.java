@@ -15,7 +15,7 @@ import me.ronygomes.ums.api.repository.CourseRepository;
 import me.ronygomes.ums.api.repository.DepartmentRepository;
 import me.ronygomes.ums.api.repository.TeacherRepository;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ import java.util.Optional;
 import static me.ronygomes.ums.api.exception.ExceptionType.DATA_VALIDATION_FAILED;
 import static me.ronygomes.ums.api.exception.ExceptionType.ENTITY_NOT_FOUND;
 
-@Component
+@Service
 public class CourseService {
 
     private static final String FIND_BY_CODE_ERROR_DETAILS_TEMPLATE = "Course with id '%d' not found";
