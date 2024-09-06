@@ -1,5 +1,6 @@
 package me.ronygomes.ums.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -21,6 +22,7 @@ public class Education implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @SequenceGenerator(name = "student_educations_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "student_educations_seq")
     private Long id;
@@ -119,5 +121,27 @@ public class Education implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(examType, grade, cgpa, certificateFileName, certificatePath);
+    }
+
+    public void merge(Education education) {
+        if (Objects.nonNull(education.getExamType())) {
+            setExamType(education.getExamType());
+        }
+
+        if (Objects.nonNull(education.getGrade())) {
+            setGrade(education.getGrade());
+        }
+
+        if (Objects.nonNull(education.cgpa)) {
+            setCgpa(education.cgpa.floatValue());
+        }
+
+        if (Objects.nonNull(education.getCertificatePath())) {
+            setCertificatePath(education.getCertificatePath());
+        }
+
+        if (Objects.nonNull(education.getCertificateFileName())) {
+            setCertificateFileName(education.getCertificateFileName());
+        }
     }
 }

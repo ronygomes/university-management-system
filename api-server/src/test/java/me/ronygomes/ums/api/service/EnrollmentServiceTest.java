@@ -113,7 +113,7 @@ public class EnrollmentServiceTest {
         Student s = new Student();
         Mockito.when(studentRepository.findById(3L)).thenReturn(Optional.of(s));
 
-        Enrollment  e = new Enrollment();
+        Enrollment e = new Enrollment();
         Mockito.when(enrollmentRepository.findById(100L)).thenReturn(Optional.of(e));
 
         service.update(100L, dto);
@@ -169,7 +169,7 @@ public class EnrollmentServiceTest {
         ArgumentCaptor<Enrollment> ac = ArgumentCaptor.forClass(Enrollment.class);
         Mockito.doNothing().when(enrollmentRepository).delete(ac.capture());
 
-        Enrollment  e = new Enrollment();
+        Enrollment e = new Enrollment();
         e.setId(500L);
         Mockito.when(enrollmentRepository.findById(100L)).thenReturn(Optional.of(e));
 

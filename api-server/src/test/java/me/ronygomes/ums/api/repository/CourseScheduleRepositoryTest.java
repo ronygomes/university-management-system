@@ -76,8 +76,8 @@ public class CourseScheduleRepositoryTest {
 
         repository.save(cs2);
 
-        CourseSchedule dbCourseSchedule =  repository.findById(cs.getId()).orElseThrow();
-        assertCourseScheduleEqual(cs2,dbCourseSchedule);
+        CourseSchedule dbCourseSchedule = repository.findById(cs.getId()).orElseThrow();
+        assertCourseScheduleEqual(cs2, dbCourseSchedule);
 
         repository.delete(dbCourseSchedule);
         courseRepository.delete(course2);

@@ -151,7 +151,7 @@ public class CourseSchedule extends AbstractEntity {
     public Long getCourseId() {
         return Objects.nonNull(courseId) ? courseId :
                 Objects.nonNull(course) ? course.getId()
-                : null;
+                        : null;
     }
 
     public String getDepartmentCode() {

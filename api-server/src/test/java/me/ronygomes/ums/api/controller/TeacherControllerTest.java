@@ -151,16 +151,16 @@ public class TeacherControllerTest {
         Teacher mockDBTeacher = createMockDBTeacher();
 
         String updateJson = """
-            {
-              "fullName": "Jane Doe",
-              "address": "Address Updated",
-              "email": "updated@example.com",
-              "contactNumber": "+2111111111111",
-              "assignedCredit": 4.5,
-              "title": "Title 2",
-              "departmentCode": "AC"
-            }
-            """;
+                {
+                  "fullName": "Jane Doe",
+                  "address": "Address Updated",
+                  "email": "updated@example.com",
+                  "contactNumber": "+2111111111111",
+                  "assignedCredit": 4.5,
+                  "title": "Title 2",
+                  "departmentCode": "AC"
+                }
+                """;
 
         ArgumentCaptor<TeacherDto> ac = ArgumentCaptor.forClass(TeacherDto.class);
         Mockito.doNothing().when(teacherService).updateAll(Mockito.eq(mockDBTeacher.getId()), ac.capture());
@@ -188,11 +188,11 @@ public class TeacherControllerTest {
         Teacher mockDBTeacher = createMockDBTeacher();
 
         String updateJson = """
-            {
-              "address": "Address Updated",
-              "assignedCredit": 4.5
-            }
-            """;
+                {
+                  "address": "Address Updated",
+                  "assignedCredit": 4.5
+                }
+                """;
 
         ArgumentCaptor<TeacherPatchInputDto> ac = ArgumentCaptor.forClass(TeacherPatchInputDto.class);
         Mockito.doNothing().when(teacherService).updateProvided(Mockito.eq(mockDBTeacher.getId()), ac.capture());

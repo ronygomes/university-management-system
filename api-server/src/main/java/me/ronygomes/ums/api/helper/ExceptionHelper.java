@@ -62,6 +62,8 @@ public class ExceptionHelper {
             }
         });
 
-        throw new UmsDataException(ExceptionType.DATA_VALIDATION_FAILED, message, errors);
+        if (!errors.isEmpty()) {
+            throw new UmsDataException(ExceptionType.DATA_VALIDATION_FAILED, message, errors);
+        }
     }
 }

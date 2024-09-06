@@ -122,6 +122,18 @@ public class ExceptionHelperTest {
         Assertions.assertEquals("default message 2", ex.getErrors().get(0).getMessage());
     }
 
+    @Test
+    void testDoesNotThrowErrorIfValidationErrorForOnlyIgnoreFields() {
+        BindingResult result = Mockito.mock(BindingResult.class);
+        Mockito.when(result.hasErrors()).thenReturn(true);
+
+        FieldError fe1 = new FieldError("parent1", "field1", "default message 1");
+        List<FieldError> errors = List.of(fe1);
+        Mockito.when(result.getFieldErrors()).thenReturn(errors);
+
+        Assertions.assertDoesNotThrow(() -> helper.throwErrorIfValidationError(result, "abc", "field1"));
+    }
+
     @Configuration
     static class ContextConfig {
         @Bean
