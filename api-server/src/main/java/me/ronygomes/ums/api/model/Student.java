@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import me.ronygomes.ums.api.validator.annotation.ContactNumber;
+import me.ronygomes.ums.api.validator.annotation.Email;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -35,14 +37,14 @@ public class Student extends AbstractEntity {
     @Column(nullable = false, length = 200)
     private String fullName;
 
+    @Email
     @NotNull
     @Size(min = 5, max = 100)
-    @Pattern(regexp = EMAIL_REGEX_PATTERN, message = "invalid email format")
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
+    @ContactNumber
     @Size(max = 14)
-    @Pattern(regexp = PHONE_REGEX_PATTERN, message = "invalid contact number format")
     @Column(length = 14)
     private String contactNumber;
 

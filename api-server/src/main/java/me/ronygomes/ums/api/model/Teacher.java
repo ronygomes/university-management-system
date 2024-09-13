@@ -2,6 +2,8 @@ package me.ronygomes.ums.api.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import me.ronygomes.ums.api.validator.annotation.ContactNumber;
+import me.ronygomes.ums.api.validator.annotation.Email;
 
 import java.io.Serial;
 
@@ -26,14 +28,14 @@ public class Teacher extends AbstractEntity {
     @Column(length = 1000)
     private String address;
 
+    @Email
     @NotNull
     @Size(min = 5, max = 100)
-    @Pattern(regexp = EMAIL_REGEX_PATTERN, message = "invalid email format")
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
+    @ContactNumber
     @Size(max = 14)
-    @Pattern(regexp = PHONE_REGEX_PATTERN, message = "invalid contact number format")
     @Column(length = 14)
     private String contactNumber;
 

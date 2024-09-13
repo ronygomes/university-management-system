@@ -4,15 +4,14 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import me.ronygomes.ums.api.helper.HalDataExcluder;
+import me.ronygomes.ums.api.validator.annotation.ContactNumber;
+import me.ronygomes.ums.api.validator.annotation.Email;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import java.io.Serial;
 import java.util.HashSet;
 import java.util.Set;
-
-import static me.ronygomes.ums.api.model.AbstractEntity.EMAIL_REGEX_PATTERN;
-import static me.ronygomes.ums.api.model.AbstractEntity.PHONE_REGEX_PATTERN;
 
 @Relation(collectionRelation = "teachers", itemRelation = "teacher")
 @JsonFilter(HalDataExcluder.FILTER_NAME)
@@ -40,9 +39,9 @@ public class TeacherDto extends RepresentationModel<TeacherDto> implements HalDa
     @Size(min = 1, max = 200)
     private String fullName;
 
+    @Email
     @NotNull
     @Size(min = 5, max = 100)
-    @Pattern(regexp = EMAIL_REGEX_PATTERN, message = "invalid email format")
     private String email;
 
     @NotNull
@@ -56,7 +55,7 @@ public class TeacherDto extends RepresentationModel<TeacherDto> implements HalDa
     @Size(max = 1000)
     private String address;
 
-    @Pattern(regexp = PHONE_REGEX_PATTERN, message = "invalid contact number format")
+    @ContactNumber
     private String contactNumber;
 
     @Min(0)

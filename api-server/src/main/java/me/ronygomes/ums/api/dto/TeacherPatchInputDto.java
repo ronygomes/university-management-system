@@ -1,16 +1,12 @@
 package me.ronygomes.ums.api.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import me.ronygomes.ums.api.model.Teacher;
+import me.ronygomes.ums.api.validator.annotation.ContactNumber;
+import me.ronygomes.ums.api.validator.annotation.Email;
 
 import java.io.Serializable;
 import java.util.Objects;
-
-import static me.ronygomes.ums.api.model.AbstractEntity.EMAIL_REGEX_PATTERN;
-import static me.ronygomes.ums.api.model.AbstractEntity.PHONE_REGEX_PATTERN;
 
 public class TeacherPatchInputDto implements Serializable {
 
@@ -20,11 +16,11 @@ public class TeacherPatchInputDto implements Serializable {
     @Size(max = 1000)
     private String address;
 
+    @Email
     @Size(min = 5, max = 100)
-    @Pattern(regexp = EMAIL_REGEX_PATTERN, message = "invalid email format")
     private String email;
 
-    @Pattern(regexp = PHONE_REGEX_PATTERN, message = "invalid contact number format")
+    @ContactNumber
     private String contactNumber;
 
     @Min(0)
