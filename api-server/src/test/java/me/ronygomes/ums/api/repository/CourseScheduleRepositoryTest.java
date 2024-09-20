@@ -1,7 +1,7 @@
 package me.ronygomes.ums.api.repository;
 
 import jakarta.validation.ConstraintViolation;
-import me.ronygomes.ums.api.helper.DataHelper;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.model.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -16,11 +16,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.time.DayOfWeek;
 import java.util.Set;
 
-import static me.ronygomes.ums.api.helper.TestHelper.extractConstraintViolation;
-import static me.ronygomes.ums.api.helper.TestHelper.isEnumFieldStoredAsString;
+import static me.ronygomes.ums.api.testHelper.TestHelper.extractConstraintViolation;
+import static me.ronygomes.ums.api.testHelper.TestHelper.isEnumFieldStoredAsString;
 
 @SpringBootTest
-@ActiveProfiles("integration-test")
+@ActiveProfiles("database-test")
 @Testcontainers(disabledWithoutDocker = true)
 public class CourseScheduleRepositoryTest {
 

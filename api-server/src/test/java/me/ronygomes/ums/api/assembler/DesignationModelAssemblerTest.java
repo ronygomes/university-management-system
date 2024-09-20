@@ -1,7 +1,7 @@
 package me.ronygomes.ums.api.assembler;
 
 import me.ronygomes.ums.api.dto.DesignationModel;
-import me.ronygomes.ums.api.helper.DataHelper;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.model.Designation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
-import static me.ronygomes.ums.api.helper.TestHelper.HAL_FORMS;
+import static me.ronygomes.ums.api.testHelper.TestHelper.HAL_FORMS;
 
 public class DesignationModelAssemblerTest {
 

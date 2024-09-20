@@ -1,7 +1,6 @@
 package me.ronygomes.ums.api.controller;
 
 import jakarta.validation.Validator;
-import me.ronygomes.ums.api.helper.DataHelper;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.Building;
 import me.ronygomes.ums.api.model.Course;
@@ -10,26 +9,35 @@ import me.ronygomes.ums.api.model.Department;
 import me.ronygomes.ums.api.repository.CourseRepository;
 import me.ronygomes.ums.api.repository.CourseScheduleRepository;
 import me.ronygomes.ums.api.repository.DepartmentRepository;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.validator.CourseScheduleValidator;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.time.DayOfWeek;
 import java.util.Optional;
 
 import static me.ronygomes.ums.api.model.Semester.FOURTH_YEAR_SECOND;
+import static me.ronygomes.ums.api.testHelper.RoleHelper.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CourseScheduleController.class)
+@SpringBootTest
+@ActiveProfiles("controller-test")
 public class CourseScheduleControllerTest {
 
     // Note: @JsonIgnore disallows read+write but @JsonProperty(READ) will allow only read
@@ -72,14 +80,26 @@ public class CourseScheduleControllerTest {
     private Validator validator;
 
     @Autowired
+    private WebApplicationContext context;
+
     private MockMvc mockMvc;
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
+    }
 
     @Test
     void testFindByIdSuccess() throws Exception {
         CourseSchedule cs = mockCourseSchedule();
         Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.of(cs));
 
-        mockMvc.perform(get("/v1/schedules/1"))
+        mockMvc.perform(get("/v1/schedules/1")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(jsonPath("$.id").value("3"))
                 .andExpect(jsonPath("$.courseId").value("2"))
@@ -93,6 +113,14 @@ public class CourseScheduleControllerTest {
                 .andExpect(jsonPath("$.endTime").exists())
                 .andExpect(jsonPath("$.course").doesNotExist())
                 .andExpect(status().is(HttpStatus.OK.value()));
+
+        mockMvc.perform(get("/v1/schedules/1")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/schedules/1")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -119,7 +147,8 @@ public class CourseScheduleControllerTest {
 
         mockMvc.perform(post("/v1/schedules")
                         .contentType("application/json")
-                        .content(JSON_DATE))
+                        .content(JSON_DATE)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(header().string("Location", "http://localhost/v1/schedules/100"))
                 .andExpect(status().is(HttpStatus.CREATED.value()));
@@ -139,12 +168,25 @@ public class CourseScheduleControllerTest {
 
         Assertions.assertEquals(1725358560000L, sc.getStartTime().getTime());
         Assertions.assertEquals(1727954177000L, sc.getEndTime().getTime());
+
+        mockMvc.perform(post("/v1/schedules")
+                        .contentType("application/json")
+                        .content(JSON_DATE)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(post("/v1/schedules")
+                        .contentType("application/json")
+                        .content(JSON_DATE)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
     void testFindByIdFailed() throws Exception {
         Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.empty());
-        mockMvc.perform(get("/v1/schedules/1"))
+        mockMvc.perform(get("/v1/schedules/1")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(jsonPath("$.type").value("https://documentation.com/errors/entity-not-found"))
                 .andExpect(jsonPath("$.title").value("Requested object not found"))
@@ -174,7 +216,8 @@ public class CourseScheduleControllerTest {
 
         mockMvc.perform(put("/v1/schedules/1")
                         .contentType("application/json")
-                        .content(JSON_DATE))
+                        .content(JSON_DATE)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(header().string("Location", "http://localhost/v1/schedules/1"))
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()));
@@ -194,6 +237,18 @@ public class CourseScheduleControllerTest {
 
         Assertions.assertEquals(1725358560000L, sc.getStartTime().getTime());
         Assertions.assertEquals(1727954177000L, sc.getEndTime().getTime());
+
+        mockMvc.perform(put("/v1/schedules/1")
+                        .contentType("application/json")
+                        .content(JSON_DATE)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(put("/v1/schedules/1")
+                        .contentType("application/json")
+                        .content(JSON_DATE)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -223,13 +278,26 @@ public class CourseScheduleControllerTest {
 
         mockMvc.perform(patch("/v1/schedules/1")
                         .contentType("application/json")
-                        .content(jsonData))
+                        .content(jsonData)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(header().string("Location", "http://localhost/v1/schedules/1"))
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()));
 
         Mockito.verify(cs, Mockito.times(1)).merge(Mockito.any());
         Mockito.verify(courseScheduleRepository, Mockito.times(1)).save(cs);
+
+        mockMvc.perform(patch("/v1/schedules/1")
+                        .contentType("application/json")
+                        .content(jsonData)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(patch("/v1/schedules/1")
+                        .contentType("application/json")
+                        .content(jsonData)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -237,12 +305,21 @@ public class CourseScheduleControllerTest {
         CourseSchedule cs = new CourseSchedule();
         Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.of(cs));
 
-        mockMvc.perform(delete("/v1/schedules/1"))
+        mockMvc.perform(delete("/v1/schedules/1")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(jsonPath("$").doesNotExist())
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()));
 
         Mockito.verify(courseScheduleRepository, Mockito.times(1)).delete(cs);
+
+        mockMvc.perform(delete("/v1/schedules/1")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(delete("/v1/schedules/1")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     private CourseSchedule mockCourseSchedule() {

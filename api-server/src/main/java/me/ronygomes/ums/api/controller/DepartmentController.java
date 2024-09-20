@@ -1,5 +1,6 @@
 package me.ronygomes.ums.api.controller;
 
+import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.dto.DepartmentDto;
 import me.ronygomes.ums.api.service.DepartmentService;
 import org.springframework.hateoas.CollectionModel;
@@ -30,6 +31,7 @@ public class DepartmentController {
     }
 
     @GetMapping
+    @AdminAccess
     public CollectionModel<EntityModel<DepartmentDto>> departments() {
         List<DepartmentDto> departments = departmentService.findAll();
         List<EntityModel<DepartmentDto>> models = departments
@@ -43,6 +45,7 @@ public class DepartmentController {
         return CollectionModel.of(models, Collections.singleton(link));
     }
 
+    @AdminAccess
     @GetMapping("/{code}")
     public EntityModel<DepartmentDto> department(@PathVariable String code) {
         EntityModel<DepartmentDto> model = EntityModel.of(departmentService.findByCode(code));
@@ -60,12 +63,14 @@ public class DepartmentController {
         return model;
     }
 
+    @AdminAccess
     @PostMapping
     public ResponseEntity<?> create(@RequestBody DepartmentDto department) {
         departmentService.save(department);
         return ResponseEntity.created(createDepartmentUri(department)).build();
     }
 
+    @AdminAccess
     @PutMapping("/{code}")
     public ResponseEntity<?> updateAll(@PathVariable String code, @RequestBody DepartmentDto department) {
         departmentService.updateAll(code, department);
@@ -74,6 +79,7 @@ public class DepartmentController {
                 .build();
     }
 
+    @AdminAccess
     @PatchMapping("/{code}")
     public ResponseEntity<?> updateOne(@PathVariable String code, @RequestBody DepartmentDto department) {
         departmentService.updateOne(code, department);
@@ -82,6 +88,7 @@ public class DepartmentController {
                 .build();
     }
 
+    @AdminAccess
     @DeleteMapping("/{code}")
     public ResponseEntity<?> delete(@PathVariable String code) {
         departmentService.delete(code);

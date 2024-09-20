@@ -2,6 +2,7 @@ package me.ronygomes.ums.api.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
+import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.CourseSchedule;
@@ -55,11 +56,13 @@ public class CourseScheduleController {
         binder.addValidators(courseScheduleValidator);
     }
 
+    @AdminAccess
     @GetMapping("/{id}")
     public CourseSchedule findById(@PathVariable Long id) {
         return findByIdOrThrow(id);
     }
 
+    @AdminAccess
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody CourseSchedule cs,
                                     BindingResult errors) {
@@ -71,6 +74,7 @@ public class CourseScheduleController {
                 .build();
     }
 
+    @AdminAccess
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id,
                                     @Valid @RequestBody CourseSchedule cs,
@@ -86,6 +90,7 @@ public class CourseScheduleController {
                 .build();
     }
 
+    @AdminAccess
     @PatchMapping("/{id}")
     public ResponseEntity<?> updatePatch(@PathVariable Long id,
                                          @RequestBody CourseSchedule cs) {
@@ -101,6 +106,7 @@ public class CourseScheduleController {
                 .build();
     }
 
+    @AdminAccess
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         CourseSchedule schedule = findByIdOrThrow(id);

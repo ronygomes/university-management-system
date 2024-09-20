@@ -1,5 +1,6 @@
 package me.ronygomes.ums.api.controller;
 
+import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.dto.CourseDto;
 import me.ronygomes.ums.api.dto.CoursePatchDto;
 import me.ronygomes.ums.api.service.CourseService;
@@ -20,11 +21,13 @@ public class CourseController {
         this.courseService = courseService;
     }
 
+    @AdminAccess
     @GetMapping("/{id}")
     public CourseDto findById(@PathVariable Long id) {
         return courseService.findById(id);
     }
 
+    @AdminAccess
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CourseDto course) {
         long newId = courseService.create(course);
@@ -32,6 +35,7 @@ public class CourseController {
                 .build();
     }
 
+    @AdminAccess
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody CourseDto courseDto) {
         courseService.updateAll(id, courseDto);
@@ -40,6 +44,7 @@ public class CourseController {
                 .build();
     }
 
+    @AdminAccess
     @PatchMapping("/{id}")
     public ResponseEntity<?> updatePatch(@PathVariable Long id, @RequestBody CoursePatchDto courseDto) {
         courseService.updateProvided(id, courseDto);
@@ -48,6 +53,7 @@ public class CourseController {
                 .build();
     }
 
+    @AdminAccess
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         courseService.delete(id);

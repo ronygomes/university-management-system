@@ -6,7 +6,7 @@ import me.ronygomes.ums.api.dto.CourseDto;
 import me.ronygomes.ums.api.dto.CoursePatchDto;
 import me.ronygomes.ums.api.exception.ExceptionType;
 import me.ronygomes.ums.api.exception.UmsDataException;
-import me.ronygomes.ums.api.helper.DataHelper;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.Course;
 import me.ronygomes.ums.api.model.Department;

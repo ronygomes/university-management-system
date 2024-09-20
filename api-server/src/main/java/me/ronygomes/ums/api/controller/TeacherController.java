@@ -1,6 +1,7 @@
 package me.ronygomes.ums.api.controller;
 
 import me.ronygomes.ums.api.assembler.TeacherModelHelper;
+import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.dto.TeacherDto;
 import me.ronygomes.ums.api.dto.TeacherPatchInputDto;
 import me.ronygomes.ums.api.service.TeacherService;
@@ -27,15 +28,18 @@ public class TeacherController {
     }
 
     @GetMapping
+    @AdminAccess
     public CollectionModel<TeacherDto> getAll() {
         return teacherModelAssembler.toCollectionModel(teacherService.findAll());
     }
 
+    @AdminAccess
     @GetMapping("/{id}")
     public RepresentationModel<TeacherDto> getById(@PathVariable long id) {
         return teacherModelAssembler.toModel(teacherService.findById(id));
     }
 
+    @AdminAccess
     @PostMapping
     public ResponseEntity<?> create(@RequestBody TeacherDto teacher) {
         long newId = teacherService.create(teacher);
@@ -43,6 +47,7 @@ public class TeacherController {
                 .build();
     }
 
+    @AdminAccess
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody TeacherDto teacherDto) {
         teacherService.updateAll(id, teacherDto);
@@ -51,6 +56,7 @@ public class TeacherController {
                 .build();
     }
 
+    @AdminAccess
     @PatchMapping("/{id}")
     public ResponseEntity<?> updatePatch(@PathVariable Long id, @RequestBody TeacherPatchInputDto teacherDto) {
         teacherService.updateProvided(id, teacherDto);
@@ -59,6 +65,8 @@ public class TeacherController {
                 .build();
     }
 
+
+    @AdminAccess
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         teacherService.delete(id);

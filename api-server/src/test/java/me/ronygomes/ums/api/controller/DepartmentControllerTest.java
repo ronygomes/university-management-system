@@ -12,24 +12,30 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.ronygomes.ums.api.helper.DataHelper.mockDBDepartments;
-import static me.ronygomes.ums.api.helper.DataHelper.validPersistableDepartment1;
+import static me.ronygomes.ums.api.testHelper.DataHelper.mockDBDepartments;
+import static me.ronygomes.ums.api.testHelper.DataHelper.validPersistableDepartment1;
+import static me.ronygomes.ums.api.testHelper.RoleHelper.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(DepartmentController.class)
+@SpringBootTest
+@ActiveProfiles("controller-test")
 public class DepartmentControllerTest {
 
     private static final String JSON_DATE = """
@@ -43,11 +49,17 @@ public class DepartmentControllerTest {
     private DepartmentService departmentService;
 
     @Autowired
+    private WebApplicationContext context;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
     }
 
     @Test
@@ -55,7 +67,8 @@ public class DepartmentControllerTest {
         Mockito.when(departmentService.findAll()).thenReturn(mockDBDepartments());
 
         mockMvc.perform(get("/v1/departments")
-                        .accept("application/prs.hal-forms+json"))
+                        .accept("application/prs.hal-forms+json")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.length()").value(3))
@@ -82,6 +95,16 @@ public class DepartmentControllerTest {
                 .andExpect(jsonPath("$._embedded.departments[1].code").value("CODE-2"))
                 .andExpect(jsonPath("$._embedded.departments[1].name").value("Name-2"))
                 .andExpect(jsonPath("$._embedded.departments[1]._links.department.href").value("http://localhost/v1/departments/CODE-2"));
+
+        mockMvc.perform(get("/v1/departments")
+                        .accept("application/prs.hal-forms+json")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/departments")
+                        .accept("application/prs.hal-forms+json")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -90,7 +113,8 @@ public class DepartmentControllerTest {
         Mockito.when(departmentService.findByCode("CODE-1")).thenReturn(department);
 
         mockMvc.perform(get("/v1/departments/CODE-1")
-                        .accept("application/prs.hal-forms+json"))
+                        .accept("application/prs.hal-forms+json")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.length()").value(4))
@@ -98,6 +122,16 @@ public class DepartmentControllerTest {
                 .andExpect(jsonPath("$.name").value("Name-1"))
                 .andExpect(jsonPath("$._links.self.href").value("http://localhost/v1/departments/CODE-1"))
                 .andExpectAll(templateMatchers());
+
+        mockMvc.perform(get("/v1/departments/CODE-1")
+                        .accept("application/prs.hal-forms+json")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/departments/CODE-1")
+                        .accept("application/prs.hal-forms+json")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -106,7 +140,8 @@ public class DepartmentControllerTest {
         Mockito.when(departmentService.findByCode("CODE-X")).thenThrow(ex);
 
         mockMvc.perform(get("/v1/departments/CODE-X")
-                        .accept("application/prs.hal-forms+json"))
+                        .accept("application/prs.hal-forms+json")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()))
                 .andExpect(jsonPath("$.length()").value(4))
@@ -114,6 +149,16 @@ public class DepartmentControllerTest {
                 .andExpect(jsonPath("$.title").value("Requested object not found"))
                 .andExpect(jsonPath("$.detail").value("abc"))
                 .andExpect(jsonPath("$.instance").value("/v1/departments/CODE-X"));
+
+        mockMvc.perform(get("/v1/departments/CODE-X")
+                        .accept("application/prs.hal-forms+json")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/departments/CODE-X")
+                        .accept("application/prs.hal-forms+json")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -131,7 +176,8 @@ public class DepartmentControllerTest {
         mockMvc.perform(post("/v1/departments")
                         .accept("application/prs.hal-forms+json")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JSON_DATE))
+                        .content(JSON_DATE)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.CREATED.value()))
                 .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/departments/CODE-1"))
@@ -140,6 +186,20 @@ public class DepartmentControllerTest {
         DepartmentDto input = ac.getValue();
         Assertions.assertEquals("CODE-1", input.getCode());
         Assertions.assertEquals("Name 1", input.getName());
+
+        mockMvc.perform(post("/v1/departments")
+                        .accept("application/prs.hal-forms+json")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(post("/v1/departments")
+                        .accept("application/prs.hal-forms+json")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -154,7 +214,8 @@ public class DepartmentControllerTest {
         mockMvc.perform(post("/v1/departments")
                         .accept("application/prs.hal-forms+json")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JSON_DATE))
+                        .content(JSON_DATE)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()))
                 .andExpect(jsonPath("$.length()").value(5))
@@ -181,7 +242,8 @@ public class DepartmentControllerTest {
         mockMvc.perform(put("/v1/departments/CODE-OLD")
                         .accept("application/prs.hal-forms+json")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JSON_DATE))
+                        .content(JSON_DATE)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()))
                 .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/departments/CODE-1"))
@@ -189,6 +251,20 @@ public class DepartmentControllerTest {
 
         Assertions.assertEquals("CODE-1", ac.getValue().getCode());
         Assertions.assertEquals("Name 1", ac.getValue().getName());
+
+        mockMvc.perform(put("/v1/departments/CODE-OLD")
+                        .accept("application/prs.hal-forms+json")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(put("/v1/departments/CODE-OLD")
+                        .accept("application/prs.hal-forms+json")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -201,7 +277,8 @@ public class DepartmentControllerTest {
         mockMvc.perform(patch("/v1/departments/CODE-OLD")
                         .accept("application/prs.hal-forms+json")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JSON_DATE))
+                        .content(JSON_DATE)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()))
                 .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/departments/CODE-1"))
@@ -209,16 +286,41 @@ public class DepartmentControllerTest {
 
         Assertions.assertEquals("CODE-1", ac.getValue().getCode());
         Assertions.assertEquals("Name 1", ac.getValue().getName());
+
+        mockMvc.perform(patch("/v1/departments/CODE-OLD")
+                        .accept("application/prs.hal-forms+json")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(patch("/v1/departments/CODE-OLD")
+                        .accept("application/prs.hal-forms+json")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
     void testPatchDepartmentDelete() throws Exception {
         mockMvc.perform(delete("/v1/departments/CODE-X")
-                        .accept("application/prs.hal-forms+json"))
+                        .accept("application/prs.hal-forms+json")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()));
 
         Mockito.verify(departmentService, Mockito.times(1)).delete("CODE-X");
+
+        mockMvc.perform(delete("/v1/departments/CODE-X")
+                .accept("application/prs.hal-forms+json")
+                .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(delete("/v1/departments/CODE-X")
+                        .accept("application/prs.hal-forms+json")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     private ResultMatcher[] templateMatchers() {

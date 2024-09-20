@@ -16,11 +16,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static me.ronygomes.ums.api.helper.DataHelper.validPersistableDesignation;
-import static me.ronygomes.ums.api.helper.TestHelper.extractConstraintViolation;
+import static me.ronygomes.ums.api.testHelper.DataHelper.validPersistableDesignation;
+import static me.ronygomes.ums.api.testHelper.TestHelper.extractConstraintViolation;
 
 @SpringBootTest
-@ActiveProfiles("integration-test")
+@ActiveProfiles("database-test")
 @Testcontainers(disabledWithoutDocker = true)
 public class DesignationRepositoryTest {
 

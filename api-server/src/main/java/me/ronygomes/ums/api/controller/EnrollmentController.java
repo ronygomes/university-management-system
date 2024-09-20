@@ -1,5 +1,6 @@
 package me.ronygomes.ums.api.controller;
 
+import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.dto.EnrollmentDto;
 import me.ronygomes.ums.api.service.EnrollmentService;
 import org.springframework.http.HttpHeaders;
@@ -19,11 +20,13 @@ public class EnrollmentController {
         this.enrollmentService = enrollmentService;
     }
 
+    @AdminAccess
     @GetMapping("/{id}")
     public EnrollmentDto findById(@PathVariable Long id) {
         return enrollmentService.findById(id);
     }
 
+    @AdminAccess
     @PostMapping
     public ResponseEntity<?> create(@RequestBody EnrollmentDto enrollmentDto) {
         long newId = enrollmentService.create(enrollmentDto);
@@ -31,6 +34,7 @@ public class EnrollmentController {
                 .build();
     }
 
+    @AdminAccess
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody EnrollmentDto enrollmentDto) {
         enrollmentService.update(id, enrollmentDto);
@@ -39,6 +43,7 @@ public class EnrollmentController {
                 .build();
     }
 
+    @AdminAccess
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateProvided(@PathVariable Long id, @RequestBody EnrollmentDto enrollmentDto) {
         enrollmentService.updateProvided(id, enrollmentDto);
@@ -47,6 +52,7 @@ public class EnrollmentController {
                 .build();
     }
 
+    @AdminAccess
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         enrollmentService.delete(id);

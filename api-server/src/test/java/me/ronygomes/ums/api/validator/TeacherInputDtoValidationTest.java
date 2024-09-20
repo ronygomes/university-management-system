@@ -4,7 +4,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import me.ronygomes.ums.api.config.TestContextConfig;
 import me.ronygomes.ums.api.dto.TeacherDto;
-import me.ronygomes.ums.api.helper.DataHelper;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

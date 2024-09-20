@@ -1,6 +1,7 @@
 package me.ronygomes.ums.api.controller;
 
 import me.ronygomes.ums.api.assembler.DesignationModelAssembler;
+import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.dto.DesignationModel;
 import me.ronygomes.ums.api.exception.ExceptionType;
 import me.ronygomes.ums.api.exception.UmsDataException;
@@ -32,17 +33,20 @@ public class DesignationController {
     }
 
     @GetMapping
+    @AdminAccess
     public CollectionModel<DesignationModel> designations() {
         List<Designation> designations = designationRepository.findAll();
         return designationModelAssembler.toCollectionModel(designations);
     }
 
+    @AdminAccess
     @GetMapping("/{id}")
     public DesignationModel designation(@PathVariable Long id) {
         Designation designation = findDesignationOrThrow(id);
         return designationModelAssembler.toModel(designation);
     }
 
+    @AdminAccess
     @PostMapping
     public ResponseEntity<?> create(@RequestBody DesignationModel designation) {
         Designation dBDesignation = new Designation();
@@ -54,6 +58,7 @@ public class DesignationController {
                 .build();
     }
 
+    @AdminAccess
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody DesignationModel designation) {
         Designation dBDesignation = findDesignationOrThrow(id);
@@ -66,6 +71,7 @@ public class DesignationController {
                 .build();
     }
 
+    @AdminAccess
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         designationRepository.delete(findDesignationOrThrow(id));

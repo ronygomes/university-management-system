@@ -1,6 +1,6 @@
 package me.ronygomes.ums.api.dto;
 
-import me.ronygomes.ums.api.helper.DataHelper;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.model.Course;
 import me.ronygomes.ums.api.model.Department;
 import me.ronygomes.ums.api.model.Semester;

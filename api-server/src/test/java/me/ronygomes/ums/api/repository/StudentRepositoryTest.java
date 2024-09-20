@@ -3,7 +3,7 @@ package me.ronygomes.ums.api.repository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
-import me.ronygomes.ums.api.helper.DataHelper;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.model.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -23,11 +23,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import static me.ronygomes.ums.api.helper.DataHelper.*;
-import static me.ronygomes.ums.api.helper.TestHelper.extractConstraintViolation;
+import static me.ronygomes.ums.api.testHelper.DataHelper.*;
+import static me.ronygomes.ums.api.testHelper.TestHelper.extractConstraintViolation;
 
 @SpringBootTest
-@ActiveProfiles("integration-test")
+@ActiveProfiles("database-test")
 @Testcontainers(disabledWithoutDocker = true)
 public class StudentRepositoryTest {
 

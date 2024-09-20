@@ -4,12 +4,12 @@ import me.ronygomes.ums.api.dto.CourseDto;
 import me.ronygomes.ums.api.dto.CoursePatchDto;
 import me.ronygomes.ums.api.exception.ExceptionType;
 import me.ronygomes.ums.api.exception.UmsDataException;
-import me.ronygomes.ums.api.helper.DataHelper;
 import me.ronygomes.ums.api.model.Course;
 import me.ronygomes.ums.api.model.Department;
 import me.ronygomes.ums.api.model.Semester;
 import me.ronygomes.ums.api.model.Teacher;
 import me.ronygomes.ums.api.service.CourseService;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,20 +17,26 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
 
+import static me.ronygomes.ums.api.testHelper.RoleHelper.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CourseController.class)
+@SpringBootTest
+@ActiveProfiles("controller-test")
 public class CourseControllerTest {
 
     private static final String JSON_DATE = """
@@ -49,11 +55,17 @@ public class CourseControllerTest {
     private CourseService courseService;
 
     @Autowired
+    private WebApplicationContext context;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
     }
 
     @Test
@@ -61,7 +73,8 @@ public class CourseControllerTest {
         CourseDto courseDto = CourseDto.toDto(createMockDBCourse());
         Mockito.when(courseService.findById(1L)).thenReturn(courseDto);
 
-        mockMvc.perform(get("/v1/courses/1"))
+        mockMvc.perform(get("/v1/courses/1")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(jsonPath("$.title").value("CSE-101"))
                 .andExpect(jsonPath("$.name").value("Introduction to Programming Language in Java"))
@@ -71,6 +84,14 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$.semester").value("FIRST_YEAR_FIRST"))
                 .andExpect(jsonPath("$.instructorId").value("3"))
                 .andExpect(status().is(HttpStatus.OK.value()));
+
+        mockMvc.perform(get("/v1/courses/1")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/courses/1")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -78,7 +99,8 @@ public class CourseControllerTest {
         UmsDataException ex = new UmsDataException(ExceptionType.ENTITY_NOT_FOUND, "abc");
         Mockito.when(courseService.findById(1L)).thenThrow(ex);
 
-        mockMvc.perform(get("/v1/courses/1"))
+        mockMvc.perform(get("/v1/courses/1")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(jsonPath("$.length()").value("4"))
                 .andExpect(jsonPath("$.type").value("https://documentation.com/errors/entity-not-found"))
@@ -95,7 +117,8 @@ public class CourseControllerTest {
 
         mockMvc.perform(post("/v1/courses")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JSON_DATE))
+                        .content(JSON_DATE)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.CREATED.value()))
                 .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/courses/500"))
@@ -109,6 +132,18 @@ public class CourseControllerTest {
         Assertions.assertEquals(Semester.FOURTH_YEAR_SECOND, received.getSemester());
         Assertions.assertEquals("CSE", received.getDepartmentCode());
         Assertions.assertEquals(30L, received.getInstructorId());
+
+        mockMvc.perform(post("/v1/courses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(post("/v1/courses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -130,7 +165,8 @@ public class CourseControllerTest {
 
         mockMvc.perform(put("/v1/courses/5")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(updateJson))
+                        .content(updateJson)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()))
                 .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/courses/5"))
@@ -144,6 +180,18 @@ public class CourseControllerTest {
         Assertions.assertEquals(Semester.FOURTH_YEAR_FIRST, received.getSemester());
         Assertions.assertEquals("EEE", received.getDepartmentCode());
         Assertions.assertEquals(31L, received.getInstructorId());
+
+        mockMvc.perform(put("/v1/courses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(put("/v1/courses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -160,7 +208,8 @@ public class CourseControllerTest {
 
         mockMvc.perform(patch("/v1/courses/5")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(updateJson))
+                        .content(updateJson)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()))
                 .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/courses/5"))
@@ -174,16 +223,37 @@ public class CourseControllerTest {
         Assertions.assertNull(received.getSemester());
         Assertions.assertEquals("EEE", received.getDepartmentCode());
         Assertions.assertNull(received.getInstructorId());
+
+        mockMvc.perform(patch("/v1/courses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(patch("/v1/courses/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateJson)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
     void testDeleteSuccess() throws Exception {
-        mockMvc.perform(delete("/v1/courses/1"))
+        mockMvc.perform(delete("/v1/courses/1")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(jsonPath("$").doesNotExist())
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()));
 
         Mockito.verify(courseService, Mockito.times(1)).delete(1L);
+
+        mockMvc.perform(delete("/v1/courses/1")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(delete("/v1/courses/1")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     private Course createMockDBCourse() {

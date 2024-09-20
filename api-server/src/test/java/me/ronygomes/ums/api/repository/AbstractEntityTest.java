@@ -1,7 +1,7 @@
 package me.ronygomes.ums.api.repository;
 
 import jakarta.validation.ConstraintViolation;
-import me.ronygomes.ums.api.helper.DataHelper;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.model.AbstractEntity;
 import me.ronygomes.ums.api.model.Department;
 import org.junit.jupiter.api.Assertions;
@@ -17,10 +17,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import static me.ronygomes.ums.api.helper.TestHelper.extractConstraintViolation;
+import static me.ronygomes.ums.api.testHelper.TestHelper.extractConstraintViolation;
 
 @SpringBootTest
-@ActiveProfiles("integration-test")
+@ActiveProfiles("database-test")
 @Testcontainers(disabledWithoutDocker = true)
 public class AbstractEntityTest {
 

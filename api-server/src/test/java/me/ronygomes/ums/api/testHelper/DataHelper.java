@@ -1,4 +1,4 @@
-package me.ronygomes.ums.api.helper;
+package me.ronygomes.ums.api.testHelper;
 
 import me.ronygomes.ums.api.dto.DepartmentDto;
 import me.ronygomes.ums.api.dto.TeacherDto;

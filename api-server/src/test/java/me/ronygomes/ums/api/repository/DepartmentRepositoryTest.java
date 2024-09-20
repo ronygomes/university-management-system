@@ -12,11 +12,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.*;
 
-import static me.ronygomes.ums.api.helper.DataHelper.validPersistableDepartment1;
-import static me.ronygomes.ums.api.helper.TestHelper.extractConstraintViolation;
+import static me.ronygomes.ums.api.testHelper.DataHelper.validPersistableDepartment1;
+import static me.ronygomes.ums.api.testHelper.TestHelper.extractConstraintViolation;
 
 @SpringBootTest
-@ActiveProfiles("integration-test")
+@ActiveProfiles("database-test")
 @Testcontainers(disabledWithoutDocker = true)
 public class DepartmentRepositoryTest {
 

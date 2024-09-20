@@ -1,4 +1,4 @@
-package me.ronygomes.ums.api.helper;
+package me.ronygomes.ums.api.testHelper;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

@@ -14,22 +14,28 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import static me.ronygomes.ums.api.testHelper.RoleHelper.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(EnrollmentController.class)
+@SpringBootTest
+@ActiveProfiles("controller-test")
 public class EnrollmentControllerTest {
 
     private static final String JSON_DATE = """
@@ -47,11 +53,17 @@ public class EnrollmentControllerTest {
     private EnrollmentService enrollmentService;
 
     @Autowired
+    private WebApplicationContext context;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
     }
 
     @Test
@@ -63,7 +75,8 @@ public class EnrollmentControllerTest {
         EnrollmentDto e = createMockDBEnrollment(d);
         Mockito.when(enrollmentService.findById(1L)).thenReturn(e);
 
-        mockMvc.perform(get("/v1/enrollments/1"))
+        mockMvc.perform(get("/v1/enrollments/1")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(jsonPath("$.id").value("1"))
                 .andExpect(jsonPath("$.enrollmentDate").value(Matchers.startsWith(formatter.format(d))))
@@ -73,6 +86,14 @@ public class EnrollmentControllerTest {
                 .andExpect(jsonPath("$.status").value("FAILED"))
                 .andExpect(jsonPath("$.length()").value("6"))
                 .andExpect(status().is(HttpStatus.OK.value()));
+
+        mockMvc.perform(get("/v1/enrollments/1")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/enrollments/1")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -80,7 +101,8 @@ public class EnrollmentControllerTest {
         UmsDataException ex = new UmsDataException(ExceptionType.ENTITY_NOT_FOUND, "abc");
         Mockito.when(enrollmentService.findById(1L)).thenThrow(ex);
 
-        mockMvc.perform(get("/v1/enrollments/1"))
+        mockMvc.perform(get("/v1/enrollments/1")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(jsonPath("$.length()").value("4"))
                 .andExpect(jsonPath("$.type").value("https://documentation.com/errors/entity-not-found"))
@@ -97,7 +119,8 @@ public class EnrollmentControllerTest {
 
         mockMvc.perform(post("/v1/enrollments")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JSON_DATE))
+                        .content(JSON_DATE)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.CREATED.value()))
                 .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/enrollments/501"))
@@ -110,6 +133,18 @@ public class EnrollmentControllerTest {
         Assertions.assertEquals(Grade.A, received.getGrade());
         Assertions.assertEquals(EnrollmentStatus.PASSED, received.getStatus());
         Assertions.assertTrue(received.getEnrollmentDate().before(new Date()));
+
+        mockMvc.perform(post("/v1/enrollments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(post("/v1/enrollments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -119,7 +154,8 @@ public class EnrollmentControllerTest {
 
         mockMvc.perform(put("/v1/enrollments/502")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JSON_DATE))
+                        .content(JSON_DATE)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()))
                 .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/enrollments/502"))
@@ -132,6 +168,18 @@ public class EnrollmentControllerTest {
         Assertions.assertEquals(Grade.A, received.getGrade());
         Assertions.assertEquals(EnrollmentStatus.PASSED, received.getStatus());
         Assertions.assertTrue(received.getEnrollmentDate().before(new Date()));
+
+        mockMvc.perform(put("/v1/enrollments/502")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(put("/v1/enrollments/502")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_DATE)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -149,7 +197,8 @@ public class EnrollmentControllerTest {
 
         mockMvc.perform(patch("/v1/enrollments/503")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonData))
+                        .content(jsonData)
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()))
                 .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/enrollments/503"))
@@ -162,16 +211,37 @@ public class EnrollmentControllerTest {
         Assertions.assertEquals(Grade.A, received.getGrade());
         Assertions.assertNull(received.getStatus());
         Assertions.assertNull(received.getEnrollmentDate());
+
+        mockMvc.perform(patch("/v1/enrollments/503")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData)
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(patch("/v1/enrollments/503")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData)
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
     void testDeleteSuccess() throws Exception {
-        mockMvc.perform(delete("/v1/enrollments/5"))
+        mockMvc.perform(delete("/v1/enrollments/5")
+                        .with(adminJwt()))
                 .andDo(print())
                 .andExpect(jsonPath("$").doesNotExist())
                 .andExpect(status().is(HttpStatus.ACCEPTED.value()));
 
         Mockito.verify(enrollmentService, Mockito.times(1)).delete(5L);
+
+        mockMvc.perform(delete("/v1/enrollments/5")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(delete("/v1/enrollments/5")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     private EnrollmentDto createMockDBEnrollment(Date date) {

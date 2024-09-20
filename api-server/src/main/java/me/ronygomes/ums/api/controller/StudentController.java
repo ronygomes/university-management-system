@@ -1,5 +1,6 @@
 package me.ronygomes.ums.api.controller;
 
+import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.model.Education;
 import me.ronygomes.ums.api.model.Student;
 import me.ronygomes.ums.api.service.StudentService;
@@ -20,11 +21,13 @@ public class StudentController {
         this.studentService = studentService;
     }
 
+    @AdminAccess
     @GetMapping("/{id}")
     public Student findById(@PathVariable Long id) {
         return studentService.findById(id);
     }
 
+    @AdminAccess
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Student student) {
         long newId = studentService.create(student);
@@ -32,6 +35,7 @@ public class StudentController {
                 .build();
     }
 
+    @AdminAccess
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Student student) {
         studentService.updateAll(id, student);
@@ -40,6 +44,7 @@ public class StudentController {
                 .build();
     }
 
+    @AdminAccess
     @PatchMapping("/{id}")
     public ResponseEntity<?> updatePatch(@PathVariable Long id, @RequestBody Student student) {
         studentService.updateProvided(id, student);
@@ -48,12 +53,14 @@ public class StudentController {
                 .build();
     }
 
+    @AdminAccess
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         studentService.delete(id);
         return ResponseEntity.accepted().build();
     }
 
+    @AdminAccess
     @PostMapping("/{id}/educations")
     public ResponseEntity<?> addEducation(@PathVariable Long id, @RequestBody Education education) {
         studentService.addEducation(id, education);
@@ -62,6 +69,7 @@ public class StudentController {
                 .build();
     }
 
+    @AdminAccess
     @PutMapping("/{id}/educations/{eid}")
     public ResponseEntity<?> updateEducation(@PathVariable Long id,
                                              @PathVariable Long eid,
@@ -73,6 +81,7 @@ public class StudentController {
                 .build();
     }
 
+    @AdminAccess
     @PatchMapping("/{id}/educations/{eid}")
     public ResponseEntity<?> updatePatchEducation(@PathVariable Long id,
                                                   @PathVariable Long eid,
@@ -84,6 +93,7 @@ public class StudentController {
                 .build();
     }
 
+    @AdminAccess
     @DeleteMapping("/{id}/educations/{eid}")
     public ResponseEntity<?> deleteEducation(@PathVariable Long id, @PathVariable Long eid) {
         studentService.deleteEducation(id, eid);
