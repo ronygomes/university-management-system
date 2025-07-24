@@ -138,7 +138,7 @@ public class StudentControllerTest {
     @Test
     void testCreate() throws Exception {
         ArgumentCaptor<Student> ac = ArgumentCaptor.forClass(Student.class);
-        Mockito.when(studentService.create(ac.capture())).thenReturn(501L);
+        Mockito.when(studentService.create(ac.capture(), Mockito.any())).thenReturn(501L);
 
         mockMvc.perform(post("/v1/students")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -96,7 +96,7 @@ public class DesignationModelAssemblerTest {
         // Index-0 has one affordance with self GET link, this won't be serialized. So skipping it
         Affordance affordance = link.getAffordances().get(1);
 
-        // Bt default spring HATEOAS generates affordance in 3 format
+        // By default spring HATEOAS generates affordance in 3 format
         Assertions.assertEquals(3, StreamSupport.stream(affordance.spliterator(), false).count());
 
         // Will test only application/prs.hal-forms+json format

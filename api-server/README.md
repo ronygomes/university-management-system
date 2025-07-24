@@ -1,6 +1,10 @@
 # University Management System - API Server
 
+Primary api-server, data is consumed by web clients.
+
 **Port**: 8100
+
+## Get Access Token and Query API
 
 ```shell
 $ JWT_ACCESS_TOKEN=$(curl -s 'http://localhost:8000/realms/ums/protocol/openid-connect/token' \
@@ -14,7 +18,12 @@ $ JWT_ACCESS_TOKEN=$(curl -s 'http://localhost:8000/realms/ums/protocol/openid-c
 $ curl -sH "Authorization: Bearer $JWT_ACCESS_TOKEN" http://localhost:8100/v1/departments/CSE | jq .name
 
 "Computer Science & Engineering"
+
+# For accessing HAL forms, need to add `application/prs.hal-forms+json` as Accept header
+$ curl -H "Accept: application/prs.hal-forms+json" http://localhost:8100/v1/departments/CSE
 ```
+
+## Query Database
 
 ```shell
 # Password 12345
@@ -27,14 +36,11 @@ ums=# \dt  " List all tables
 ums=# \quit
 ```
 
+## Backup Database
+
 ```shell
 # Requires -it as prompts for password and need to enter.
 # Can't use regular redirect (>) for password input
 $ docker exec -it ums_postgres \
      pg_dump -h ums_postgres -U postgres ums | tee ums_dump.sql
-```
-
-```shell
-# For accessing HAL forms, need to add `application/prs.hal-forms+json` as Accept header
-$ curl -H "Accept: application/prs.hal-forms+json" http://localhost:8100/v1/departments/CSE
 ```

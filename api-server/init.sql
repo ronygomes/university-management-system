@@ -106,6 +106,15 @@ CREATE TABLE IF NOT EXISTS course_schedules (
     CONSTRAINT fk_course_schedules_course_id FOREIGN KEY (course_id) REFERENCES courses(id)
 );
 
+CREATE TABLE IF NOT EXISTS registration_number_bounds (
+    year smallint NOT NULL,
+    department_id BIGINT NOT NULL,
+    last_used_number smallint NOT NULL,
+    PRIMARY KEY (year, department_id, last_used_number),
+    CONSTRAINT fk_registration_number_bounds_department_id FOREIGN KEY (department_id) REFERENCES departments(id),
+    CHECK(last_used_number BETWEEN 1 AND 9999)
+);
+
 INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'CE', 'Civil Engineering', gen_random_uuid(), 0);
 INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'CSE', 'Computer Science & Engineering', gen_random_uuid(), 0);
 INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'EEE', 'Electrical & Electronic Engineering', gen_random_uuid(), 0);

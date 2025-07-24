@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
@@ -30,7 +32,7 @@ public class StudentController {
     @AdminAccess
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Student student) {
-        long newId = studentService.create(student);
+        long newId = studentService.create(student, new Date());
         return ResponseEntity.created(linkTo(StudentController.class).slash(newId).toUri())
                 .build();
     }

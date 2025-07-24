@@ -2,14 +2,15 @@ package me.ronygomes.ums.api.service;
 
 import me.ronygomes.ums.api.exception.ExceptionType;
 import me.ronygomes.ums.api.exception.UmsDataException;
-import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.Department;
 import me.ronygomes.ums.api.model.Education;
 import me.ronygomes.ums.api.model.Grade;
 import me.ronygomes.ums.api.model.Student;
 import me.ronygomes.ums.api.repository.DepartmentRepository;
+import me.ronygomes.ums.api.repository.RegistrationNumberRepository;
 import me.ronygomes.ums.api.repository.StudentRepository;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.validator.EducationValidator;
 import me.ronygomes.ums.api.validator.StudentValidator;
 import org.junit.jupiter.api.Assertions;
@@ -21,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Date;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +33,9 @@ public class StudentServiceTest {
 
     @Mock
     private DepartmentRepository departmentRepository;
+
+    @Mock
+    private RegistrationNumberRepository registrationNumberRepository;
 
     @Mock
     private StudentValidator studentValidator;
@@ -46,7 +51,8 @@ public class StudentServiceTest {
     @BeforeEach
     void setup() {
         service = new StudentService(studentRepository, departmentRepository,
-                studentValidator, educationValidator, exceptionHelper);
+                registrationNumberRepository, studentValidator, educationValidator,
+                exceptionHelper);
     }
 
     @Test
@@ -81,11 +87,13 @@ public class StudentServiceTest {
         Department d = new Department();
         Mockito.when(departmentRepository.findByCode("ABC")).thenReturn(Optional.of(d));
 
-        long newId = service.create(s);
+        Date registrationDate = new Date();
+        long newId = service.create(s, registrationDate);
 
         Assertions.assertEquals(500, newId);
         Assertions.assertSame(s, ac.getValue());
         Assertions.assertSame(d, ac.getValue().getDepartment());
+        Mockito.verify(registrationNumberRepository, Mockito.times(1)).getNextId(registrationDate, s.getDepartmentCode());
         Mockito.verify(studentValidator, Mockito.times(1)).validate(Mockito.any(Student.class), Mockito.any());
         Mockito.verify(exceptionHelper, Mockito.times(1)).throwErrorIfValidationError(Mockito.any(), Mockito.any(), Mockito.any());
     }

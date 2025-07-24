@@ -18,8 +18,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @RequestMapping("/v1/teachers")
 public class TeacherController {
 
-    private TeacherService teacherService;
-    private TeacherModelHelper teacherModelAssembler;
+    private final TeacherService teacherService;
+    private final TeacherModelHelper teacherModelAssembler;
 
     public TeacherController(TeacherService teacherService,
                              TeacherModelHelper teacherModelAssembler) {
@@ -64,7 +64,6 @@ public class TeacherController {
                 .header(HttpHeaders.LOCATION, linkTo(TeacherController.class).slash(id).toUri().toString())
                 .build();
     }
-
 
     @AdminAccess
     @DeleteMapping("/{id}")

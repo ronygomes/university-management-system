@@ -6,12 +6,15 @@ import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.Education;
 import me.ronygomes.ums.api.model.Student;
 import me.ronygomes.ums.api.repository.DepartmentRepository;
+import me.ronygomes.ums.api.repository.RegistrationNumberRepository;
 import me.ronygomes.ums.api.repository.StudentRepository;
 import me.ronygomes.ums.api.validator.EducationValidator;
 import me.ronygomes.ums.api.validator.StudentValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
+
+import java.util.Date;
 
 import static me.ronygomes.ums.api.exception.ExceptionType.ENTITY_NOT_FOUND;
 
@@ -25,18 +28,21 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final DepartmentRepository departmentRepository;
+    private final RegistrationNumberRepository registrationNumberRepository;
     private final StudentValidator studentValidator;
     private final EducationValidator educationValidator;
     private final ExceptionHelper exceptionHelper;
 
     public StudentService(StudentRepository studentRepository,
                           DepartmentRepository departmentRepository,
+                          RegistrationNumberRepository registrationNumberRepository,
                           StudentValidator studentValidator,
                           EducationValidator educationValidator,
                           ExceptionHelper exceptionHelper) {
 
         this.studentRepository = studentRepository;
         this.departmentRepository = departmentRepository;
+        this.registrationNumberRepository = registrationNumberRepository;
         this.studentValidator = studentValidator;
         this.educationValidator = educationValidator;
         this.exceptionHelper = exceptionHelper;
@@ -47,8 +53,13 @@ public class StudentService {
     }
 
     @Transactional
-    public long create(Student student) {
+    public long create(Student student, Date registrationDate) {
         validateOrThrow(student);
+
+        student.setRegistrationDate(registrationDate);
+        student.setRegistrationNumber(registrationNumberRepository
+                .getNextId(registrationDate, student.getDepartmentCode()));
+
         save(student);
         return student.getId();
     }
