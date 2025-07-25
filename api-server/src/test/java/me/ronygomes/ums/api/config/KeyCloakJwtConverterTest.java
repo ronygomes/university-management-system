@@ -19,14 +19,18 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.ArrayList;
 
 @ExtendWith(SpringExtension.class)
-@AutoConfigureWireMock(port = 8000)
+@AutoConfigureWireMock(port = KeyCloakJwtConverterTest.KEYCLOAK_MOCK_SERVER_PORT)
 public class KeyCloakJwtConverterTest {
+
+    // If this port modified, need to update ports in __files/openid-configuration.json also.
+    // Otherwise, test will fail
+    public static final int KEYCLOAK_MOCK_SERVER_PORT = 58000;
 
     private static final String KEYCLOAK_EXPIRED_JWT_TOKEN = """
             eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJtMXZXZ0pMeGRUUDltM1BTZHFEaVljdUZxQW8yZXJ1Nk5DLVpzNjFaUkJrIn0.eyJleHAiOjE3Mjc5NjUyMDIsImlhdCI6MTcyNzk2NDkwMiwianRpIjoiMmVmZWQ3MmQtM2Y5OC00M2YzLTljMmUtODNkMWEwMzc0NzA4IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDAwL3JlYWxtcy91bXMiLCJzdWIiOiIwYjQzMjI2MS01OTAyLTRmY2UtYmUzMC1mZjI4YjMwZGUyYjciLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJ1bXMtY2xpZW50LXdlYmFwcCIsInNlc3Npb25fc3RhdGUiOiIwYTcxZDk2Ni05NzYyLTQ3NzYtYTEwMC04NjVhY2IwZTU3ODEiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9sb2NhbGhvc3Q6ODEwMCJdLCJyZXNvdXJjZV9hY2Nlc3MiOnsidW1zLWNsaWVudC13ZWJhcHAiOnsicm9sZXMiOlsiYWRtaW4iXX19LCJzY29wZSI6ImVtYWlsIHByb2ZpbGUiLCJzaWQiOiIwYTcxZDk2Ni05NzYyLTQ3NzYtYTEwMC04NjVhY2IwZTU3ODEiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicHJlZmVycmVkX3VzZXJuYW1lIjoiYWRtaW4iLCJnaXZlbl9uYW1lIjoiIiwiZmFtaWx5X25hbWUiOiIiLCJlbWFpbCI6ImFkbWluQHVtcy5kZXYifQ.Atn6VW-qMBJRTu4Yyl3oYjC4_kA0AKKtTJ0aG3gkUayRwbfbQlOa-1ezv90GdyP07zsPU5g2bUQj8ttneBh3qfaOvsEfxYijwyM-2q42JFVblnHCA56Wgu0ygKNEU7yzZToMmpB4nYrV3cOjAFu2I7y4lgmjN_xBfGhM6zRfffiZn_jDF-vtmRQdnWemoyV2Kp-gxZXhlsBXiz_HHEQwGFTOU63oTO0atIosSYtTjFXPKQP8QzgbyuYQjhz1l0p22wFcJRWglBtfn5n7ekdIEDU5FK_lBLbEuCiF871ZdIsDObfuy9RiBMu_hOmlRGJxDoS52z40O4PI4MqCZItySA
             """;
 
-    private static final String ISSUER_URL = "http://localhost:8000/realms/ums";
+    private static final String ISSUER_URL = String.format("http://localhost:%d/realms/ums", KEYCLOAK_MOCK_SERVER_PORT);
 
     private KeyCloakJwtConverter converter;
 

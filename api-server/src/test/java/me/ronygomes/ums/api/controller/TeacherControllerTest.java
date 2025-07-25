@@ -10,7 +10,6 @@ import me.ronygomes.ums.api.service.TeacherService;
 import me.ronygomes.ums.api.testHelper.DataHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -103,13 +102,13 @@ public class TeacherControllerTest {
     }
 
     @Test
-    @Disabled
     void testGetTeacherSuccess() throws Exception {
         Teacher mockDBTeacher = createMockDBTeacher();
         Mockito.when(teacherService.findById(mockDBTeacher.getId())).thenReturn(mockDBTeacher);
 
         mockMvc.perform(get("/v1/teachers/" + mockDBTeacher.getId())
-                        // Didn't implement HAL forms
+                        // Didn't implement HAL forms, so application/prs.hal-forms+json
+                        // will return content of application/hal+json
                         .accept("application/hal+json")
                         .with(adminJwt()))
                 .andDo(print())
