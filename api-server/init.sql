@@ -4,8 +4,8 @@ CREATE SEQUENCE IF NOT EXISTS student_educations_seq START WITH 1 INCREMENT BY 1
 CREATE SEQUENCE IF NOT EXISTS teacher_designations_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS teachers_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS courses_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE IF NOT EXISTS course_enrollments_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE IF NOT EXISTS course_schedules_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE IF NOT EXISTS course_enrollments_seq START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE IF NOT EXISTS departments (
     id BIGINT PRIMARY KEY,
@@ -77,19 +77,6 @@ CREATE TABLE IF NOT EXISTS courses (
     CONSTRAINT fk_courses_instructor_id FOREIGN KEY (instructor_id) REFERENCES teachers(id)
 );
 
-CREATE TABLE IF NOT EXISTS course_enrollments (
-    id BIGINT PRIMARY KEY,
-    student_id BIGINT NOT NULL,
-    course_id BIGINT NOT NULL,
-    enrollment_date TIMESTAMP(6) WITH TIME ZONE NOT NULL,
-    status VARCHAR(10) NOT NULL CHECK (status IN ('PASSED', 'FAILED', 'ON_GOING')),
-    grade VARCHAR(10) CHECK (grade IN ('A_PLUS', 'A', 'A_MINUS', 'B_PLUS', 'B', 'B_MINUS', 'C_PLUS', 'C', 'C_MINUS', 'F')),
-    uuid CHAR(36) NOT NULL UNIQUE,
-    version INTEGER DEFAULT 0,
-    CONSTRAINT fk_course_enrollments_student_id FOREIGN KEY (student_id) REFERENCES students(id),
-    CONSTRAINT fk_course_enrollments_course_id FOREIGN KEY (course_id) REFERENCES courses(id)
-);
-
 CREATE TABLE IF NOT EXISTS course_schedules (
     id BIGINT PRIMARY KEY,
     department_id BIGINT NOT NULL,
@@ -97,13 +84,27 @@ CREATE TABLE IF NOT EXISTS course_schedules (
     course_id BIGINT NOT NULL,
     building VARCHAR(30) NOT NULL CHECK (building IN ('BUILDING_1', 'BUILDING_2')),
     room_number VARCHAR(100) NOT NULL,
-    day VARCHAR(20) NOT NULL CHECK (day IN ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY')),
-    end_time TIMESTAMP(6) WITH TIME ZONE,
-    start_time TIMESTAMP(6) WITH TIME ZONE,
+    days VARCHAR(60) NOT NULL,
+    end_date TIMESTAMP(6) WITH TIME ZONE,
+    start_date TIMESTAMP(6) WITH TIME ZONE,
+    enrollment_open BOOLEAN DEFAULT true,
     uuid CHAR(36) NOT NULL UNIQUE,
     version INTEGER DEFAULT 0,
     CONSTRAINT fk_course_schedules_department_id FOREIGN KEY (department_id) REFERENCES departments(id),
     CONSTRAINT fk_course_schedules_course_id FOREIGN KEY (course_id) REFERENCES courses(id)
+);
+
+CREATE TABLE IF NOT EXISTS course_enrollments (
+    id BIGINT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    course_schedule_id BIGINT NOT NULL,
+    enrollment_date TIMESTAMP(6) WITH TIME ZONE NOT NULL,
+    status VARCHAR(10) NOT NULL CHECK (status IN ('PASSED', 'FAILED', 'ON_GOING', 'CANCELED')),
+    grade VARCHAR(10) CHECK (grade IN ('A_PLUS', 'A', 'A_MINUS', 'B_PLUS', 'B', 'B_MINUS', 'C_PLUS', 'C', 'C_MINUS', 'F')),
+    uuid CHAR(36) NOT NULL UNIQUE,
+    version INTEGER DEFAULT 0,
+    CONSTRAINT fk_course_enrollments_student_id FOREIGN KEY (student_id) REFERENCES students(id),
+    CONSTRAINT fk_course_enrollments_course_schedule_id FOREIGN KEY (course_schedule_id) REFERENCES course_schedules(id)
 );
 
 CREATE TABLE IF NOT EXISTS registration_number_bounds (

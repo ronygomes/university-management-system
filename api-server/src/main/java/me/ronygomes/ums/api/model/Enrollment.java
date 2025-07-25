@@ -27,7 +27,7 @@ public class Enrollment extends AbstractEntity {
 
     @NotNull
     @ManyToOne(optional = false)
-    private Course course;
+    private CourseSchedule courseSchedule;
 
     @NotNull
     @PastOrPresent
@@ -61,12 +61,12 @@ public class Enrollment extends AbstractEntity {
         this.student = student;
     }
 
-    public Course getCourse() {
-        return course;
+    public CourseSchedule getCourseSchedule() {
+        return courseSchedule;
     }
 
-    public void setCourse(Course course) {
-        this.course = course;
+    public void setCourseSchedule(CourseSchedule courseSchedule) {
+        this.courseSchedule = courseSchedule;
     }
 
     public Date getEnrollmentDate() {

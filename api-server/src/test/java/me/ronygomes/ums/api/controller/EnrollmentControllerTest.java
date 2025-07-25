@@ -41,7 +41,7 @@ public class EnrollmentControllerTest {
     private static final String JSON_DATE = """
             {
               "id": 47,
-              "courseId": 48,
+              "courseScheduleId": 48,
               "studentId": 49,
               "grade": "A",
               "status": "PASSED",
@@ -80,7 +80,7 @@ public class EnrollmentControllerTest {
                 .andDo(print())
                 .andExpect(jsonPath("$.id").value("1"))
                 .andExpect(jsonPath("$.enrollmentDate").value(Matchers.startsWith(formatter.format(d))))
-                .andExpect(jsonPath("$.courseId").value("2"))
+                .andExpect(jsonPath("$.courseScheduleId").value("2"))
                 .andExpect(jsonPath("$.studentId").value("3"))
                 .andExpect(jsonPath("$.grade").value("F"))
                 .andExpect(jsonPath("$.status").value("FAILED"))
@@ -128,7 +128,7 @@ public class EnrollmentControllerTest {
 
         EnrollmentDto received = ac.getValue();
         Assertions.assertNull(received.getId()); // Can't bind id
-        Assertions.assertEquals(48, received.getCourseId());
+        Assertions.assertEquals(48, received.getCourseScheduleId());
         Assertions.assertEquals(49, received.getStudentId());
         Assertions.assertEquals(Grade.A, received.getGrade());
         Assertions.assertEquals(EnrollmentStatus.PASSED, received.getStatus());
@@ -163,7 +163,7 @@ public class EnrollmentControllerTest {
 
         EnrollmentDto received = ac.getValue();
         Assertions.assertNull(received.getId()); // Can't bind id
-        Assertions.assertEquals(48, received.getCourseId());
+        Assertions.assertEquals(48, received.getCourseScheduleId());
         Assertions.assertEquals(49, received.getStudentId());
         Assertions.assertEquals(Grade.A, received.getGrade());
         Assertions.assertEquals(EnrollmentStatus.PASSED, received.getStatus());
@@ -190,10 +190,10 @@ public class EnrollmentControllerTest {
         String jsonData = """
                 {
                      "id": 47,
-                     "courseId": 48,
+                     "courseScheduleId": 48,
                      "grade": "A"
                  }
-                 """;
+                """;
 
         mockMvc.perform(patch("/v1/enrollments/503")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -206,7 +206,7 @@ public class EnrollmentControllerTest {
 
         EnrollmentDto received = ac.getValue();
         Assertions.assertNull(received.getId()); // Can't bind id
-        Assertions.assertEquals(48, received.getCourseId());
+        Assertions.assertEquals(48, received.getCourseScheduleId());
         Assertions.assertNull(received.getStudentId());
         Assertions.assertEquals(Grade.A, received.getGrade());
         Assertions.assertNull(received.getStatus());
@@ -248,7 +248,7 @@ public class EnrollmentControllerTest {
         EnrollmentDto dto = new EnrollmentDto();
         dto.setId(1L);
         dto.setEnrollmentDate(date);
-        dto.setCourseId(2L);
+        dto.setCourseScheduleId(2L);
         dto.setStudentId(3L);
         dto.setGrade(Grade.F);
         dto.setStatus(EnrollmentStatus.FAILED);

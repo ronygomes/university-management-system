@@ -1,8 +1,8 @@
 package me.ronygomes.ums.api.repository;
 
 import jakarta.validation.ConstraintViolation;
-import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.model.*;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,6 +73,7 @@ public class CourseScheduleRepositoryTest {
         cs2.setUuid(cs.getUuid());
         cs2.setId(cs.getId());
         cs2.setVersion(cs.getVersion());
+        cs2.setEnrollmentOpen(false);
 
         repository.save(cs2);
 
@@ -196,7 +197,7 @@ public class CourseScheduleRepositoryTest {
     }
 
     @Test
-    void testFieldConstrain_day() {
+    void testFieldConstrain_days() {
         Assertions.assertTrue(isEnumFieldStoredAsString(CourseSchedule.class, "day"));
 
         for (DayOfWeek d : DayOfWeek.values()) {
@@ -205,7 +206,7 @@ public class CourseScheduleRepositoryTest {
 
         Department department = departmentRepository.findByCode("EEE").orElseThrow();
         CourseSchedule cs = DataHelper.validPersistableCourseSchedule1(department, course);
-        cs.setDay(null);
+        cs.setDays(null);
 
         Throwable exNull = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(cs));
         Set<ConstraintViolation<?>> nullViolations = extractConstraintViolation(exNull);
@@ -215,16 +216,18 @@ public class CourseScheduleRepositoryTest {
             Assertions.assertEquals("day", v.getPropertyPath().toString());
             Assertions.assertNull(v.getInvalidValue());
         });
+
+        Assertions.fail();
     }
 
     @Test
     void testFieldConstrain_startTime() {
         Department department = departmentRepository.findByCode("EEE").orElseThrow();
         CourseSchedule cs = DataHelper.validPersistableCourseSchedule1(department, course);
-        cs.setStartTime(null);
+        cs.setStartDate(null);
         repository.save(cs);
 
-        Assertions.assertNull(repository.findById(cs.getId()).orElseThrow().getStartTime());
+        Assertions.assertNull(repository.findById(cs.getId()).orElseThrow().getStartDate());
         repository.delete(cs);
     }
 
@@ -232,10 +235,10 @@ public class CourseScheduleRepositoryTest {
     void testFieldConstrain_endTime() {
         Department department = departmentRepository.findByCode("EEE").orElseThrow();
         CourseSchedule cs = DataHelper.validPersistableCourseSchedule1(department, course);
-        cs.setEndTime(null);
+        cs.setEndDate(null);
         repository.save(cs);
 
-        Assertions.assertNull(repository.findById(cs.getId()).orElseThrow().getEndTime());
+        Assertions.assertNull(repository.findById(cs.getId()).orElseThrow().getEndDate());
         repository.delete(cs);
     }
 
@@ -245,8 +248,9 @@ public class CourseScheduleRepositoryTest {
         Assertions.assertEquals(cs1.getCourse(), cs2.getCourse());
         Assertions.assertEquals(cs1.getBuilding(), cs2.getBuilding());
         Assertions.assertEquals(cs1.getRoomNumber(), cs2.getRoomNumber());
-        Assertions.assertEquals(cs1.getDay(), cs2.getDay());
-        Assertions.assertEquals(0, cs1.getStartTime().compareTo(cs2.getStartTime()));
-        Assertions.assertEquals(0, cs1.getEndTime().compareTo(cs2.getEndTime()));
+        Assertions.assertIterableEquals(cs1.getDays(), cs2.getDays());
+        Assertions.assertEquals(0, cs1.getStartDate().compareTo(cs2.getStartDate()));
+        Assertions.assertEquals(0, cs1.getEndDate().compareTo(cs2.getEndDate()));
+        Assertions.assertEquals(cs1.isEnrollmentOpen(), cs2.isEnrollmentOpen());
     }
 }

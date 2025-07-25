@@ -2,9 +2,9 @@ package me.ronygomes.ums.api.validator;
 
 import jakarta.validation.Validator;
 import me.ronygomes.ums.api.dto.EnrollmentDto;
-import me.ronygomes.ums.api.model.Course;
+import me.ronygomes.ums.api.model.CourseSchedule;
 import me.ronygomes.ums.api.model.Student;
-import me.ronygomes.ums.api.repository.CourseRepository;
+import me.ronygomes.ums.api.repository.CourseScheduleRepository;
 import me.ronygomes.ums.api.repository.StudentRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,7 @@ public class EnrollmentValidatorTest {
     private Validator validator;
 
     @Mock
-    private CourseRepository courseRepository;
+    private CourseScheduleRepository courseScheduleRepository;
 
     @Mock
     private StudentRepository studentRepository;
@@ -33,7 +33,7 @@ public class EnrollmentValidatorTest {
 
     @BeforeEach
     void setup() {
-        enrollmentValidator = new EnrollmentValidator(validator, courseRepository, studentRepository);
+        enrollmentValidator = new EnrollmentValidator(validator, courseScheduleRepository, studentRepository);
     }
 
     @Test
@@ -46,34 +46,34 @@ public class EnrollmentValidatorTest {
         EnrollmentDto dto = new EnrollmentDto();
         BindingResult errors = Mockito.mock(BindingResult.class);
 
-        Mockito.when(errors.hasFieldErrors("courseId")).thenReturn(true);
+        Mockito.when(errors.hasFieldErrors("courseScheduleId")).thenReturn(true);
         Mockito.when(errors.hasFieldErrors("studentId")).thenReturn(true);
 
         enrollmentValidator.validate(dto, errors);
         Mockito.verify(validator, Mockito.times(1)).validate(dto);
         Assertions.assertEquals(0, errors.getErrorCount());
 
-        Mockito.verify(courseRepository, Mockito.never()).findById(Mockito.any());
+        Mockito.verify(courseScheduleRepository, Mockito.never()).findById(Mockito.any());
         Mockito.verify(studentRepository, Mockito.never()).findById(Mockito.any());
     }
 
     @Test
     void testBeanValidationTriggersSuccess() {
         EnrollmentDto dto = new EnrollmentDto();
-        dto.setCourseId(1L);
+        dto.setCourseScheduleId(1L);
         dto.setStudentId(2L);
 
         BindingResult errors = Mockito.mock(BindingResult.class);
 
-        Mockito.when(errors.hasFieldErrors("courseId")).thenReturn(false);
+        Mockito.when(errors.hasFieldErrors("courseScheduleId")).thenReturn(false);
         Mockito.when(errors.hasFieldErrors("studentId")).thenReturn(false);
-        Mockito.when(courseRepository.findById(1L)).thenReturn(Optional.of(new Course()));
+        Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.of(new CourseSchedule()));
         Mockito.when(studentRepository.findById(2L)).thenReturn(Optional.of(new Student()));
 
         enrollmentValidator.validate(dto, errors);
         Mockito.verify(validator, Mockito.times(1)).validate(dto);
 
-        Mockito.verify(courseRepository, Mockito.times(1)).findById(Mockito.any());
+        Mockito.verify(courseScheduleRepository, Mockito.times(1)).findById(Mockito.any());
         Mockito.verify(studentRepository, Mockito.times(1)).findById(Mockito.any());
         Mockito.verify(errors, Mockito.never()).rejectValue(Mockito.any(), Mockito.any(), Mockito.any());
     }
@@ -81,25 +81,25 @@ public class EnrollmentValidatorTest {
     @Test
     void testBeanValidationTriggersFailed() {
         EnrollmentDto dto = new EnrollmentDto();
-        dto.setCourseId(1L);
+        dto.setCourseScheduleId(1L);
         dto.setStudentId(2L);
 
         BindingResult errors = Mockito.mock(BindingResult.class);
 
-        Mockito.when(errors.hasFieldErrors("courseId")).thenReturn(false);
+        Mockito.when(errors.hasFieldErrors("courseScheduleId")).thenReturn(false);
         Mockito.when(errors.hasFieldErrors("studentId")).thenReturn(false);
-        Mockito.when(courseRepository.findById(1L)).thenReturn(Optional.empty());
+        Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.empty());
         Mockito.when(studentRepository.findById(2L)).thenReturn(Optional.empty());
 
         enrollmentValidator.validate(dto, errors);
         Mockito.verify(validator, Mockito.times(1)).validate(dto);
 
-        Mockito.verify(courseRepository, Mockito.times(1)).findById(Mockito.any());
+        Mockito.verify(courseScheduleRepository, Mockito.times(1)).findById(Mockito.any());
         Mockito.verify(studentRepository, Mockito.times(1)).findById(Mockito.any());
 
         Mockito.verify(errors, Mockito.times(2)).rejectValue(
-                Mockito.argThat(m -> m.equals("courseId") || m.equals("studentId")),
+                Mockito.argThat(m -> m.equals("courseScheduleId") || m.equals("studentId")),
                 Mockito.isNull(),
-                Mockito.argThat(m -> m.equals("course not found") || m.equals("student not found")));
+                Mockito.argThat(m -> m.equals("course schedule not found") || m.equals("student not found")));
     }
 }

@@ -3,12 +3,12 @@ package me.ronygomes.ums.api.service;
 import me.ronygomes.ums.api.dto.EnrollmentDto;
 import me.ronygomes.ums.api.exception.ExceptionType;
 import me.ronygomes.ums.api.exception.UmsDataException;
-import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.*;
-import me.ronygomes.ums.api.repository.CourseRepository;
+import me.ronygomes.ums.api.repository.CourseScheduleRepository;
 import me.ronygomes.ums.api.repository.EnrollmentRepository;
 import me.ronygomes.ums.api.repository.StudentRepository;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.validator.EnrollmentValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +35,7 @@ public class EnrollmentServiceTest {
     private ExceptionHelper exceptionHelper;
 
     @Mock
-    private CourseRepository courseRepository;
+    private CourseScheduleRepository courseScheduleRepository;
 
     @Mock
     private StudentRepository studentRepository;
@@ -45,7 +45,7 @@ public class EnrollmentServiceTest {
     @BeforeEach
     void setup() {
         service = new EnrollmentService(enrollmentRepository, enrollmentValidator,
-                courseRepository, studentRepository, exceptionHelper);
+                courseScheduleRepository, studentRepository, exceptionHelper);
     }
 
     @Test
@@ -79,8 +79,8 @@ public class EnrollmentServiceTest {
             return null;
         }).when(enrollmentRepository).save(ac.capture());
 
-        Course c = new Course();
-        Mockito.when(courseRepository.findById(2L)).thenReturn(Optional.of(c));
+        CourseSchedule cs = new CourseSchedule();
+        Mockito.when(courseScheduleRepository.findById(2L)).thenReturn(Optional.of(cs));
 
         Student s = new Student();
         Mockito.when(studentRepository.findById(3L)).thenReturn(Optional.of(s));
@@ -89,7 +89,7 @@ public class EnrollmentServiceTest {
         Assertions.assertEquals(100, newId);
 
         Enrollment r = ac.getValue();
-        Assertions.assertSame(c, r.getCourse());
+        Assertions.assertSame(cs, r.getCourseSchedule());
         Assertions.assertSame(s, r.getStudent());
         Assertions.assertEquals(EnrollmentStatus.PASSED, r.getStatus());
         Assertions.assertEquals(Grade.A, r.getGrade());
@@ -107,8 +107,8 @@ public class EnrollmentServiceTest {
         ArgumentCaptor<Enrollment> ac = ArgumentCaptor.forClass(Enrollment.class);
         Mockito.when(enrollmentRepository.save(ac.capture())).thenReturn(null);
 
-        Course c = new Course();
-        Mockito.when(courseRepository.findById(2L)).thenReturn(Optional.of(c));
+        CourseSchedule cs = new CourseSchedule();
+        Mockito.when(courseScheduleRepository.findById(2L)).thenReturn(Optional.of(cs));
 
         Student s = new Student();
         Mockito.when(studentRepository.findById(3L)).thenReturn(Optional.of(s));
@@ -119,7 +119,7 @@ public class EnrollmentServiceTest {
         service.update(100L, dto);
 
         Enrollment r = ac.getValue();
-        Assertions.assertSame(c, r.getCourse());
+        Assertions.assertSame(cs, r.getCourseSchedule());
         Assertions.assertSame(s, r.getStudent());
         Assertions.assertEquals(EnrollmentStatus.PASSED, r.getStatus());
         Assertions.assertEquals(Grade.A, r.getGrade());
@@ -135,20 +135,20 @@ public class EnrollmentServiceTest {
         Student dbS = new Student();
         dbS.setId(10L);
 
-        Course dbC = new Course();
-        dbC.setId(20L);
+        CourseSchedule dbCs = new CourseSchedule();
+        dbCs.setId(20L);
 
         Enrollment dbE = new Enrollment();
         dbE.setId(500L);
         dbE.setStudent(dbS);
-        dbE.setCourse(dbC);
+        dbE.setCourseSchedule(dbCs);
 
         Mockito.when(enrollmentRepository.findById(99L)).thenReturn(Optional.of(dbE));
         ArgumentCaptor<Enrollment> ac = ArgumentCaptor.forClass(Enrollment.class);
         Mockito.when(enrollmentRepository.save(ac.capture())).thenReturn(null);
 
         Mockito.when(studentRepository.findById(10L)).thenReturn(Optional.of(dbS));
-        Mockito.when(courseRepository.findById(20L)).thenReturn(Optional.of(dbC));
+        Mockito.when(courseScheduleRepository.findById(20L)).thenReturn(Optional.of(dbCs));
 
         Assertions.assertNull(dbE.getStatus());
         EnrollmentDto input = new EnrollmentDto();
@@ -159,7 +159,7 @@ public class EnrollmentServiceTest {
         Assertions.assertEquals(99L, e.getId());
         Assertions.assertEquals(EnrollmentStatus.PASSED, e.getStatus());
         Assertions.assertSame(dbS, e.getStudent());
-        Assertions.assertSame(dbC, e.getCourse());
+        Assertions.assertSame(dbCs, e.getCourseSchedule());
         Assertions.assertNull(e.getEnrollmentDate());
         Assertions.assertNull(e.getGrade());
     }
@@ -179,7 +179,7 @@ public class EnrollmentServiceTest {
 
     private void assertDataEquals(Enrollment e, EnrollmentDto dto) {
         Assertions.assertEquals(e.getId(), dto.getId());
-        Assertions.assertEquals(e.getCourse().getId(), dto.getCourseId());
+        Assertions.assertEquals(e.getCourseSchedule().getId(), dto.getCourseScheduleId());
         Assertions.assertEquals(e.getStudent().getId(), dto.getStudentId());
         Assertions.assertEquals(e.getGrade(), dto.getGrade());
         Assertions.assertEquals(e.getStatus(), dto.getStatus());
@@ -193,7 +193,10 @@ public class EnrollmentServiceTest {
         Course c = new Course();
         c.setId(2L);
 
-        Enrollment e = DataHelper.validPersistableEnrollment1(s, c);
+        Department d = new Department();
+        d.setId(4L);
+
+        Enrollment e = DataHelper.validPersistableEnrollment1(s, d, c);
         e.setId((long) 1);
 
         return e;
@@ -203,7 +206,7 @@ public class EnrollmentServiceTest {
         EnrollmentDto dto = new EnrollmentDto();
         dto.setStatus(EnrollmentStatus.PASSED);
         dto.setId(1L);
-        dto.setCourseId(2L);
+        dto.setCourseScheduleId(2L);
         dto.setStudentId(3L);
         dto.setEnrollmentDate(enrollmentDate);
         dto.setGrade(Grade.A);

@@ -1,8 +1,8 @@
 package me.ronygomes.ums.api.repository;
 
 import jakarta.validation.ConstraintViolation;
-import me.ronygomes.ums.api.testHelper.DataHelper;
 import me.ronygomes.ums.api.model.*;
+import me.ronygomes.ums.api.testHelper.DataHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,21 +40,29 @@ public class EnrollmentRepositoryTest {
     @Autowired
     private CourseRepository courseRepository;
 
+    @Autowired
+    private CourseScheduleRepository courseScheduleRepository;
+
     private Course course;
     private Student student;
+    private Department department;
+    private CourseSchedule courseSchedule;
 
     @BeforeEach
     void setup() {
-        Department department = departmentRepository.findByCode("CSE").orElseThrow();
+        department = departmentRepository.findByCode("CSE").orElseThrow();
         course = DataHelper.validPersistableCourse1(department, null);
         student = DataHelper.validPersistableStudent1(department);
+        courseSchedule = DataHelper.validPersistableCourseSchedule1(department, course);
 
         courseRepository.save(course);
         studentRepository.save(student);
+        courseScheduleRepository.save(courseSchedule);
     }
 
     @AfterEach
     void tearDown() {
+        courseScheduleRepository.delete(courseSchedule);
         courseRepository.delete(course);
         studentRepository.delete(student);
 
@@ -63,7 +71,7 @@ public class EnrollmentRepositoryTest {
 
     @Test
     void testSave() {
-        Enrollment enrollment = validPersistableEnrollment1(student, course);
+        Enrollment enrollment = validPersistableEnrollment1(student, courseSchedule);
 
         repository.save(enrollment);
 
@@ -75,7 +83,7 @@ public class EnrollmentRepositoryTest {
 
     @Test
     void testUpdate() {
-        Enrollment enrollment = validPersistableEnrollment1(student, course);
+        Enrollment enrollment = validPersistableEnrollment1(student, courseSchedule);
 
         repository.save(enrollment);
 
@@ -92,8 +100,10 @@ public class EnrollmentRepositoryTest {
 
         studentRepository.save(student2);
         courseRepository.save(course2);
+        CourseSchedule courseSchedule2 = DataHelper.validPersistableCourseSchedule2(department, course2);
+        courseScheduleRepository.save(courseSchedule2);
 
-        updatedEnrollment.setCourse(course2);
+        updatedEnrollment.setCourseSchedule(courseSchedule2);
         updatedEnrollment.setStudent(student2);
 
         repository.save(updatedEnrollment);
@@ -103,12 +113,13 @@ public class EnrollmentRepositoryTest {
 
         repository.delete(dbEnrollment);
         studentRepository.delete(student2);
+        courseScheduleRepository.delete(courseSchedule2);
         courseRepository.delete(course2);
     }
 
     @Test
     void testFieldConstrainStudent() {
-        Enrollment nullField = validPersistableEnrollment1(null, course);
+        Enrollment nullField = validPersistableEnrollment1(null, courseSchedule);
 
         Throwable exNull = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(nullField));
         Set<ConstraintViolation<?>> nullViolations = extractConstraintViolation(exNull);
@@ -122,7 +133,7 @@ public class EnrollmentRepositoryTest {
         Student s = new Student();
         s.setId(500L);
 
-        Enrollment invalidRefField = validPersistableEnrollment1(s, course);
+        Enrollment invalidRefField = validPersistableEnrollment1(s, courseSchedule);
         Assertions.assertThrows(DataIntegrityViolationException.class, () -> repository.save(invalidRefField));
     }
 
@@ -135,20 +146,20 @@ public class EnrollmentRepositoryTest {
         Assertions.assertEquals(1, nullViolations.size());
         nullViolations.forEach(v -> {
             Assertions.assertEquals("must not be null", v.getMessage());
-            Assertions.assertEquals("course", v.getPropertyPath().toString());
+            Assertions.assertEquals("courseSchedule", v.getPropertyPath().toString());
             Assertions.assertNull(v.getInvalidValue());
         });
 
-        Course c = new Course();
-        c.setId(500L);
+        CourseSchedule cs = new CourseSchedule();
+        cs.setId(500L);
 
-        Enrollment invalidRefField = validPersistableEnrollment1(student, c);
+        Enrollment invalidRefField = validPersistableEnrollment1(student, cs);
         Assertions.assertThrows(DataIntegrityViolationException.class, () -> repository.save(invalidRefField));
     }
 
     @Test
     void testFieldConstrainEnrollmentDate() {
-        Enrollment nullField = validPersistableEnrollment1(student, course);
+        Enrollment nullField = validPersistableEnrollment1(student, courseSchedule);
         nullField.setEnrollmentDate(null);
 
         Throwable exNull = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(nullField));
@@ -160,7 +171,7 @@ public class EnrollmentRepositoryTest {
             Assertions.assertNull(v.getInvalidValue());
         });
 
-        Enrollment futureEnrollDate = validPersistableEnrollment1(student, course);
+        Enrollment futureEnrollDate = validPersistableEnrollment1(student, courseSchedule);
         Date futureDate = Date.from(Instant.now().plus(Duration.ofDays(1)));
         futureEnrollDate.setEnrollmentDate(futureDate);
         Throwable exFuture = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(futureEnrollDate));
@@ -180,7 +191,7 @@ public class EnrollmentRepositoryTest {
             Assertions.assertTrue(e.name().length() <= 10);
         }
 
-        Enrollment enrollment = validPersistableEnrollment1(student, course);
+        Enrollment enrollment = validPersistableEnrollment1(student, courseSchedule);
         enrollment.setStatus(null);
 
         Throwable exNull = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(enrollment));
@@ -200,7 +211,7 @@ public class EnrollmentRepositoryTest {
             Assertions.assertTrue(g.name().length() <= 10);
         }
 
-        Enrollment enrollment = validPersistableEnrollment1(student, course);
+        Enrollment enrollment = validPersistableEnrollment1(student, courseSchedule);
         enrollment.setGrade(null);
 
         Assertions.assertDoesNotThrow(() -> repository.save(enrollment));
@@ -209,7 +220,7 @@ public class EnrollmentRepositoryTest {
 
     private void assertEnrolmentEquals(Enrollment enrollment1, Enrollment enrollment2) {
         Assertions.assertEquals(enrollment1.getStudent(), enrollment2.getStudent());
-        Assertions.assertEquals(enrollment1.getCourse(), enrollment2.getCourse());
+        Assertions.assertEquals(enrollment1.getCourseSchedule(), enrollment2.getCourseSchedule());
         Assertions.assertEquals(0, enrollment1.getEnrollmentDate().compareTo(enrollment2.getEnrollmentDate()));
         Assertions.assertEquals(enrollment1.getStatus(), enrollment2.getStatus());
         Assertions.assertEquals(enrollment1.getGrade(), enrollment2.getGrade());

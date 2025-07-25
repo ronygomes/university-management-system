@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
 import java.util.Date;
+import java.util.List;
 
 public class CourseScheduleTest {
 
@@ -22,8 +23,8 @@ public class CourseScheduleTest {
         target.setCourse(reference.getCourse());
 
         // Date test data depends on Instant.now()
-        target.setStartTime(reference.getStartTime());
-        target.setEndTime(reference.getEndTime());
+        target.setStartDate(reference.getStartDate());
+        target.setEndDate(reference.getEndDate());
 
         patch = new CourseSchedule();
     }
@@ -60,36 +61,36 @@ public class CourseScheduleTest {
 
     @Test
     void testDay() {
-        Assertions.assertEquals(DayOfWeek.MONDAY, target.getDay());
-        patch.setDay(DayOfWeek.FRIDAY);
+        Assertions.assertEquals(DayOfWeek.MONDAY, target.getDays().get(0));
+        patch.setDays(List.of(DayOfWeek.FRIDAY));
 
         target.merge(patch);
-        assertCourseExcept(target, "day");
-        Assertions.assertEquals(DayOfWeek.FRIDAY, target.getDay());
+        assertCourseExcept(target, "days");
+        Assertions.assertEquals(DayOfWeek.FRIDAY, target.getDays().get(0));
     }
 
     @Test
     void testStartTime() {
-        Assertions.assertSame(reference.getStartTime(), target.getStartTime());
+        Assertions.assertSame(reference.getStartDate(), target.getStartDate());
 
         Date date = new Date();
-        patch.setStartTime(date);
+        patch.setStartDate(date);
 
         target.merge(patch);
         assertCourseExcept(target, "startTime");
-        Assertions.assertSame(date, target.getStartTime());
+        Assertions.assertSame(date, target.getStartDate());
     }
 
     @Test
     void testEndTime() {
-        Assertions.assertSame(reference.getEndTime(), target.getEndTime());
+        Assertions.assertSame(reference.getEndDate(), target.getEndDate());
 
         Date date = new Date();
-        patch.setEndTime(date);
+        patch.setEndDate(date);
 
         target.merge(patch);
         assertCourseExcept(target, "endTime");
-        Assertions.assertSame(date, target.getEndTime());
+        Assertions.assertSame(date, target.getEndDate());
     }
 
     @Test
@@ -138,16 +139,16 @@ public class CourseScheduleTest {
             Assertions.assertEquals(reference.getRoomNumber(), merged.getRoomNumber());
         }
 
-        if (!"day".equals(field)) {
-            Assertions.assertEquals(reference.getDay(), merged.getDay());
+        if (!"days".equals(field)) {
+            Assertions.assertIterableEquals(reference.getDays(), merged.getDays());
         }
 
         if (!"startTime".equals(field)) {
-            Assertions.assertEquals(reference.getStartTime(), merged.getStartTime());
+            Assertions.assertEquals(reference.getStartDate(), merged.getStartDate());
         }
 
         if (!"endTime".equals(field)) {
-            Assertions.assertEquals(reference.getEndTime(), merged.getEndTime());
+            Assertions.assertEquals(reference.getEndDate(), merged.getEndDate());
         }
 
         if (!"courseId".equals(field)) {

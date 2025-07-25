@@ -5,7 +5,7 @@ import me.ronygomes.ums.api.dto.EnrollmentDto;
 import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.Enrollment;
-import me.ronygomes.ums.api.repository.CourseRepository;
+import me.ronygomes.ums.api.repository.CourseScheduleRepository;
 import me.ronygomes.ums.api.repository.EnrollmentRepository;
 import me.ronygomes.ums.api.repository.StudentRepository;
 import me.ronygomes.ums.api.validator.EnrollmentValidator;
@@ -23,19 +23,19 @@ public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
     private final EnrollmentValidator enrollmentValidator;
-    private final CourseRepository courseRepository;
+    private final CourseScheduleRepository courseScheduleRepository;
     private final StudentRepository studentRepository;
     private final ExceptionHelper exceptionHelper;
 
     public EnrollmentService(EnrollmentRepository enrollmentRepository,
                              EnrollmentValidator enrollmentValidator,
-                             CourseRepository courseRepository,
+                             CourseScheduleRepository courseScheduleRepository,
                              StudentRepository studentRepository,
                              ExceptionHelper exceptionHelper) {
 
         this.enrollmentRepository = enrollmentRepository;
         this.enrollmentValidator = enrollmentValidator;
-        this.courseRepository = courseRepository;
+        this.courseScheduleRepository = courseScheduleRepository;
         this.studentRepository = studentRepository;
         this.exceptionHelper = exceptionHelper;
     }
@@ -85,7 +85,7 @@ public class EnrollmentService {
 
     private long save(Long id, EnrollmentDto enrollmentDto) {
         Enrollment e = enrollmentDto.toEnrollment(id);
-        e.setCourse(courseRepository.findById(enrollmentDto.getCourseId()).orElseThrow());
+        e.setCourseSchedule(courseScheduleRepository.findById(enrollmentDto.getCourseScheduleId()).orElseThrow());
         e.setStudent(studentRepository.findById(enrollmentDto.getStudentId()).orElseThrow());
         enrollmentRepository.save(e);
 

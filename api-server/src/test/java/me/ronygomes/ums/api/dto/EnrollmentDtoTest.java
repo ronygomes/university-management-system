@@ -15,13 +15,17 @@ public class EnrollmentDtoTest {
 
     @BeforeEach
     void setup() {
-        Student s = DataHelper.validPersistableStudent1(new Department());
+        Department d = new Department();
+        Student s = DataHelper.validPersistableStudent1(d);
         s.setId(2L);
-        Course c = DataHelper.validPersistableCourse1(new Department(), null);
+        Course c = DataHelper.validPersistableCourse1(d, null);
         c.setId(3L);
 
-        enrollment = DataHelper.validPersistableEnrollment1(s, c);
+        enrollment = DataHelper.validPersistableEnrollment1(s, d, c);
         enrollment.setId(1L);
+
+        CourseSchedule sc = enrollment.getCourseSchedule();
+        sc.setId(4L);
 
         dto = new EnrollmentDto();
     }
@@ -30,7 +34,7 @@ public class EnrollmentDtoTest {
     void testToEntity() {
         EnrollmentDto dto = new EnrollmentDto();
         dto.setId(1L);
-        dto.setCourseId(2L);
+        dto.setCourseScheduleId(2L);
         dto.setGrade(Grade.A);
         dto.setStatus(EnrollmentStatus.PASSED);
 
@@ -40,7 +44,7 @@ public class EnrollmentDtoTest {
         Enrollment e = dto.toEnrollment(null);
 
         Assertions.assertNull(e.getId());
-        Assertions.assertNull(e.getCourse());
+        Assertions.assertNull(e.getCourseSchedule());
         Assertions.assertNull(e.getStudent());
         Assertions.assertEquals(Grade.A, e.getGrade());
         Assertions.assertEquals(EnrollmentStatus.PASSED, e.getStatus());
@@ -62,12 +66,12 @@ public class EnrollmentDtoTest {
 
     @Test
     void testCourseId() {
-        Assertions.assertEquals(3L, enrollment.getCourse().getId());
-        dto.setCourseId(300L);
+        Assertions.assertEquals(4L, enrollment.getCourseSchedule().getId());
+        dto.setCourseScheduleId(300L);
         dto.mergeWith(enrollment);
 
-        assertDataEquals(dto, "courseId");
-        Assertions.assertEquals(300L, dto.getCourseId());
+        assertDataEquals(dto, "courseScheduleId");
+        Assertions.assertEquals(300L, dto.getCourseScheduleId());
     }
 
     @Test
@@ -110,8 +114,8 @@ public class EnrollmentDtoTest {
             Assertions.assertEquals(enrollment.getStudent().getId(), dto.getStudentId());
         }
 
-        if (!"courseId".equals(field)) {
-            Assertions.assertEquals(enrollment.getCourse().getId(), dto.getCourseId());
+        if (!"courseScheduleId".equals(field)) {
+            Assertions.assertEquals(enrollment.getCourseSchedule().getId(), dto.getCourseScheduleId());
         }
 
         if (!"enrollmentDate".equals(field)) {

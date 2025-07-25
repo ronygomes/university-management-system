@@ -24,7 +24,7 @@ public class EnrollmentDto implements Serializable {
     private Long studentId;
 
     @NotNull
-    private Long courseId;
+    private Long courseScheduleId;
 
     @NotNull
     @PastOrPresent
@@ -41,7 +41,7 @@ public class EnrollmentDto implements Serializable {
     public EnrollmentDto(Enrollment enrollment) {
         this.id = enrollment.getId();
         this.studentId = enrollment.getStudent().getId();
-        this.courseId = enrollment.getCourse().getId();
+        this.courseScheduleId = enrollment.getCourseSchedule().getId();
         this.enrollmentDate = enrollment.getEnrollmentDate();
         this.status = enrollment.getStatus();
         this.grade = enrollment.getGrade();
@@ -63,12 +63,12 @@ public class EnrollmentDto implements Serializable {
         this.studentId = studentId;
     }
 
-    public Long getCourseId() {
-        return courseId;
+    public Long getCourseScheduleId() {
+        return courseScheduleId;
     }
 
-    public void setCourseId(Long courseId) {
-        this.courseId = courseId;
+    public void setCourseScheduleId(Long courseScheduleId) {
+        this.courseScheduleId = courseScheduleId;
     }
 
     public Date getEnrollmentDate() {
@@ -110,8 +110,8 @@ public class EnrollmentDto implements Serializable {
             setStudentId(e.getStudent().getId());
         }
 
-        if (Objects.isNull(getCourseId())) {
-            setCourseId(e.getCourse().getId());
+        if (Objects.isNull(getCourseScheduleId())) {
+            setCourseScheduleId(e.getCourseSchedule().getId());
         }
 
         if (Objects.isNull(getEnrollmentDate())) {

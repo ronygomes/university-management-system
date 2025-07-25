@@ -190,9 +190,20 @@ public class DataHelper {
         return c;
     }
 
-    public static Enrollment validPersistableEnrollment1(Student student, Course course) {
+    public static Enrollment validPersistableEnrollment1(Student student, Department department, Course course) {
         Enrollment e = new Enrollment();
-        e.setCourse(course);
+        e.setCourseSchedule(validPersistableCourseSchedule1(department, course));
+        e.setStudent(student);
+        e.setGrade(Grade.A);
+        e.setStatus(EnrollmentStatus.ON_GOING);
+        e.setEnrollmentDate(new Date());
+
+        return e;
+    }
+
+    public static Enrollment validPersistableEnrollment1(Student student, CourseSchedule courseSchedule) {
+        Enrollment e = new Enrollment();
+        e.setCourseSchedule(courseSchedule);
         e.setStudent(student);
         e.setGrade(Grade.A);
         e.setStatus(EnrollmentStatus.ON_GOING);
@@ -208,9 +219,9 @@ public class DataHelper {
         cs.setCourse(course);
         cs.setBuilding(Building.BUILDING_1);
         cs.setRoomNumber("F7-102");
-        cs.setDay(DayOfWeek.MONDAY);
-        cs.setStartTime(Date.from(Instant.now().plus(Duration.ofDays(1))));
-        cs.setEndTime(Date.from(Instant.now().plus(Duration.ofDays(30 * 3))));
+        cs.setDays(Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.TUESDAY));
+        cs.setStartDate(Date.from(Instant.now().plus(Duration.ofDays(1))));
+        cs.setEndDate(Date.from(Instant.now().plus(Duration.ofDays(30 * 3))));
 
         return cs;
     }
@@ -222,9 +233,9 @@ public class DataHelper {
         cs.setCourse(course);
         cs.setBuilding(Building.BUILDING_2);
         cs.setRoomNumber("F7-202");
-        cs.setDay(DayOfWeek.TUESDAY);
-        cs.setStartTime(Date.from(Instant.now().plus(Duration.ofDays(10))));
-        cs.setEndTime(Date.from(Instant.now().plus(Duration.ofDays(20))));
+        cs.setDays(Arrays.asList(DayOfWeek.FRIDAY, DayOfWeek.TUESDAY));
+        cs.setStartDate(Date.from(Instant.now().plus(Duration.ofDays(10))));
+        cs.setEndDate(Date.from(Instant.now().plus(Duration.ofDays(20))));
 
         return cs;
     }

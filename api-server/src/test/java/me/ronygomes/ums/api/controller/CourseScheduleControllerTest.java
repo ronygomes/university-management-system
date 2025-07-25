@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.DayOfWeek;
+import java.util.List;
 import java.util.Optional;
 
 import static me.ronygomes.ums.api.model.Semester.FOURTH_YEAR_SECOND;
@@ -55,9 +56,9 @@ public class CourseScheduleControllerTest {
               "semester": "FOURTH_YEAR_SECOND",
               "building": "BUILDING_1",
               "roomNumber": "410-B",
-              "day": "MONDAY",
-              "startTime": "2024-09-03T10:16:00.000+00:00",
-              "endTime": "2024-10-03T11:16:17.000+00:00"
+              "days": ["FRIDAY", "MONDAY"],
+              "startDate": "2024-09-03T10:16:00.000+00:00",
+              "endDate": "2024-10-03T11:16:17.000+00:00"
             }
             """;
 
@@ -108,9 +109,11 @@ public class CourseScheduleControllerTest {
                 .andExpect(jsonPath("$.semester").value("FIRST_YEAR_SECOND"))
                 .andExpect(jsonPath("$.building").value("BUILDING_1"))
                 .andExpect(jsonPath("$.roomNumber").value("F7-102"))
-                .andExpect(jsonPath("$.day").value("MONDAY"))
-                .andExpect(jsonPath("$.startTime").exists())
-                .andExpect(jsonPath("$.endTime").exists())
+                .andExpect(jsonPath("$.days").isArray())
+                .andExpect(jsonPath("$.days[0]").value("MONDAY"))
+                .andExpect(jsonPath("$.days[1]").value("TUESDAY"))
+                .andExpect(jsonPath("$.startDate").exists())
+                .andExpect(jsonPath("$.endDate").exists())
                 .andExpect(jsonPath("$.course").doesNotExist())
                 .andExpect(status().is(HttpStatus.OK.value()));
 
@@ -164,10 +167,10 @@ public class CourseScheduleControllerTest {
         Assertions.assertEquals(100L, sc.getCourseId());
         Assertions.assertEquals(Building.BUILDING_1, sc.getBuilding());
         Assertions.assertEquals("410-B", sc.getRoomNumber());
-        Assertions.assertEquals(DayOfWeek.MONDAY, sc.getDay());
+        Assertions.assertIterableEquals(List.of(DayOfWeek.FRIDAY, DayOfWeek.MONDAY), sc.getDays());
 
-        Assertions.assertEquals(1725358560000L, sc.getStartTime().getTime());
-        Assertions.assertEquals(1727954177000L, sc.getEndTime().getTime());
+        Assertions.assertEquals(1725358560000L, sc.getStartDate().getTime());
+        Assertions.assertEquals(1727954177000L, sc.getEndDate().getTime());
 
         mockMvc.perform(post("/v1/schedules")
                         .contentType("application/json")
@@ -233,10 +236,10 @@ public class CourseScheduleControllerTest {
         Assertions.assertEquals(100L, sc.getCourseId());
         Assertions.assertEquals(Building.BUILDING_1, sc.getBuilding());
         Assertions.assertEquals("410-B", sc.getRoomNumber());
-        Assertions.assertEquals(DayOfWeek.MONDAY, sc.getDay());
+        Assertions.assertIterableEquals(List.of(DayOfWeek.FRIDAY, DayOfWeek.MONDAY), sc.getDays());
 
-        Assertions.assertEquals(1725358560000L, sc.getStartTime().getTime());
-        Assertions.assertEquals(1727954177000L, sc.getEndTime().getTime());
+        Assertions.assertEquals(1725358560000L, sc.getStartDate().getTime());
+        Assertions.assertEquals(1727954177000L, sc.getEndDate().getTime());
 
         mockMvc.perform(put("/v1/schedules/1")
                         .contentType("application/json")

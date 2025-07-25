@@ -5,10 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import me.ronygomes.ums.api.converter.WeekOfDayListStringAttributeConverter;
 
 import java.io.Serial;
 import java.time.DayOfWeek;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import static jakarta.persistence.EnumType.STRING;
@@ -53,15 +55,19 @@ public class CourseSchedule extends AbstractEntity {
     private String roomNumber;
 
     @NotNull
-    @Enumerated(STRING)
-    @Column(nullable = false, length = 20)
-    private DayOfWeek day;
+    @Size(min = 1, max = 7)
+    @Column(nullable = false, length = 60)
+    @Convert(converter = WeekOfDayListStringAttributeConverter.class)
+    private List<DayOfWeek> days;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date startTime;
+    private Date startDate;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date endTime;
+    private Date endDate;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean enrollmentOpen;
 
     @Transient
     private Long courseId;
@@ -119,28 +125,36 @@ public class CourseSchedule extends AbstractEntity {
         this.roomNumber = roomNumber;
     }
 
-    public DayOfWeek getDay() {
-        return day;
+    public List<DayOfWeek> getDays() {
+        return days;
     }
 
-    public void setDay(DayOfWeek day) {
-        this.day = day;
+    public void setDays(List<DayOfWeek> days) {
+        this.days = days;
     }
 
-    public Date getStartTime() {
-        return startTime;
+    public Date getStartDate() {
+        return startDate;
     }
 
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
     }
 
-    public Date getEndTime() {
-        return endTime;
+    public Date getEndDate() {
+        return endDate;
     }
 
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public boolean isEnrollmentOpen() {
+        return enrollmentOpen;
+    }
+
+    public void setEnrollmentOpen(boolean enrollmentOpen) {
+        this.enrollmentOpen = enrollmentOpen;
     }
 
     public void setCourseId(Long courseId) {
@@ -175,16 +189,16 @@ public class CourseSchedule extends AbstractEntity {
             setRoomNumber(patchCs.getRoomNumber());
         }
 
-        if (Objects.nonNull(patchCs.getDay())) {
-            setDay(patchCs.getDay());
+        if (Objects.nonNull(patchCs.getDays())) {
+            setDays(patchCs.getDays());
         }
 
-        if (Objects.nonNull(patchCs.getStartTime())) {
-            setStartTime(patchCs.getStartTime());
+        if (Objects.nonNull(patchCs.getStartDate())) {
+            setStartDate(patchCs.getStartDate());
         }
 
-        if (Objects.nonNull(patchCs.getEndTime())) {
-            setEndTime(patchCs.getEndTime());
+        if (Objects.nonNull(patchCs.getEndDate())) {
+            setEndDate(patchCs.getEndDate());
         }
 
         if (Objects.nonNull(patchCs.getCourseId())) {

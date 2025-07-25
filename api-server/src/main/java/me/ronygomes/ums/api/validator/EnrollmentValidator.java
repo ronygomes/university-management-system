@@ -2,7 +2,7 @@ package me.ronygomes.ums.api.validator;
 
 import jakarta.validation.Validator;
 import me.ronygomes.ums.api.dto.EnrollmentDto;
-import me.ronygomes.ums.api.repository.CourseRepository;
+import me.ronygomes.ums.api.repository.CourseScheduleRepository;
 import me.ronygomes.ums.api.repository.StudentRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -12,15 +12,15 @@ import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 public class EnrollmentValidator implements org.springframework.validation.Validator {
 
     private final Validator validator;
-    private final CourseRepository courseRepository;
+    private final CourseScheduleRepository courseScheduleRepository;
     private final StudentRepository studentRepository;
 
     public EnrollmentValidator(Validator validator,
-                               CourseRepository courseRepository,
+                               CourseScheduleRepository courseScheduleRepository,
                                StudentRepository studentRepository) {
 
         this.validator = validator;
-        this.courseRepository = courseRepository;
+        this.courseScheduleRepository = courseScheduleRepository;
         this.studentRepository = studentRepository;
     }
 
@@ -36,8 +36,8 @@ public class EnrollmentValidator implements org.springframework.validation.Valid
         SpringValidatorAdapter beanValidator = new SpringValidatorAdapter(validator);
         beanValidator.validate(dto, errors);
 
-        if (!errors.hasFieldErrors("courseId") && courseRepository.findById(dto.getCourseId()).isEmpty()) {
-            errors.rejectValue("courseId", null, "course not found");
+        if (!errors.hasFieldErrors("courseScheduleId") && courseScheduleRepository.findById(dto.getCourseScheduleId()).isEmpty()) {
+            errors.rejectValue("courseScheduleId", null, "course schedule not found");
         }
 
         if (!errors.hasFieldErrors("studentId") && studentRepository.findById(dto.getStudentId()).isEmpty()) {
