@@ -7,6 +7,8 @@ import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.Department;
 import me.ronygomes.ums.api.repository.DepartmentRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
@@ -22,6 +24,8 @@ import static me.ronygomes.ums.api.exception.ExceptionType.ENTITY_NOT_FOUND;
 @Validated
 public class DepartmentService {
 
+    private static final String DEPARTMENT_CACHE_KEY = "departmentListCache";
+
     private static final String FIND_BY_CODE_ERROR_DETAILS_TEMPLATE = "Department with code '%s' not found";
     private static final String DATA_VALIDATION_ERROR_DETAILS_TEMPLATE = "Not a valid Department. See 'error' field for details";
 
@@ -33,6 +37,7 @@ public class DepartmentService {
         this.exceptionHelper = exceptionHelper;
     }
 
+    @Cacheable(DEPARTMENT_CACHE_KEY)
     public List<DepartmentDto> findAll() {
         return departmentRepository.findAll()
                 .stream()
@@ -45,11 +50,13 @@ public class DepartmentService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = DEPARTMENT_CACHE_KEY, allEntries = true)
     public void save(DepartmentDto departmentDto) {
         save(departmentDto.toDepartment());
     }
 
     @Transactional
+    @CacheEvict(cacheNames = DEPARTMENT_CACHE_KEY, allEntries = true)
     public void updateAll(String code, DepartmentDto updatedDepartment) {
         Department department = findByCodeOrThrow(code);
         department.setCode(updatedDepartment.getCode());
@@ -58,6 +65,7 @@ public class DepartmentService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = DEPARTMENT_CACHE_KEY, allEntries = true)
     public void updateOne(String code, DepartmentDto updatedDepartment) {
         Department department = findByCodeOrThrow(code);
         if (Objects.nonNull(updatedDepartment.getCode())) {
@@ -71,6 +79,7 @@ public class DepartmentService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = DEPARTMENT_CACHE_KEY, allEntries = true)
     public void delete(String code) {
         Department department = findByCodeOrThrow(code);
         departmentRepository.delete(department);
