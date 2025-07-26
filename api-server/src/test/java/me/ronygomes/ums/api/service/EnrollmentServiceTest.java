@@ -196,7 +196,10 @@ public class EnrollmentServiceTest {
         Department d = new Department();
         d.setId(4L);
 
-        Enrollment e = DataHelper.validPersistableEnrollment1(s, d, c);
+        CourseSchedule cs = DataHelper.validPersistableCourseSchedule1(d, c);
+        cs.setId(5L);
+
+        Enrollment e = DataHelper.validPersistableEnrollment1(s, cs);
         e.setId((long) 1);
 
         return e;

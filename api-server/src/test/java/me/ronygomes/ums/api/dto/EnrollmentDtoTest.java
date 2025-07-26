@@ -21,11 +21,11 @@ public class EnrollmentDtoTest {
         Course c = DataHelper.validPersistableCourse1(d, null);
         c.setId(3L);
 
-        enrollment = DataHelper.validPersistableEnrollment1(s, d, c);
-        enrollment.setId(1L);
+        CourseSchedule cs = new CourseSchedule();
+        cs.setId(4L);
 
-        CourseSchedule sc = enrollment.getCourseSchedule();
-        sc.setId(4L);
+        enrollment = DataHelper.validPersistableEnrollment1(s, cs);
+        enrollment.setId(1L);
 
         dto = new EnrollmentDto();
     }

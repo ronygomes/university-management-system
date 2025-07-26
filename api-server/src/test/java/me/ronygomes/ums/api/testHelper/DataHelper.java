@@ -190,17 +190,6 @@ public class DataHelper {
         return c;
     }
 
-    public static Enrollment validPersistableEnrollment1(Student student, Department department, Course course) {
-        Enrollment e = new Enrollment();
-        e.setCourseSchedule(validPersistableCourseSchedule1(department, course));
-        e.setStudent(student);
-        e.setGrade(Grade.A);
-        e.setStatus(EnrollmentStatus.ON_GOING);
-        e.setEnrollmentDate(new Date());
-
-        return e;
-    }
-
     public static Enrollment validPersistableEnrollment1(Student student, CourseSchedule courseSchedule) {
         Enrollment e = new Enrollment();
         e.setCourseSchedule(courseSchedule);
