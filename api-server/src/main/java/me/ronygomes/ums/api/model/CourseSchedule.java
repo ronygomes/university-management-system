@@ -40,7 +40,7 @@ public class CourseSchedule extends AbstractEntity {
 
     @NotNull
     @JsonIgnore
-    @OneToOne(optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "course_id", nullable = false, unique = true)
     private Course course;
 

@@ -1,5 +1,6 @@
 package me.ronygomes.ums.api.testHelper;
 
+import jakarta.persistence.Convert;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.ConstraintViolation;
@@ -34,6 +35,22 @@ public class TestHelper {
             }
 
             return annotation.value().equals(EnumType.STRING);
+
+        } catch (NoSuchFieldException e) {
+            throw new IllegalArgumentException(String.format("Field '%s' doesn't exists in %s",
+                    fieldName, clazz.getCanonicalName()));
+        }
+    }
+
+    public static boolean isConvertPresent(Class<?> clazz, String fieldName, Class<?> converterType) {
+        try {
+            Field field = clazz.getDeclaredField(fieldName);
+            Convert annotation = field.getAnnotation(Convert.class);
+            if (Objects.isNull(annotation)) {
+                return false;
+            }
+
+            return annotation.converter().equals(converterType);
 
         } catch (NoSuchFieldException e) {
             throw new IllegalArgumentException(String.format("Field '%s' doesn't exists in %s",

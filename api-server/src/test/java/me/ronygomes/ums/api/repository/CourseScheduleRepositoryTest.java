@@ -1,6 +1,7 @@
 package me.ronygomes.ums.api.repository;
 
 import jakarta.validation.ConstraintViolation;
+import me.ronygomes.ums.api.converter.WeekOfDayListStringAttributeConverter;
 import me.ronygomes.ums.api.model.*;
 import me.ronygomes.ums.api.testHelper.DataHelper;
 import org.junit.jupiter.api.AfterEach;
@@ -14,10 +15,11 @@ import org.springframework.transaction.TransactionSystemException;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.DayOfWeek;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
-import static me.ronygomes.ums.api.testHelper.TestHelper.extractConstraintViolation;
-import static me.ronygomes.ums.api.testHelper.TestHelper.isEnumFieldStoredAsString;
+import static me.ronygomes.ums.api.testHelper.TestHelper.*;
 
 @SpringBootTest
 @ActiveProfiles("database-test")
@@ -198,7 +200,8 @@ public class CourseScheduleRepositoryTest {
 
     @Test
     void testFieldConstrain_days() {
-        Assertions.assertTrue(isEnumFieldStoredAsString(CourseSchedule.class, "day"));
+        Assertions.assertTrue(isConvertPresent(CourseSchedule.class, "days",
+                WeekOfDayListStringAttributeConverter.class));
 
         for (DayOfWeek d : DayOfWeek.values()) {
             Assertions.assertTrue(d.name().length() <= 20);
@@ -213,11 +216,19 @@ public class CourseScheduleRepositoryTest {
         Assertions.assertEquals(1, nullViolations.size());
         nullViolations.forEach(v -> {
             Assertions.assertEquals("must not be null", v.getMessage());
-            Assertions.assertEquals("day", v.getPropertyPath().toString());
+            Assertions.assertEquals("days", v.getPropertyPath().toString());
             Assertions.assertNull(v.getInvalidValue());
         });
 
-        Assertions.fail();
+        cs.setDays(Collections.emptyList());
+        exNull = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(cs));
+        Set<ConstraintViolation<?>> emptyViolations = extractConstraintViolation(exNull);
+        Assertions.assertEquals(1, emptyViolations.size());
+        nullViolations.forEach(v -> {
+            Assertions.assertEquals("must not be null", v.getMessage());
+            Assertions.assertEquals("days", v.getPropertyPath().toString());
+            Assertions.assertNull(v.getInvalidValue());
+        });
     }
 
     @Test
@@ -240,6 +251,39 @@ public class CourseScheduleRepositoryTest {
 
         Assertions.assertNull(repository.findById(cs.getId()).orElseThrow().getEndDate());
         repository.delete(cs);
+    }
+
+    @Test
+    void testFindByCourseId() {
+        Department department = departmentRepository.findByCode("EEE").orElseThrow();
+        CourseSchedule cs1 = DataHelper.validPersistableCourseSchedule1(department, course);
+        CourseSchedule cs2 = DataHelper.validPersistableCourseSchedule2(department, course);
+
+        Course course2 = DataHelper.validPersistableCourse2(department, null);
+        courseRepository.save(course2);
+
+        repository.save(cs1);
+        repository.save(cs2);
+        CourseSchedule cs3 = DataHelper.validPersistableCourseSchedule1(department, course2);
+        repository.save(cs3);
+
+        List<CourseSchedule> schedules = repository.findByCourseId(course.getId());
+        Assertions.assertEquals(2, schedules.size());
+
+        CourseSchedule dbCs1 = schedules.stream().filter(cs -> cs.getRoomNumber()
+                .equals("F7-102")).findFirst().orElseThrow();
+        assertCourseScheduleEqual(cs1, dbCs1);
+        Assertions.assertNotNull(dbCs1.getId());
+
+        CourseSchedule dbCs2 = schedules.stream().filter(cs -> cs.getRoomNumber()
+                .equals("F7-202")).findFirst().orElseThrow();
+        assertCourseScheduleEqual(cs2, dbCs2);
+        Assertions.assertNotNull(dbCs2.getId());
+
+        repository.delete(cs1);
+        repository.delete(cs2);
+        repository.delete(cs3);
+        courseRepository.delete(course2);
     }
 
     private void assertCourseScheduleEqual(CourseSchedule cs1, CourseSchedule cs2) {

@@ -19,6 +19,8 @@ import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static me.ronygomes.ums.api.exception.ExceptionType.ENTITY_NOT_FOUND;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -60,6 +62,12 @@ public class CourseScheduleController {
     @GetMapping("/{id}")
     public CourseSchedule findById(@PathVariable Long id) {
         return findByIdOrThrow(id);
+    }
+
+    @AdminAccess
+    @GetMapping("/course/{id}")
+    public List<CourseSchedule> findAllByCourseId(@PathVariable Long id) {
+        return courseScheduleRepository.findByCourseId(id);
     }
 
     @AdminAccess

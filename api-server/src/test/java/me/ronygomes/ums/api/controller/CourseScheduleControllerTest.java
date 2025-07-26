@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.DayOfWeek;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,6 +125,25 @@ public class CourseScheduleControllerTest {
         mockMvc.perform(get("/v1/schedules/1")
                         .with(studentJwt()))
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+    }
+
+    @Test
+    void testFindByCourseIdSuccess() throws Exception {
+        CourseSchedule cs1 = mockCourseSchedule();
+        CourseSchedule cs2 = mockCourseSchedule();
+        cs2.setId(4L);
+
+        Mockito.when(courseScheduleRepository.findByCourseId(1L))
+                .thenReturn(Arrays.asList(cs1, cs2));
+
+        mockMvc.perform(get("/v1/schedules/course/1")
+                        .with(adminJwt()))
+                .andDo(print())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(3))
+                .andExpect(jsonPath("$[1].id").value(4))
+                .andExpect(status().is(HttpStatus.OK.value()));
     }
 
     @Test
