@@ -8,6 +8,9 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.MediaType;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 
@@ -56,5 +59,11 @@ public class TestHelper {
             throw new IllegalArgumentException(String.format("Field '%s' doesn't exists in %s",
                     fieldName, clazz.getCanonicalName()));
         }
+    }
+
+    public static Method[] getPublicMethods(Class<?> clazz) {
+        return Arrays.stream(clazz.getDeclaredMethods())
+                .filter(m -> Modifier.isPublic(m.getModifiers()))
+                .toArray(Method[]::new);
     }
 }

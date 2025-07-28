@@ -1,11 +1,13 @@
 package me.ronygomes.ums.api.controller;
 
 import me.ronygomes.ums.api.assembler.DesignationModelAssembler;
+import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.dto.DesignationModel;
 import me.ronygomes.ums.api.exception.ExceptionType;
 import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.model.Designation;
 import me.ronygomes.ums.api.repository.DesignationRepository;
+import me.ronygomes.ums.api.testHelper.TestHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -173,5 +176,15 @@ public class DesignationControllerTest {
         Assertions.assertEquals(HttpStatus.ACCEPTED, res.getStatusCode());
         Assertions.assertNull(res.getBody());
         Mockito.verify(designationRepository, Mockito.times(1)).delete(dbData);
+    }
+
+    @Test
+    void testAccessCheck() {
+        Method[] publicMethods = TestHelper.getPublicMethods(DesignationController.class);
+
+        Assertions.assertEquals(5, publicMethods.length);
+        for (Method method : publicMethods) {
+            Assertions.assertTrue(method.isAnnotationPresent(AdminAccess.class));
+        }
     }
 }
