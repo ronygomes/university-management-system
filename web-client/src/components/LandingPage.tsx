@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import ContentWrapper from './ContentWrapper';
+import { useAuth } from './AuthContext';
+import ProtectedPage from './ProtectedPage'
 
 const DEPARTMENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/departments`;
 
@@ -10,27 +13,29 @@ type Department = {
 
 const LandingPage = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
+  const { token } = useAuth();
 
   useEffect(() => {
-    // TODO: Move it to AuthProvider and keep in memory
-    const accessToken = sessionStorage.getItem('jwtToken');
-
-    axios.get(DEPARTMENT_ENDPOINT, {
-            headers: { 'Authorization': 'Bearer ' + accessToken }
-        }).then(response => {
-          setDepartments(response.data._embedded.departments);
-        });
+    if (token != null) {
+      axios.get(DEPARTMENT_ENDPOINT, {
+              headers: { 'Authorization': 'Bearer ' + token.access_token }
+          }).then(response => {
+            setDepartments(response.data._embedded.departments);
+          });
+    }
   }, []);
 
   return (
-    <>
-      <h1>Welcome Authenticated User</h1>
-      <ul>
-        {departments.map((department) => (
-            <li key={department.code}>{department.name}</li>
-          ))}
-      </ul>
-    </>
+    <ProtectedPage>
+      <ContentWrapper>
+        <h1>Welcome Authenticated User</h1>
+        <ul>
+          {departments.map((department) => (
+              <li key={department.code}>{department.name}</li>
+            ))}
+        </ul>
+      </ContentWrapper>
+    </ProtectedPage>
   );
 };
 

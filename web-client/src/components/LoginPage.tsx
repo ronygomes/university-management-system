@@ -14,76 +14,36 @@ import {
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useState } from 'react';
-import axios, { type AxiosResponse } from 'axios';
-import LandingPage from './LandingPage';
+import { useAuth } from './AuthContext'
+import { Navigate } from 'react-router-dom';
 
 type User = {
   email: string;
   password: string;
 }
 
-type AccessToken = {
-    access_token: string;
-    expires_in: number;
-    // not-before-policy
-    refresh_expires_in: number;
-    refresh_token: string;
-    scope: string;
-    token_type: string;
-}
-
-const TOKEN_ENDPOINT = `${import.meta.env.VITE_AUTH_SERVER_URL}/realms/ums/protocol/openid-connect/token`;
-
-async function fetchAccessToken(user: User): Promise<AccessToken> {
-    try {
-        const response: AxiosResponse<AccessToken> = await axios.post<AccessToken>(TOKEN_ENDPOINT, {
-            'grant_type': 'password', 
-            'username': user.email,  
-            'password': user.password, 
-            'client_id': 'ums-client-webapp', 
-            'redirect_uri': 'http://localhost:3000/'
-        }, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        });
-
-        console.log(response.data);
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
-}
-
 const LoginPage = () => {
 
-    const [user, setUser] = useState<User>({
+    const [formUser, setFormUser] = useState<User>({
         email: '',
         password: ''
     });
 
-    const [isAuthenticated, setAuth] = useState(false);
     const [open, setOpen] = useState(false);
-
+    const {isAuthenticated, loginHandler} = useAuth();
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setUser({...user, [event.target.name] : event.target.value});
+        setFormUser({...formUser, [event.target.name] : event.target.value});
     }
 
     const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
         event.preventDefault();
-
-        try {
-            const data = await fetchAccessToken(user);
-            sessionStorage.setItem('jwtToken', data.access_token);
-            setAuth(true);
-            
-        } catch (error) {
-            setOpen(true);
-        }
+        const isLoginSuccess = await loginHandler(formUser)
+        setOpen(!isLoginSuccess);
     }
 
-
     if (isAuthenticated) {
-        return <LandingPage />;
+        return <Navigate to='/' replace />;
     }
 
     return (
