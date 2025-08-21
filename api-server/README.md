@@ -13,7 +13,7 @@ $ JWT_ACCESS_TOKEN=$(curl -s 'http://localhost:8000/realms/ums/protocol/openid-c
 -d 'username=admin' \
 -d 'password=12345' \
 -d 'client_id=ums-client-webapp' \
--d 'redirect_uri=http://localhost:8100/' | jq -r '.access_token')
+-d 'redirect_uri=http://localhost:3000/' | jq -r '.access_token')
 
 $ curl -sH "Authorization: Bearer $JWT_ACCESS_TOKEN" http://localhost:8100/v1/departments/CSE | jq .name
 
