@@ -1,4 +1,3 @@
-
 ```shell
 $ volta install node@22.17.1
 
@@ -9,8 +8,12 @@ Select a Framework: React
 Select a variant: TypeScript+SWC
 ```
 
-# Start dev server
+# Start Server
+
+```shell
+# Development server
 $ npm run dev
+
 # Create production build
 $ npm run build
-
+```
