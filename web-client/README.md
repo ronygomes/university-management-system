@@ -1,3 +1,9 @@
+# University Management System - Web Client
+
+A work-in-progress web client for the application (will be) built using React and MUI5.
+
+Following `vite` configuration is used generate the project:
+ 
 ```shell
 $ volta install node@22.17.1
 
