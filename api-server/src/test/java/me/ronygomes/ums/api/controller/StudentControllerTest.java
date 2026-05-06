@@ -171,13 +171,13 @@ public class StudentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JSON_DATA)
                         .with(teacherJwt()))
-                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+                .andExpect(status().is(HttpStatus.CREATED.value()));
 
         mockMvc.perform(post("/v1/students")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JSON_DATA)
                         .with(studentJwt()))
-                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+                .andExpect(status().is(HttpStatus.CREATED.value()));
     }
 
     @Test

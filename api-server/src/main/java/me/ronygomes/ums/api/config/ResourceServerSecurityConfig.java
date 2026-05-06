@@ -3,6 +3,7 @@ package me.ronygomes.ums.api.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -23,7 +24,11 @@ public class ResourceServerSecurityConfig {
     @Bean
     SecurityFilterChain configure(HttpSecurity http, KeyCloakJwtConverter converter) throws Exception {
 
-        http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.GET, "/v1/departments").permitAll()
+                .requestMatchers(HttpMethod.POST, "/v1/students").permitAll()
+                .anyRequest().authenticated());
+
         http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(Customizer.withDefaults());

@@ -99,12 +99,12 @@ public class DepartmentControllerTest {
         mockMvc.perform(get("/v1/departments")
                         .accept("application/prs.hal-forms+json")
                         .with(teacherJwt()))
-                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+                .andExpect(status().is(HttpStatus.OK.value()));
 
         mockMvc.perform(get("/v1/departments")
                         .accept("application/prs.hal-forms+json")
                         .with(studentJwt()))
-                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+                .andExpect(status().is(HttpStatus.OK.value()));
     }
 
     @Test

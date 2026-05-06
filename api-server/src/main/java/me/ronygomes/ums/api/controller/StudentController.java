@@ -29,7 +29,6 @@ public class StudentController {
         return studentService.findById(id);
     }
 
-    @AdminAccess
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Student student) {
         long newId = studentService.create(student, new Date());

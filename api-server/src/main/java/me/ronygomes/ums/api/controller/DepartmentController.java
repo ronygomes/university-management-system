@@ -31,7 +31,6 @@ public class DepartmentController {
     }
 
     @GetMapping
-    @AdminAccess
     public CollectionModel<EntityModel<DepartmentDto>> departments() {
         List<DepartmentDto> departments = departmentService.findAll();
         List<EntityModel<DepartmentDto>> models = departments
