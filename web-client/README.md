@@ -20,6 +20,9 @@ Select a variant: TypeScript+SWC
 # Development server
 $ npm run dev
 
+# Run unit tests
+$ npm test
+
 # Create production build
 $ npm run build
 ```
