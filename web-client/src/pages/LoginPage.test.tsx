@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import LoginPage from './LoginPage';
-import * as AuthContext from './AuthContext';
+import * as AuthContext from '../components/AuthContext';
 
 const mockLoginHandler = vi.fn();
 

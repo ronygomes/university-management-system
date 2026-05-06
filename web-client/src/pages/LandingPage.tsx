@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import ContentWrapper from './ContentWrapper';
-import { useAuth } from './AuthContext';
-import ProtectedPage from './ProtectedPage';
+import ContentWrapper from '../components/ContentWrapper';
+import { useAuth } from '../components/AuthContext';
+import ProtectedPage from '../components/ProtectedPage';
 
 const DEPARTMENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/departments`;
 
