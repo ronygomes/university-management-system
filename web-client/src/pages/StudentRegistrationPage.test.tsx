@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
@@ -98,6 +98,12 @@ describe('StudentRegistrationPage', () => {
 
   it('does not reset student form fields when a valid education is added to the list', async () => {
     vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: [] } } });
+    vi.spyOn(axios, 'post').mockImplementation(async (url) => {
+      if (typeof url === 'string' && url.includes('/v1/upload')) {
+        return { data: { name: 'cert.pdf', uploadPath: 'uuid-1', fileSize: 4, filetype: 'application/pdf' } };
+      }
+      return {};
+    });
     renderPage();
 
     await userEvent.type(await screen.findByLabelText(/full name/i), 'John Doe');
@@ -109,10 +115,90 @@ describe('StudentRegistrationPage', () => {
     await userEvent.click(await screen.findByText('A+'));
     await userEvent.type(screen.getByLabelText(/cgpa/i), '3.5');
 
-    await userEvent.click(screen.getByRole('button', { name: /add to list/i }));
+    const file = new File(['data'], 'cert.pdf', { type: 'application/pdf' });
+    await userEvent.upload(screen.getByLabelText(/certificate/i), file);
+
+    const addButton = await screen.findByRole('button', { name: /add to list/i });
+    await waitFor(() => expect(addButton).toBeEnabled());
+    await userEvent.click(addButton);
 
     expect(screen.getByLabelText(/full name/i)).toHaveValue('John Doe');
     expect(screen.getByLabelText(/email/i)).toHaveValue('john@example.com');
+  });
+
+  it('shows spinner while certificate is uploading and enables Add to List on success', async () => {
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: [] } } });
+    let resolveUpload: (value: unknown) => void = () => {};
+    vi.spyOn(axios, 'post').mockImplementation(
+      () => new Promise((resolve) => { resolveUpload = resolve; }),
+    );
+    renderPage();
+
+    await screen.findByLabelText(/full name/i);
+    const file = new File(['data'], 'cert.pdf', { type: 'application/pdf' });
+    await userEvent.upload(screen.getByLabelText(/certificate/i), file);
+
+    expect(await screen.findByRole('progressbar')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /add to list/i })).toBeDisabled();
+
+    resolveUpload({ data: { name: 'cert.pdf', uploadPath: 'uuid-1', fileSize: 4, filetype: 'application/pdf' } });
+
+    await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument());
+  });
+
+  it('shows inline error when certificate upload fails', async () => {
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: [] } } });
+    vi.spyOn(axios, 'post').mockRejectedValue(new Error('upload failed'));
+    renderPage();
+
+    await screen.findByLabelText(/full name/i);
+    const file = new File(['data'], 'cert.pdf', { type: 'application/pdf' });
+    await userEvent.upload(screen.getByLabelText(/certificate/i), file);
+
+    expect(await screen.findByText('Upload failed')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /add to list/i })).toBeDisabled();
+  });
+
+  it('submits student with certificatePath from upload response', async () => {
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: mockDepartments } } });
+    let capturedStudentPayload: unknown;
+    vi.spyOn(axios, 'post').mockImplementation(async (url, data) => {
+      if (typeof url === 'string' && url.includes('/v1/upload')) {
+        return { data: { name: 'cert.pdf', uploadPath: 'uuid-from-server', fileSize: 4, filetype: 'application/pdf' } };
+      }
+      if (typeof url === 'string' && url.includes('/v1/students')) {
+        capturedStudentPayload = data;
+        return {};
+      }
+      return {};
+    });
+    renderPage();
+
+    await userEvent.type(await screen.findByLabelText(/full name/i), 'John Doe');
+    await userEvent.type(screen.getByLabelText(/email/i), 'john@example.com');
+    await userEvent.click(screen.getByLabelText(/department/i));
+    await userEvent.click(await screen.findByText('Computer Science'));
+
+    await userEvent.click(screen.getByLabelText(/exam/i));
+    await userEvent.click(await screen.findByText('A Level'));
+    await userEvent.click(screen.getByLabelText(/grade/i));
+    await userEvent.click(await screen.findByText('A+'));
+    await userEvent.type(screen.getByLabelText(/cgpa/i), '3.5');
+
+    const file = new File(['data'], 'cert.pdf', { type: 'application/pdf' });
+    await userEvent.upload(screen.getByLabelText(/certificate/i), file);
+
+    const addButton = await screen.findByRole('button', { name: /add to list/i });
+    await waitFor(() => expect(addButton).toBeEnabled());
+    await userEvent.click(addButton);
+
+    await userEvent.click(screen.getByRole('button', { name: /register/i }));
+
+    await waitFor(() => expect(capturedStudentPayload).toBeDefined());
+    const payload = capturedStudentPayload as { educations: Array<{ certificateFileName: string; certificatePath: string }> };
+    expect(payload.educations).toHaveLength(1);
+    expect(payload.educations[0].certificatePath).toBe('uuid-from-server');
+    expect(payload.educations[0].certificateFileName).toBe('cert.pdf');
   });
 
   it('shows error snackbar when submission fails', async () => {

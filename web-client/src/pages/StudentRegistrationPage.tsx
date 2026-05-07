@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   Container,
   Grid,
   InputAdornment,
@@ -18,11 +19,12 @@ import {
 import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
-import { useRef, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import ContentWrapper from '../components/ContentWrapper';
 
 const DEPARTMENTS_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/departments`;
 const STUDENTS_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/students`;
+const UPLOAD_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/upload`;
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const CONTACT_NUMBER_SUFFIX_REGEX = /^\d{10}$/;
@@ -70,7 +72,6 @@ type EducationFormData = {
   examType: string;
   grade: string;
   cgpa: number;
-  certificateFile: FileList;
 };
 
 export type Education = {
@@ -81,6 +82,15 @@ export type Education = {
   certificatePath: string;
 };
 
+type UploadResponse = {
+  name: string;
+  uploadPath: string;
+  fileSize: number;
+  filetype: string;
+};
+
+type UploadStatus = 'idle' | 'uploading' | 'error';
+
 async function fetchDepartments(): Promise<Department[]> {
   const response = await axios.get(DEPARTMENTS_ENDPOINT);
   return response.data._embedded.departments;
@@ -90,6 +100,13 @@ async function createStudent(data: CreateStudentPayload): Promise<void> {
   await axios.post(STUDENTS_ENDPOINT, data);
 }
 
+async function uploadCertificate(file: File): Promise<UploadResponse> {
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await axios.post<UploadResponse>(UPLOAD_ENDPOINT, fd);
+  return res.data;
+}
+
 interface EducationSectionProps {
   onAdd: (education: Education) => void;
 }
@@ -97,33 +114,53 @@ interface EducationSectionProps {
 const EducationSection = ({ onAdd }: EducationSectionProps) => {
   const [educations, setEducations] = useState<Education[]>([]);
   const [formKey, setFormKey] = useState(0);
+  const [uploadResult, setUploadResult] = useState<UploadResponse | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
 
   const {
     register,
     trigger,
     getValues,
     reset,
-    formState: { errors },
-  } = useForm<EducationFormData>();
+    formState: { errors, isValid },
+  } = useForm<EducationFormData>({ mode: 'onTouched' });
+
+  const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadStatus('uploading');
+    setUploadResult(null);
+    try {
+      const result = await uploadCertificate(file);
+      setUploadResult(result);
+      setUploadStatus('idle');
+    } catch {
+      setUploadStatus('error');
+    }
+  };
 
   const onClickAddToList = async () => {
-    const isValid = await trigger();
-    if (!isValid) return;
+    const isFormValid = await trigger();
+    if (!isFormValid || !uploadResult) return;
 
     const data = getValues();
-    const fileName = data.certificateFile?.[0]?.name ?? 'Sample Filename';
     const education: Education = {
       examType: data.examType,
       grade: data.grade,
       cgpa: data.cgpa,
-      certificateFileName: fileName,
-      certificatePath: 'Byte',
+      certificateFileName: uploadResult.name,
+      certificatePath: uploadResult.uploadPath,
     };
     setEducations((prev) => [...prev, education]);
     onAdd(education);
     reset({});
+    setUploadResult(null);
+    setUploadStatus('idle');
     setFormKey((k) => k + 1);
   };
+
+  const addDisabled = uploadStatus !== 'idle' || !uploadResult || !isValid;
 
   return (
     <Box
@@ -209,14 +246,32 @@ const EducationSection = ({ onAdd }: EducationSectionProps) => {
           <TextField
             label='Certificate'
             fullWidth
+            required
             type='file'
-            slotProps={{ inputLabel: { shrink: true } }}
-            {...register('certificateFile')}
+            error={uploadStatus === 'error'}
+            helperText={uploadStatus === 'error' ? 'Upload failed' : ''}
+            slotProps={{
+              inputLabel: { shrink: true },
+              input: {
+                endAdornment:
+                  uploadStatus === 'uploading' ? (
+                    <InputAdornment position='end'>
+                      <CircularProgress size={20} />
+                    </InputAdornment>
+                  ) : null,
+              },
+            }}
+            onChange={onFileChange}
           />
         </Grid>
 
         <Grid size={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button type='button' variant='outlined' onClick={onClickAddToList}>
+          <Button
+            type='button'
+            variant='outlined'
+            disabled={addDisabled}
+            onClick={onClickAddToList}
+          >
             Add to List
           </Button>
         </Grid>
@@ -256,6 +311,7 @@ const StudentRegistrationPage = () => {
   const [successOpen, setSuccessOpen] = useState(false);
   const [errorOpen, setErrorOpen] = useState(false);
   const [educationKey, setEducationKey] = useState(0);
+  const [studentFormKey, setStudentFormKey] = useState(0);
   const educationsRef = useRef<Education[]>([]);
 
   const { data: departments = [] } = useQuery({
@@ -266,9 +322,10 @@ const StudentRegistrationPage = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: createStudent,
     onSuccess: () => {
-      reset();
+      reset({});
       educationsRef.current = [];
       setEducationKey((k) => k + 1);
+      setStudentFormKey((k) => k + 1);
       setSuccessOpen(true);
     },
     onError: () => {
@@ -303,7 +360,7 @@ const StudentRegistrationPage = () => {
           </Typography>
 
           <Box component='form' onSubmit={handleSubmit(onSubmit)} noValidate>
-            <Grid container spacing={2}>
+            <Grid key={studentFormKey} container spacing={2}>
               <Grid size={12}>
                 <TextField
                   label='Full Name'

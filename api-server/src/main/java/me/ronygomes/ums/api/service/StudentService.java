@@ -54,12 +54,11 @@ public class StudentService {
 
     @Transactional
     public long create(Student student, Date registrationDate) {
-        validateOrThrow(student);
-
         student.setRegistrationDate(registrationDate);
         student.setRegistrationNumber(registrationNumberRepository
                 .getNextId(registrationDate, student.getDepartmentCode()));
 
+        validateOrThrow(student);
         save(student);
         return student.getId();
     }
