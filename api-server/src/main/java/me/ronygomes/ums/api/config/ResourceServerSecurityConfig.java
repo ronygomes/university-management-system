@@ -27,6 +27,7 @@ public class ResourceServerSecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/v1/departments").permitAll()
                 .requestMatchers(HttpMethod.POST, "/v1/students").permitAll()
+                .requestMatchers(HttpMethod.POST, "/v1/upload").permitAll()
                 .anyRequest().authenticated());
 
         http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

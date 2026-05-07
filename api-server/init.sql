@@ -116,6 +116,13 @@ CREATE TABLE IF NOT EXISTS registration_number_bounds (
     CHECK(last_used_number BETWEEN 1 AND 9999)
 );
 
+CREATE TABLE IF NOT EXISTS uploaded_files (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    file_size BIGINT NOT NULL,
+    filetype VARCHAR(100) NOT NULL
+);
+
 INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'CE', 'Civil Engineering', gen_random_uuid(), 0);
 INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'CSE', 'Computer Science & Engineering', gen_random_uuid(), 0);
 INSERT INTO departments VALUES(NEXTVAL('departments_seq'), 'EEE', 'Electrical & Electronic Engineering', gen_random_uuid(), 0);
