@@ -50,10 +50,25 @@ describe('LoginPage', () => {
     await userEvent.type(screen.getByPlaceholderText('Password'), 'secret');
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-    expect(mockLoginHandler).toHaveBeenCalledWith({
-      username: 'admin',
-      password: 'secret',
-    });
+    expect(mockLoginHandler).toHaveBeenCalledWith(
+      { username: 'admin', password: 'secret' },
+      true,
+    );
+  });
+
+  it('passes remember=false when the Remember me checkbox is unchecked', async () => {
+    mockLoginHandler.mockResolvedValue(true);
+    renderLoginPage();
+
+    await userEvent.type(screen.getByPlaceholderText('Username'), 'admin');
+    await userEvent.type(screen.getByPlaceholderText('Password'), 'secret');
+    await userEvent.click(screen.getByRole('checkbox', { name: /remember me/i }));
+    await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
+
+    expect(mockLoginHandler).toHaveBeenCalledWith(
+      { username: 'admin', password: 'secret' },
+      false,
+    );
   });
 
   it('shows error snackbar when login fails', async () => {

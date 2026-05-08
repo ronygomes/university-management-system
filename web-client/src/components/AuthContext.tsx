@@ -19,7 +19,7 @@ interface AuthContextType {
   token: AccessToken | null;
   username: string | null;
   role: Role | null;
-  loginHandler: (user: User) => Promise<boolean>;
+  loginHandler: (user: User, remember: boolean) => Promise<boolean>;
   logoutHandler: () => void;
 }
 
@@ -33,11 +33,43 @@ type AccessToken = {
 };
 
 type DecodedAccessToken = {
+  exp?: number;
   preferred_username?: string;
   resource_access?: Record<string, { roles?: string[] }>;
 };
 
 const TOKEN_ENDPOINT = `${import.meta.env.VITE_AUTH_SERVER_URL}/realms/ums/protocol/openid-connect/token`;
+const STORAGE_KEY = 'ums.auth.token';
+
+type HydratedSession = {
+  token: AccessToken;
+  username: string | null;
+  role: Role | null;
+};
+
+function loadSession(): HydratedSession | null {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return null;
+
+  try {
+    const token = JSON.parse(raw) as AccessToken;
+    const decoded = jwtDecode<DecodedAccessToken>(token.access_token);
+
+    if (decoded.exp && decoded.exp * 1000 <= Date.now()) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+
+    return {
+      token,
+      username: decoded.preferred_username ?? null,
+      role: extractRole(decoded),
+    };
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+    return null;
+  }
+}
 
 async function fetchAccessToken(user: User): Promise<AccessToken> {
   const response: AxiosResponse<AccessToken> = await axios.post<AccessToken>(
@@ -67,16 +99,20 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [isAuthenticated, setAuthenticated] = useState(false);
-  const [token, setToken] = useState<AccessToken | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
-  const [role, setRole] = useState<Role | null>(null);
+  const initial = loadSession();
+  const [isAuthenticated, setAuthenticated] = useState(initial !== null);
+  const [token, setToken] = useState<AccessToken | null>(initial?.token ?? null);
+  const [username, setUsername] = useState<string | null>(initial?.username ?? null);
+  const [role, setRole] = useState<Role | null>(initial?.role ?? null);
 
-  const loginHandler = async (user: User): Promise<boolean> => {
+  const loginHandler = async (user: User, remember: boolean): Promise<boolean> => {
     try {
       const data = await fetchAccessToken(user);
       const decoded = jwtDecode<DecodedAccessToken>(data.access_token);
 
+      if (remember) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }
       setToken(data);
       setUsername(decoded.preferred_username ?? null);
       setRole(extractRole(decoded));
@@ -90,6 +126,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logoutHandler = () => {
+    localStorage.removeItem(STORAGE_KEY);
     setAuthenticated(false);
     setToken(null);
     setUsername(null);

@@ -27,6 +27,7 @@ const LoginPage = () => {
     username: '',
     password: '',
   });
+  const [remember, setRemember] = useState(true);
 
   const [open, setOpen] = useState(false);
   const { isAuthenticated, loginHandler } = useAuth();
@@ -37,7 +38,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const isLoginSuccess = await loginHandler(formUser);
+    const isLoginSuccess = await loginHandler(formUser, remember);
     setOpen(!isLoginSuccess);
   };
 
@@ -83,7 +84,13 @@ const LoginPage = () => {
           />
 
           <FormControlLabel
-            control={<Checkbox value='remember' color='primary' />}
+            control={
+              <Checkbox
+                color='primary'
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+              />
+            }
             label='Remember me'
           />
 
