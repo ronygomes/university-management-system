@@ -28,6 +28,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 import static me.ronygomes.ums.api.dto.CourseDtoTest.assertCourseDto;
@@ -62,6 +63,28 @@ public class CourseServiceTest {
 
         service = new CourseService(courseRepository, departmentRepository,
                 teacherRepository, exceptionHelper, mockValidator);
+    }
+
+    @Test
+    void testFindAll() {
+        Department d = DataHelper.validPersistableDepartment1();
+        Teacher t = new Teacher();
+        t.setId(7L);
+
+        Course c1 = DataHelper.validPersistableCourse1(d, t);
+        c1.setId(1L);
+        Course c2 = DataHelper.validPersistableCourse1(d, t);
+        c2.setId(2L);
+
+        Mockito.when(courseRepository.findAll()).thenReturn(List.of(c1, c2));
+
+        List<CourseDto> result = service.findAll();
+
+        Assertions.assertEquals(2, result.size());
+        assertCourseDto(c1, result.get(0));
+        assertCourseDto(c2, result.get(1));
+        Assertions.assertEquals(1L, result.get(0).getId());
+        Assertions.assertEquals(2L, result.get(1).getId());
     }
 
     @Test

@@ -22,6 +22,8 @@ public class CourseDto implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private Long id;
+
     @NotNull
     @Size(min = 1, max = 20)
     private String title;
@@ -46,6 +48,14 @@ public class CourseDto implements Serializable {
     private Semester semester;
 
     private Long instructorId;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getTitle() {
         return title;
@@ -105,6 +115,7 @@ public class CourseDto implements Serializable {
 
     public static CourseDto toDto(Course entity) {
         CourseDto dto = new CourseDto();
+        dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setName(entity.getName());
         dto.setCredit(BigDecimal.valueOf(entity.getCredit()));

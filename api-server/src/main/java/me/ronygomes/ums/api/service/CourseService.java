@@ -51,6 +51,10 @@ public class CourseService {
         this.validator = validator;
     }
 
+    public List<CourseDto> findAll() {
+        return courseRepository.findAll().stream().map(CourseDto::toDto).toList();
+    }
+
     public CourseDto findById(Long id) {
         return CourseDto.toDto(findByIdOrThrow(id));
     }

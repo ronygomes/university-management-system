@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static me.ronygomes.ums.api.testHelper.RoleHelper.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -66,6 +67,35 @@ public class CourseControllerTest {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @Test
+    void testFindAllSuccess() throws Exception {
+        CourseDto dto1 = CourseDto.toDto(createMockDBCourse());
+        dto1.setId(1L);
+        CourseDto dto2 = CourseDto.toDto(createMockDBCourse());
+        dto2.setId(2L);
+        dto2.setTitle("CSE-102");
+
+        Mockito.when(courseService.findAll()).thenReturn(List.of(dto1, dto2));
+
+        mockMvc.perform(get("/v1/courses")
+                        .with(adminJwt()))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.OK.value()))
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].title").value("CSE-101"))
+                .andExpect(jsonPath("$[1].id").value(2))
+                .andExpect(jsonPath("$[1].title").value("CSE-102"));
+
+        mockMvc.perform(get("/v1/courses")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/courses")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
