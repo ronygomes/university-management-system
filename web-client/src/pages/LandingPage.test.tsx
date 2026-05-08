@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import axios from 'axios';
 import LandingPage from './LandingPage';
 import * as AuthContext from '../components/AuthContext';
+import type { Role } from '../components/AuthContext';
 
 const mockToken = {
   access_token: 'test-token',
@@ -14,12 +14,13 @@ const mockToken = {
   token_type: 'Bearer',
 };
 
-function renderLandingPage(isAuthenticated = false) {
+function renderLandingPage(opts: { isAuthenticated?: boolean; role?: Role | null } = {}) {
+  const { isAuthenticated = false, role = null } = opts;
   vi.spyOn(AuthContext, 'useAuth').mockReturnValue({
     isAuthenticated,
     token: isAuthenticated ? mockToken : null,
     username: null,
-    role: null,
+    role,
     loginHandler: vi.fn(),
     logoutHandler: vi.fn(),
   });
@@ -43,33 +44,28 @@ describe('LandingPage', () => {
   });
 
   it('redirects to /login when not authenticated', () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: [] } } });
-    renderLandingPage(false);
+    renderLandingPage({ isAuthenticated: false });
 
-    expect(screen.queryByText('Welcome Authenticated User')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
   });
 
-  it('renders the welcome heading when authenticated', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: [] } } });
-    renderLandingPage(true);
+  it('renders AdminLandingPage when role is ADMIN', () => {
+    renderLandingPage({ isAuthenticated: true, role: 'ADMIN' });
 
-    expect(await screen.findByText('Welcome Authenticated User')).toBeInTheDocument();
+    expect(screen.getByText('Welcome Admin')).toBeInTheDocument();
+    expect(screen.getByText('Department')).toBeInTheDocument();
   });
 
-  it('renders department names fetched from the API', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({
-      data: {
-        _embedded: {
-          departments: [
-            { code: 'CSE', name: 'Computer Science' },
-            { code: 'EEE', name: 'Electrical Engineering' },
-          ],
-        },
-      },
-    });
-    renderLandingPage(true);
+  it('renders "Welcome Teacher" when role is TEACHER', () => {
+    renderLandingPage({ isAuthenticated: true, role: 'TEACHER' });
 
-    expect(await screen.findByText('Computer Science')).toBeInTheDocument();
-    expect(screen.getByText('Electrical Engineering')).toBeInTheDocument();
+    expect(screen.getByText('Welcome Teacher')).toBeInTheDocument();
+    expect(screen.queryByText('Welcome Admin')).not.toBeInTheDocument();
+  });
+
+  it('renders "Welcome Student" when role is STUDENT', () => {
+    renderLandingPage({ isAuthenticated: true, role: 'STUDENT' });
+
+    expect(screen.getByText('Welcome Student')).toBeInTheDocument();
   });
 });

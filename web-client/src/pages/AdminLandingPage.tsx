@@ -1,0 +1,22 @@
+import { Box, Button, Card, Stack, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+
+const AdminLandingPage = () => {
+  return (
+    <>
+      <h1>Welcome Admin</h1>
+      <Stack spacing={2}>
+        <Card sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography>Department</Typography>
+            <Button component={RouterLink} to='/admin/departments' variant='outlined'>
+              View
+            </Button>
+          </Box>
+        </Card>
+      </Stack>
+    </>
+  );
+};
+
+export default AdminLandingPage;

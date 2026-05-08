@@ -7,9 +7,10 @@ import {
   Container,
   CssBaseline,
   IconButton,
+  Link,
 } from '@mui/material';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth, type Role } from './AuthContext';
 
 interface ContentWrapperProps {
@@ -38,7 +39,15 @@ const ContentWrapper: React.FC<ContentWrapperProps> = ({ children }) => {
       <CssBaseline />
       <AppBar position='static'>
         <Toolbar>
-          <Typography variant='h6'>University Management System</Typography>
+          <Link
+            component={RouterLink}
+            to='/'
+            color='inherit'
+            underline='none'
+            variant='h6'
+          >
+            University Management System
+          </Link>
           <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
             {userLabel && <Typography variant='body1'>{userLabel}</Typography>}
             <IconButton color='inherit' aria-label='Logout' onClick={handleLogout}>
