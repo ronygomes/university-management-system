@@ -4,8 +4,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import axios from 'axios';
 import StudentRegistrationPage from './StudentRegistrationPage';
+import * as AuthContext from '../components/AuthContext';
 
 function renderPage() {
+  vi.spyOn(AuthContext, 'useAuth').mockReturnValue({
+    isAuthenticated: true,
+    token: null,
+    username: null,
+    role: null,
+    loginHandler: vi.fn(),
+    logoutHandler: vi.fn(),
+  });
+
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });

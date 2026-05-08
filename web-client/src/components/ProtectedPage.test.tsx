@@ -7,6 +7,8 @@ function renderProtectedPage(isAuthenticated = false) {
   vi.spyOn(AuthContext, 'useAuth').mockReturnValue({
     isAuthenticated,
     token: null,
+    username: null,
+    role: null,
     loginHandler: vi.fn(),
     logoutHandler: vi.fn(),
   });

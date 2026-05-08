@@ -17,6 +17,8 @@ function renderLandingPage(isAuthenticated = false) {
   vi.spyOn(AuthContext, 'useAuth').mockReturnValue({
     isAuthenticated,
     token: isAuthenticated ? mockToken : null,
+    username: null,
+    role: null,
     loginHandler: vi.fn(),
     logoutHandler: vi.fn(),
   });
