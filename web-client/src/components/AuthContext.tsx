@@ -4,7 +4,7 @@ import axios, { type AxiosResponse } from 'axios';
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 type User = {
-  email: string;
+  username: string;
   password: string;
 };
 
@@ -32,7 +32,7 @@ async function fetchAccessToken(user: User): Promise<AccessToken> {
     TOKEN_ENDPOINT,
     {
       grant_type: 'password',
-      username: user.email,
+      username: user.username,
       password: user.password,
       client_id: 'ums-client-webapp',
       redirect_uri: 'http://localhost:3000/',

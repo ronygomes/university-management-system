@@ -18,13 +18,13 @@ import { useAuth } from '../components/AuthContext';
 import { Navigate } from 'react-router-dom';
 
 type User = {
-  email: string;
+  username: string;
   password: string;
 };
 
 const LoginPage = () => {
   const [formUser, setFormUser] = useState<User>({
-    email: '',
+    username: '',
     password: '',
   });
 
@@ -63,11 +63,11 @@ const LoginPage = () => {
 
         <Box component='form' onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
           <TextField
-            placeholder='Email'
+            placeholder='Username'
             fullWidth
             required
             autoFocus
-            name='email'
+            name='username'
             sx={{ mb: 2 }}
             onChange={handleChange}
           />
@@ -110,7 +110,7 @@ const LoginPage = () => {
         open={open}
         autoHideDuration={3000}
         onClose={() => setOpen(false)}
-        message='Invalid email or password'
+        message='Invalid username or password'
       />
     </Container>
   );

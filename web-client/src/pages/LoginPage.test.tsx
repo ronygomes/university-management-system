@@ -26,10 +26,10 @@ describe('LoginPage', () => {
     mockLoginHandler.mockReset();
   });
 
-  it('renders the email field, password field, and sign in button', () => {
+  it('renders the username field, password field, and sign in button', () => {
     renderLoginPage();
 
-    expect(screen.getByPlaceholderText('Email')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Username')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
@@ -37,19 +37,19 @@ describe('LoginPage', () => {
   it('redirects to / when already authenticated', () => {
     renderLoginPage(true);
 
-    expect(screen.queryByPlaceholderText('Email')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Username')).not.toBeInTheDocument();
   });
 
-  it('calls loginHandler with typed email and password on submit', async () => {
+  it('calls loginHandler with typed username and password on submit', async () => {
     mockLoginHandler.mockResolvedValue(true);
     renderLoginPage();
 
-    await userEvent.type(screen.getByPlaceholderText('Email'), 'admin@ums.com');
+    await userEvent.type(screen.getByPlaceholderText('Username'), 'admin');
     await userEvent.type(screen.getByPlaceholderText('Password'), 'secret');
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
     expect(mockLoginHandler).toHaveBeenCalledWith({
-      email: 'admin@ums.com',
+      username: 'admin',
       password: 'secret',
     });
   });
@@ -60,7 +60,7 @@ describe('LoginPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-    expect(await screen.findByText('Invalid email or password')).toBeInTheDocument();
+    expect(await screen.findByText('Invalid username or password')).toBeInTheDocument();
   });
 
   it('does not show error snackbar when login succeeds', async () => {
@@ -69,6 +69,6 @@ describe('LoginPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-    expect(screen.queryByText('Invalid email or password')).not.toBeInTheDocument();
+    expect(screen.queryByText('Invalid username or password')).not.toBeInTheDocument();
   });
 });
