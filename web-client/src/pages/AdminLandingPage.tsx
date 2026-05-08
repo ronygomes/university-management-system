@@ -14,6 +14,14 @@ const AdminLandingPage = () => {
             </Button>
           </Box>
         </Card>
+        <Card sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography>Designation</Typography>
+            <Button component={RouterLink} to='/admin/designations' variant='outlined'>
+              View
+            </Button>
+          </Box>
+        </Card>
       </Stack>
     </>
   );

@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import PageNotFound from './pages/PageNotFound';
 import StudentRegistrationPage from './pages/StudentRegistrationPage';
 import DepartmentPage from './pages/DepartmentPage';
+import DesignationPage from './pages/DesignationPage';
 import { AuthProvider } from './components/AuthContext';
 
 const queryClient = new QueryClient();
@@ -19,6 +20,7 @@ function App() {
           <Route path='/login' element={<LoginPage />} />
           <Route path='/register' element={<StudentRegistrationPage />} />
           <Route path='/admin/departments' element={<DepartmentPage />} />
+          <Route path='/admin/designations' element={<DesignationPage />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Router>

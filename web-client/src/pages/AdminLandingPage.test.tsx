@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import AdminLandingPage from './AdminLandingPage';
@@ -9,6 +9,7 @@ function renderPage() {
       <Routes>
         <Route path='/' element={<AdminLandingPage />} />
         <Route path='/admin/departments' element={<div>Department Page Loaded</div>} />
+        <Route path='/admin/designations' element={<div>Designation Page Loaded</div>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -21,19 +22,31 @@ describe('AdminLandingPage', () => {
     expect(screen.getByText('Welcome Admin')).toBeInTheDocument();
   });
 
-  it('renders the Department row with a View link', () => {
+  it('renders the Department row with a View link to /admin/departments', () => {
     renderPage();
 
     expect(screen.getByText('Department')).toBeInTheDocument();
-    const viewLink = screen.getByRole('link', { name: /view/i });
-    expect(viewLink).toHaveAttribute('href', '/admin/departments');
+    const departmentRow = screen.getByText('Department').closest('div') as HTMLElement;
+    const departmentView = within(departmentRow).getByRole('link', { name: /view/i });
+    expect(departmentView).toHaveAttribute('href', '/admin/departments');
   });
 
-  it('navigates to /admin/departments when View is clicked', async () => {
+  it('navigates to /admin/departments when its View is clicked', async () => {
     renderPage();
 
-    await userEvent.click(screen.getByRole('link', { name: /view/i }));
+    const departmentRow = screen.getByText('Department').closest('div') as HTMLElement;
+    const departmentView = within(departmentRow).getByRole('link', { name: /view/i });
+    await userEvent.click(departmentView);
 
     expect(await screen.findByText('Department Page Loaded')).toBeInTheDocument();
+  });
+
+  it('renders the Designation row with a View link to /admin/designations', () => {
+    renderPage();
+
+    expect(screen.getByText('Designation')).toBeInTheDocument();
+    const designationRow = screen.getByText('Designation').closest('div') as HTMLElement;
+    const designationView = within(designationRow).getByRole('link', { name: /view/i });
+    expect(designationView).toHaveAttribute('href', '/admin/designations');
   });
 });
