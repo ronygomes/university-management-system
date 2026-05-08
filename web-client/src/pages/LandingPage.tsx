@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
 import ContentWrapper from '../components/ContentWrapper';
-import { useAuth } from '../components/AuthContext';
 import ProtectedPage from '../components/ProtectedPage';
 
 const DEPARTMENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/departments`;
@@ -11,21 +10,16 @@ type Department = {
   name: string;
 };
 
-const LandingPage = () => {
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const { token } = useAuth();
+async function fetchDepartments(): Promise<Department[]> {
+  const response = await axios.get(DEPARTMENT_ENDPOINT);
+  return response.data._embedded.departments;
+}
 
-  useEffect(() => {
-    if (token != null) {
-      axios
-        .get(DEPARTMENT_ENDPOINT, {
-          headers: { Authorization: 'Bearer ' + token.access_token },
-        })
-        .then((response) => {
-          setDepartments(response.data._embedded.departments);
-        });
-    }
-  }, [token]);
+const LandingPage = () => {
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments'],
+    queryFn: fetchDepartments,
+  });
 
   return (
     <ProtectedPage>

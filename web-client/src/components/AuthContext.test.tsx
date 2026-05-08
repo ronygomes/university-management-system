@@ -1,6 +1,7 @@
 import { render, screen, act } from '@testing-library/react';
 import axios from 'axios';
 import { AuthProvider, useAuth } from './AuthContext';
+import * as AuthTokenModule from '../api/authToken';
 
 const STORAGE_KEY = 'ums.auth.token';
 
@@ -126,5 +127,26 @@ describe('AuthContext', () => {
 
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
     expect(screen.getByTestId('auth')).toHaveTextContent('false');
+  });
+
+  it('pushes the token to the api auth interceptor on hydrate, login, and logout', async () => {
+    const setApiTokenSpy = vi.spyOn(AuthTokenModule, 'setApiToken');
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(makeTokenResponse(validJwt)));
+    renderProvider();
+    expect(setApiTokenSpy).toHaveBeenCalledWith(validJwt);
+
+    setApiTokenSpy.mockClear();
+    act(() => {
+      captured!.logoutHandler();
+    });
+    expect(setApiTokenSpy).toHaveBeenCalledWith(null);
+
+    vi.spyOn(axios, 'post').mockResolvedValue({ data: makeTokenResponse(validJwt) });
+    setApiTokenSpy.mockClear();
+    await act(async () => {
+      await captured!.loginHandler({ username: 'admin', password: 'pw' }, false);
+    });
+    expect(setApiTokenSpy).toHaveBeenCalledWith(validJwt);
   });
 });
