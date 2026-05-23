@@ -20,6 +20,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -369,6 +370,35 @@ public class CourseScheduleControllerTest {
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
 
         mockMvc.perform(delete("/v1/schedules/1")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+    }
+
+    @Test
+    void testSetEnrollmentOpenSuccess() throws Exception {
+        CourseSchedule cs = new CourseSchedule();
+        cs.setEnrollmentOpen(false);
+        Mockito.when(courseScheduleRepository.findById(7L)).thenReturn(Optional.of(cs));
+
+        ArgumentCaptor<CourseSchedule> ac = ArgumentCaptor.forClass(CourseSchedule.class);
+        Mockito.when(courseScheduleRepository.save(ac.capture())).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(put("/v1/schedules/7/enrollment-open")
+                        .param("open", "true")
+                        .with(adminJwt()))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.ACCEPTED.value()))
+                .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/schedules/7"));
+
+        Assertions.assertTrue(ac.getValue().isEnrollmentOpen());
+
+        mockMvc.perform(put("/v1/schedules/7/enrollment-open")
+                        .param("open", "false")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(put("/v1/schedules/7/enrollment-open")
+                        .param("open", "false")
                         .with(studentJwt()))
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }

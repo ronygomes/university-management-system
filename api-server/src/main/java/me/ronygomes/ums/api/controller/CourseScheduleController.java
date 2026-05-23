@@ -130,6 +130,18 @@ public class CourseScheduleController {
         return ResponseEntity.accepted().build();
     }
 
+    @AdminAccess
+    @PutMapping("/{id}/enrollment-open")
+    public ResponseEntity<?> setEnrollmentOpen(@PathVariable Long id, @RequestParam boolean open) {
+        CourseSchedule schedule = findByIdOrThrow(id);
+        schedule.setEnrollmentOpen(open);
+        courseScheduleRepository.save(schedule);
+
+        return ResponseEntity.accepted()
+                .header(HttpHeaders.LOCATION, linkTo(CourseScheduleController.class).slash(id).toUri().toString())
+                .build();
+    }
+
     private CourseSchedule findByIdOrThrow(Long id) {
         return courseScheduleRepository.findById(id)
                 .orElseThrow(() -> new UmsDataException(ENTITY_NOT_FOUND,

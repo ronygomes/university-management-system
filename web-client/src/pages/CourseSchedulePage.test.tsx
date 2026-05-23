@@ -247,6 +247,24 @@ describe('CourseSchedulePage', () => {
     expect(alert).toHaveTextContent('days: must not be empty');
   });
 
+  it('toggles enrollmentOpen via PUT to /enrollment-open with ?open=', async () => {
+    mockAllGet();
+    const putSpy = vi.spyOn(axios, 'put').mockResolvedValue({});
+    renderPage();
+
+    // initialSchedules[0].enrollmentOpen === true, button shows "Open . Close"
+    const toggle = await screen.findByRole('button', { name: /open · close/i });
+    await userEvent.click(toggle);
+
+    await waitFor(() => expect(putSpy).toHaveBeenCalledTimes(1));
+    expect(putSpy).toHaveBeenCalledWith(
+      expect.stringMatching(/\/v1\/schedules\/10\/enrollment-open$/),
+      null,
+      { params: { open: false } },
+    );
+    expect(await screen.findByText('Enrollment closed')).toBeInTheDocument();
+  });
+
   it('shows error snackbar when DELETE fails', async () => {
     mockAllGet();
     vi.spyOn(axios, 'delete').mockRejectedValue(new Error('boom'));

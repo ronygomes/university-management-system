@@ -67,7 +67,9 @@ public class EnrollmentValidatorTest {
 
         Mockito.when(errors.hasFieldErrors("courseScheduleId")).thenReturn(false);
         Mockito.when(errors.hasFieldErrors("studentId")).thenReturn(false);
-        Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.of(new CourseSchedule()));
+        CourseSchedule openSchedule = new CourseSchedule();
+        openSchedule.setEnrollmentOpen(true);
+        Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.of(openSchedule));
         Mockito.when(studentRepository.findById(2L)).thenReturn(Optional.of(new Student()));
 
         enrollmentValidator.validate(dto, errors);
@@ -76,6 +78,27 @@ public class EnrollmentValidatorTest {
         Mockito.verify(courseScheduleRepository, Mockito.times(1)).findById(Mockito.any());
         Mockito.verify(studentRepository, Mockito.times(1)).findById(Mockito.any());
         Mockito.verify(errors, Mockito.never()).rejectValue(Mockito.any(), Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void testRejectsWhenEnrollmentClosed() {
+        EnrollmentDto dto = new EnrollmentDto();
+        dto.setCourseScheduleId(1L);
+        dto.setStudentId(2L);
+
+        BindingResult errors = Mockito.mock(BindingResult.class);
+
+        Mockito.when(errors.hasFieldErrors("courseScheduleId")).thenReturn(false);
+        Mockito.when(errors.hasFieldErrors("studentId")).thenReturn(false);
+        CourseSchedule closedSchedule = new CourseSchedule();
+        closedSchedule.setEnrollmentOpen(false);
+        Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.of(closedSchedule));
+        Mockito.when(studentRepository.findById(2L)).thenReturn(Optional.of(new Student()));
+
+        enrollmentValidator.validate(dto, errors);
+
+        Mockito.verify(errors, Mockito.times(1)).rejectValue(
+                "courseScheduleId", null, "enrollment is closed for this course schedule");
     }
 
     @Test

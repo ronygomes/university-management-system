@@ -78,6 +78,7 @@ function letterFromCgpa(cgpa: number): GradeLetter {
 type Schedule = {
   id: number;
   courseId: number;
+  enrollmentOpen: boolean;
 };
 
 type Enrollment = {
@@ -245,7 +246,9 @@ const StudentLandingPage = () => {
   );
 
   const availableCourses = self ? courses.filter((c) => {
-    if (!scheduleByCourseId.has(c.id)) return false;
+    const sched = scheduleByCourseId.get(c.id);
+    if (!sched) return false;
+    if (!sched.enrollmentOpen) return false;
     if (myEnrolledCourseIds.has(c.id)) return false;
     if (!showAll && c.departmentCode !== self.departmentCode) return false;
     return true;

@@ -112,6 +112,7 @@ type SchedulePayload = {
   days: Day[];
   startDate: string;
   endDate: string;
+  enrollmentOpen: boolean;
 };
 
 async function fetchSchedules(): Promise<Schedule[]> {
@@ -131,6 +132,10 @@ async function fetchDepartments(): Promise<Department[]> {
 
 async function deleteSchedule(id: number): Promise<void> {
   await axios.delete(`${SCHEDULE_ENDPOINT}/${id}`);
+}
+
+async function setScheduleEnrollmentOpen(id: number, open: boolean): Promise<void> {
+  await axios.put(`${SCHEDULE_ENDPOINT}/${id}/enrollment-open`, null, { params: { open } });
 }
 
 async function updateSchedule(id: number, data: SchedulePayload): Promise<void> {
@@ -431,6 +436,16 @@ const CourseSchedulePage = () => {
     },
   });
 
+  const { mutate: triggerToggle, isPending: isTogglePending } = useMutation({
+    mutationFn: ({ id, open }: { id: number; open: boolean }) => setScheduleEnrollmentOpen(id, open),
+    onSuccess: (_d, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['schedules'] });
+      setSuccessMessage(vars.open ? 'Enrollment opened' : 'Enrollment closed');
+      setSuccessOpen(true);
+    },
+    onError: () => setErrorOpen(true),
+  });
+
   const onConfirmDelete = () => {
     if (pendingDelete) {
       triggerDelete(pendingDelete.id);
@@ -457,6 +472,7 @@ const CourseSchedulePage = () => {
                 <TableCell>Room</TableCell>
                 <TableCell>Days</TableCell>
                 <TableCell>Date Range</TableCell>
+                <TableCell>Enrollment</TableCell>
                 <TableCell align='right'>Action</TableCell>
               </TableRow>
             </TableHead>
@@ -470,6 +486,17 @@ const CourseSchedulePage = () => {
                   <TableCell>{schedule.roomNumber}</TableCell>
                   <TableCell>{schedule.days.map((d) => DAY_SHORT[d]).join(', ')}</TableCell>
                   <TableCell>{formatDateRange(schedule.startDate, schedule.endDate)}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant='text'
+                      size='small'
+                      color={schedule.enrollmentOpen ? 'success' : 'warning'}
+                      disabled={isTogglePending}
+                      onClick={() => triggerToggle({ id: schedule.id, open: !schedule.enrollmentOpen })}
+                    >
+                      {schedule.enrollmentOpen ? 'Open · Close' : 'Closed · Open'}
+                    </Button>
+                  </TableCell>
                   <TableCell align='right'>
                     <Button
                       variant='outlined'

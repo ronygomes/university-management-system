@@ -2,11 +2,14 @@ package me.ronygomes.ums.api.validator;
 
 import jakarta.validation.Validator;
 import me.ronygomes.ums.api.dto.EnrollmentDto;
+import me.ronygomes.ums.api.model.CourseSchedule;
 import me.ronygomes.ums.api.repository.CourseScheduleRepository;
 import me.ronygomes.ums.api.repository.StudentRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
+
+import java.util.Optional;
 
 @Component
 public class EnrollmentValidator implements org.springframework.validation.Validator {
@@ -36,8 +39,13 @@ public class EnrollmentValidator implements org.springframework.validation.Valid
         SpringValidatorAdapter beanValidator = new SpringValidatorAdapter(validator);
         beanValidator.validate(dto, errors);
 
-        if (!errors.hasFieldErrors("courseScheduleId") && courseScheduleRepository.findById(dto.getCourseScheduleId()).isEmpty()) {
-            errors.rejectValue("courseScheduleId", null, "course schedule not found");
+        if (!errors.hasFieldErrors("courseScheduleId")) {
+            Optional<CourseSchedule> opt = courseScheduleRepository.findById(dto.getCourseScheduleId());
+            if (opt.isEmpty()) {
+                errors.rejectValue("courseScheduleId", null, "course schedule not found");
+            } else if (!opt.get().isEnrollmentOpen()) {
+                errors.rejectValue("courseScheduleId", null, "enrollment is closed for this course schedule");
+            }
         }
 
         if (!errors.hasFieldErrors("studentId") && studentRepository.findById(dto.getStudentId()).isEmpty()) {

@@ -40,9 +40,9 @@ const courses = [
 ];
 
 const schedules = [
-  { id: 100, courseId: 10 },
-  { id: 101, courseId: 11 },
-  { id: 102, courseId: 12 },
+  { id: 100, courseId: 10, enrollmentOpen: true },
+  { id: 101, courseId: 11, enrollmentOpen: true },
+  { id: 102, courseId: 12, enrollmentOpen: true },
   // course 13 intentionally has no schedule
 ];
 
@@ -108,6 +108,29 @@ describe('StudentLandingPage', () => {
     expect(within(listbox).queryByText(/CSE-301 —/)).not.toBeInTheDocument();
     // EEE-101 is not in Jane's department
     expect(within(listbox).queryByText(/EEE-101 —/)).not.toBeInTheDocument();
+  });
+
+  it('excludes courses whose schedule has enrollmentOpen=false', async () => {
+    const closedSchedules = [
+      { id: 100, courseId: 10, enrollmentOpen: true },
+      // CSE-201 now closed
+      { id: 101, courseId: 11, enrollmentOpen: false },
+      { id: 102, courseId: 12, enrollmentOpen: true },
+    ];
+    vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
+      if (url.includes('/v1/students')) return { data: students };
+      if (url.includes('/v1/schedules')) return { data: closedSchedules };
+      if (url.includes('/v1/courses')) return { data: courses };
+      if (url.includes('/v1/enrollments')) return { data: enrollments };
+      return { data: {} };
+    });
+    renderPage('jane@ums.dev');
+
+    await screen.findByText('Welcome, Jane Doe');
+    await userEvent.click(screen.getByLabelText(/course to enroll/i));
+    const listbox = await screen.findByRole('listbox');
+    // CSE-201 should NOT appear (its schedule has enrollmentOpen=false)
+    expect(within(listbox).queryByText(/CSE-201/)).not.toBeInTheDocument();
   });
 
   it('toggling "Show all" reveals other-department courses', async () => {
