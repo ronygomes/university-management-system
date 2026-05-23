@@ -144,7 +144,7 @@ public class EnrollmentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JSON_DATE)
                         .with(studentJwt()))
-                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+                .andExpect(status().is(HttpStatus.CREATED.value()));
     }
 
     @Test

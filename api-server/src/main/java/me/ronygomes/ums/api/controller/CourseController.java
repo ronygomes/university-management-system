@@ -24,7 +24,7 @@ public class CourseController {
         this.courseService = courseService;
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
     @GetMapping
     public List<CourseDto> findAll() {
         return courseService.findAll();

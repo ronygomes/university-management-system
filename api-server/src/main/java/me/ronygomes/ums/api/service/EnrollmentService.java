@@ -40,6 +40,10 @@ public class EnrollmentService {
         this.exceptionHelper = exceptionHelper;
     }
 
+    public java.util.List<EnrollmentDto> findAll() {
+        return enrollmentRepository.findAll().stream().map(EnrollmentDto::new).toList();
+    }
+
     public EnrollmentDto findById(long id) {
         return new EnrollmentDto(findByIdOrThrow(id));
     }

@@ -3,6 +3,7 @@ import ProtectedPage from '../components/ProtectedPage';
 import { useAuth } from '../components/AuthContext';
 import AdminLandingPage from './AdminLandingPage';
 import TeacherLandingPage from './TeacherLandingPage';
+import StudentLandingPage from './StudentLandingPage';
 
 const LandingPage = () => {
   const { role } = useAuth();
@@ -13,7 +14,7 @@ const LandingPage = () => {
   } else if (role === 'TEACHER') {
     body = <TeacherLandingPage />;
   } else if (role === 'STUDENT') {
-    body = <h1>Welcome Student</h1>;
+    body = <StudentLandingPage />;
   } else {
     body = <h1>Welcome</h1>;
   }

@@ -48,6 +48,10 @@ public class StudentService {
         this.exceptionHelper = exceptionHelper;
     }
 
+    public java.util.List<Student> findAll() {
+        return studentRepository.findAll();
+    }
+
     public Student findById(long id) {
         return findWithEducationOrThrow(id);
     }

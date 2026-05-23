@@ -59,7 +59,7 @@ public class CourseScheduleController {
         binder.addValidators(courseScheduleValidator);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
     @GetMapping
     public List<CourseSchedule> findAll() {
         return courseScheduleRepository.findAll();

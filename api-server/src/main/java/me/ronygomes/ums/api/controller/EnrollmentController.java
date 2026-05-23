@@ -6,7 +6,10 @@ import me.ronygomes.ums.api.service.EnrollmentService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -20,13 +23,19 @@ public class EnrollmentController {
         this.enrollmentService = enrollmentService;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','STUDENT')")
+    @GetMapping
+    public List<EnrollmentDto> findAll() {
+        return enrollmentService.findAll();
+    }
+
     @AdminAccess
     @GetMapping("/{id}")
     public EnrollmentDto findById(@PathVariable Long id) {
         return enrollmentService.findById(id);
     }
 
-    @AdminAccess
+    @PreAuthorize("hasAnyRole('ADMIN','STUDENT')")
     @PostMapping
     public ResponseEntity<?> create(@RequestBody EnrollmentDto enrollmentDto) {
         long newId = enrollmentService.create(enrollmentDto);
