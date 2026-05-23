@@ -12,6 +12,7 @@ function renderWrapper(opts: { username?: string | null; role?: Role | null } = 
     isAuthenticated: true,
     token: null,
     username: opts.username ?? 'jdoe',
+    email: null,
     role: opts.role ?? 'TEACHER',
     loginHandler: vi.fn(),
     logoutHandler: mockLogoutHandler,

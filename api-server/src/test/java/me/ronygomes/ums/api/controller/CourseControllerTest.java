@@ -91,7 +91,7 @@ public class CourseControllerTest {
 
         mockMvc.perform(get("/v1/courses")
                         .with(teacherJwt()))
-                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+                .andExpect(status().is(HttpStatus.OK.value()));
 
         mockMvc.perform(get("/v1/courses")
                         .with(studentJwt()))

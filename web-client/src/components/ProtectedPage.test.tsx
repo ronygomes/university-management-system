@@ -8,6 +8,7 @@ function renderProtectedPage(isAuthenticated = false) {
     isAuthenticated,
     token: null,
     username: null,
+    email: null,
     role: null,
     loginHandler: vi.fn(),
     logoutHandler: vi.fn(),

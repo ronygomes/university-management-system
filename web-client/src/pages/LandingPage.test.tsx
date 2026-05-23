@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import axios from 'axios';
 import LandingPage from './LandingPage';
 import * as AuthContext from '../components/AuthContext';
 import type { Role } from '../components/AuthContext';
@@ -20,6 +21,7 @@ function renderLandingPage(opts: { isAuthenticated?: boolean; role?: Role | null
     isAuthenticated,
     token: isAuthenticated ? mockToken : null,
     username: null,
+    email: null,
     role,
     loginHandler: vi.fn(),
     logoutHandler: vi.fn(),
@@ -56,10 +58,17 @@ describe('LandingPage', () => {
     expect(screen.getByText('Department')).toBeInTheDocument();
   });
 
-  it('renders "Welcome Teacher" when role is TEACHER', () => {
+  it('renders TeacherLandingPage when role is TEACHER', async () => {
+    vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
+      if (url.includes('/v1/courses')) return { data: [] };
+      if (url.includes('/v1/schedules')) return { data: [] };
+      if (url.includes('/v1/teachers')) return { data: { _embedded: { teachers: [] } } };
+      return { data: {} };
+    });
     renderLandingPage({ isAuthenticated: true, role: 'TEACHER' });
 
-    expect(screen.getByText('Welcome Teacher')).toBeInTheDocument();
+    expect(await screen.findByText('My Assigned Courses')).toBeInTheDocument();
+    expect(screen.getByText('My Schedule')).toBeInTheDocument();
     expect(screen.queryByText('Welcome Admin')).not.toBeInTheDocument();
   });
 

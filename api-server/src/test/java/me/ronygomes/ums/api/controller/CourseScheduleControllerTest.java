@@ -116,7 +116,7 @@ public class CourseScheduleControllerTest {
 
         mockMvc.perform(get("/v1/schedules")
                         .with(teacherJwt()))
-                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+                .andExpect(status().is(HttpStatus.OK.value()));
 
         mockMvc.perform(get("/v1/schedules")
                         .with(studentJwt()))

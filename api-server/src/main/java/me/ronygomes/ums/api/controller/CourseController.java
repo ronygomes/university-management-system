@@ -7,6 +7,7 @@ import me.ronygomes.ums.api.service.CourseService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class CourseController {
         this.courseService = courseService;
     }
 
-    @AdminAccess
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @GetMapping
     public List<CourseDto> findAll() {
         return courseService.findAll();

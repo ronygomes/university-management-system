@@ -10,6 +10,7 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -28,7 +29,7 @@ public class TeacherController {
     }
 
     @GetMapping
-    @AdminAccess
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     public CollectionModel<TeacherDto> getAll() {
         return teacherModelAssembler.toCollectionModel(teacherService.findAll());
     }

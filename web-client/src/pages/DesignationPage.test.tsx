@@ -11,6 +11,7 @@ function renderPage() {
     isAuthenticated: true,
     token: null,
     username: null,
+    email: null,
     role: 'ADMIN',
     loginHandler: vi.fn(),
     logoutHandler: vi.fn(),

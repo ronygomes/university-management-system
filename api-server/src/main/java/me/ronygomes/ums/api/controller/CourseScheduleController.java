@@ -13,6 +13,7 @@ import me.ronygomes.ums.api.validator.CourseScheduleValidator;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
@@ -58,7 +59,7 @@ public class CourseScheduleController {
         binder.addValidators(courseScheduleValidator);
     }
 
-    @AdminAccess
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @GetMapping
     public List<CourseSchedule> findAll() {
         return courseScheduleRepository.findAll();

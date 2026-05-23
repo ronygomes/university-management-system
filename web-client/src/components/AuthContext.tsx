@@ -21,6 +21,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   token: AccessToken | null;
   username: string | null;
+  email: string | null;
   role: Role | null;
   loginHandler: (user: User, remember: boolean) => Promise<boolean>;
   logoutHandler: () => void;
@@ -38,12 +39,14 @@ type AccessToken = {
 type DecodedAccessToken = {
   exp?: number;
   preferred_username?: string;
+  email?: string;
   resource_access?: Record<string, { roles?: string[] }>;
 };
 
 type HydratedSession = {
   token: AccessToken;
   username: string | null;
+  email: string | null;
   role: Role | null;
 };
 
@@ -63,6 +66,7 @@ function loadSession(): HydratedSession | null {
     return {
       token,
       username: decoded.preferred_username ?? null,
+      email: decoded.email ?? null,
       role: extractRole(decoded),
     };
   } catch {
@@ -106,6 +110,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthenticated, setAuthenticated] = useState(initial !== null);
   const [token, setToken] = useState<AccessToken | null>(initial?.token ?? null);
   const [username, setUsername] = useState<string | null>(initial?.username ?? null);
+  const [email, setEmail] = useState<string | null>(initial?.email ?? null);
   const [role, setRole] = useState<Role | null>(initial?.role ?? null);
 
   const loginHandler = async (user: User, remember: boolean): Promise<boolean> => {
@@ -119,6 +124,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setApiToken(data.access_token);
       setToken(data);
       setUsername(decoded.preferred_username ?? null);
+      setEmail(decoded.email ?? null);
       setRole(extractRole(decoded));
       setAuthenticated(true);
       return true;
@@ -135,12 +141,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setAuthenticated(false);
     setToken(null);
     setUsername(null);
+    setEmail(null);
     setRole(null);
   };
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, token, username, role, loginHandler, logoutHandler }}
+      value={{ isAuthenticated, token, username, email, role, loginHandler, logoutHandler }}
     >
       {children}
     </AuthContext.Provider>

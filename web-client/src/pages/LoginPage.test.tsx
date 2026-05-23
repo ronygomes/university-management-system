@@ -11,6 +11,7 @@ function renderLoginPage(isAuthenticated = false) {
     isAuthenticated,
     token: null,
     username: null,
+    email: null,
     role: null,
     loginHandler: mockLoginHandler,
     logoutHandler: vi.fn(),
