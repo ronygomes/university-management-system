@@ -93,9 +93,11 @@ describe('StudentRegistrationPage', () => {
     expect(await screen.findByText('Must be 10 digits')).toBeInTheDocument();
   });
 
-  it('shows success snackbar after successful submission', async () => {
+  it('shows the assigned Registration Number after successful submission', async () => {
     vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: mockDepartments } } });
-    vi.spyOn(axios, 'post').mockResolvedValue({});
+    vi.spyOn(axios, 'post').mockResolvedValue({
+      data: { id: 501, registrationNumber: '2024-CSE-0501' },
+    });
     renderPage();
 
     await userEvent.type(await screen.findByLabelText(/full name/i), 'John Doe');
@@ -104,7 +106,10 @@ describe('StudentRegistrationPage', () => {
     await userEvent.click(await screen.findByText('Computer Science'));
     await userEvent.click(screen.getByRole('button', { name: /register/i }));
 
-    expect(await screen.findByText('Student registered successfully')).toBeInTheDocument();
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('John Doe');
+    expect(alert).toHaveTextContent('john@example.com');
+    expect(alert).toHaveTextContent('2024-CSE-0501');
   });
 
   it('does not reset student form fields when a valid education is added to the list', async () => {

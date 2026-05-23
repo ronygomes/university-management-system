@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -41,7 +42,10 @@ public class StudentController {
     public ResponseEntity<?> create(@RequestBody Student student) {
         long newId = studentService.create(student, new Date());
         return ResponseEntity.created(linkTo(StudentController.class).slash(newId).toUri())
-                .build();
+                .body(Map.of(
+                        "id", newId,
+                        "registrationNumber", student.getRegistrationNumber()
+                ));
     }
 
     @AdminAccess

@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static me.ronygomes.ums.api.testHelper.RoleHelper.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -138,7 +140,15 @@ public class StudentControllerTest {
     @Test
     void testCreate() throws Exception {
         ArgumentCaptor<Student> ac = ArgumentCaptor.forClass(Student.class);
-        Mockito.when(studentService.create(ac.capture(), Mockito.any())).thenReturn(501L);
+        // Capture client-bound registrationNumber before the service mutates it,
+        // so we can still assert the request body couldn't bind it.
+        AtomicReference<String> boundRegNo = new AtomicReference<>("UNSET");
+        Mockito.when(studentService.create(ac.capture(), Mockito.any())).thenAnswer(inv -> {
+            Student captured = inv.getArgument(0);
+            boundRegNo.set(captured.getRegistrationNumber());
+            captured.setRegistrationNumber("2024-CSE-0501");
+            return 501L;
+        });
 
         mockMvc.perform(post("/v1/students")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -146,7 +156,8 @@ public class StudentControllerTest {
                         .with(adminJwt()))
                 .andDo(print())
                 .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/v1/students/501"))
-                .andExpect(jsonPath("$").doesNotExist())
+                .andExpect(jsonPath("$.id").value(501))
+                .andExpect(jsonPath("$.registrationNumber").value("2024-CSE-0501"))
                 .andExpect(status().isCreated());
 
         Student s = ac.getValue();
@@ -158,7 +169,7 @@ public class StudentControllerTest {
         Assertions.assertNull(s.getDepartment());
         Assertions.assertEquals("CSE", s.getDepartmentCode());
         Assertions.assertNull(s.getRegistrationDate()); // Can't bind
-        Assertions.assertNull(s.getRegistrationNumber()); // Can't bind
+        Assertions.assertNull(boundRegNo.get()); // Client-supplied registrationNumber must not bind
         Assertions.assertEquals(1, s.getEducations().size());
         Assertions.assertNull(s.getEducations().get(0).getId()); // Can't bind
         Assertions.assertEquals(ExamType.HSC, s.getEducations().get(0).getExamType());

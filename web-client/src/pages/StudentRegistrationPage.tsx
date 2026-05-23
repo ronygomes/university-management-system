@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
@@ -96,8 +97,11 @@ async function fetchDepartments(): Promise<Department[]> {
   return response.data._embedded.departments;
 }
 
-async function createStudent(data: CreateStudentPayload): Promise<void> {
-  await axios.post(STUDENTS_ENDPOINT, data);
+type CreateStudentResponse = { id: number; registrationNumber: string };
+
+async function createStudent(data: CreateStudentPayload): Promise<CreateStudentResponse> {
+  const res = await axios.post<CreateStudentResponse>(STUDENTS_ENDPOINT, data);
+  return res.data;
 }
 
 async function uploadCertificate(file: File): Promise<UploadResponse> {
@@ -308,10 +312,14 @@ const EducationSection = ({ onAdd }: EducationSectionProps) => {
 };
 
 const StudentRegistrationPage = () => {
-  const [successOpen, setSuccessOpen] = useState(false);
   const [errorOpen, setErrorOpen] = useState(false);
   const [educationKey, setEducationKey] = useState(0);
   const [studentFormKey, setStudentFormKey] = useState(0);
+  const [lastRegistration, setLastRegistration] = useState<{
+    fullName: string;
+    email: string;
+    registrationNumber: string;
+  } | null>(null);
   const educationsRef = useRef<Education[]>([]);
 
   const { data: departments = [] } = useQuery({
@@ -321,12 +329,16 @@ const StudentRegistrationPage = () => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: createStudent,
-    onSuccess: () => {
+    onSuccess: (response, submitted) => {
+      setLastRegistration({
+        fullName: submitted.fullName,
+        email: submitted.email,
+        registrationNumber: response.registrationNumber,
+      });
       reset({});
       educationsRef.current = [];
       setEducationKey((k) => k + 1);
       setStudentFormKey((k) => k + 1);
-      setSuccessOpen(true);
     },
     onError: () => {
       setErrorOpen(true);
@@ -358,6 +370,18 @@ const StudentRegistrationPage = () => {
           <Typography variant='h5' sx={{ mb: 3 }}>
             Student Registration
           </Typography>
+
+          {lastRegistration && (
+            <Alert
+              severity='success'
+              sx={{ mb: 3 }}
+              onClose={() => setLastRegistration(null)}
+            >
+              Registration Number of <strong>{lastRegistration.fullName}</strong> with{' '}
+              <strong>{lastRegistration.email}</strong> email is{' '}
+              <strong>{lastRegistration.registrationNumber}</strong>.
+            </Alert>
+          )}
 
           <Box component='form' onSubmit={handleSubmit(onSubmit)} noValidate>
             <Grid key={studentFormKey} container spacing={2}>
@@ -462,12 +486,6 @@ const StudentRegistrationPage = () => {
           </Box>
         </Paper>
 
-        <Snackbar
-          open={successOpen}
-          autoHideDuration={4000}
-          onClose={() => setSuccessOpen(false)}
-          message='Student registered successfully'
-        />
         <Snackbar
           open={errorOpen}
           autoHideDuration={4000}
