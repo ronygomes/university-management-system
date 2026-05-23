@@ -13,6 +13,7 @@ function renderPage() {
         <Route path='/admin/teachers' element={<div>Teacher Page Loaded</div>} />
         <Route path='/admin/courses' element={<div>Course Page Loaded</div>} />
         <Route path='/admin/schedules' element={<div>Schedule Page Loaded</div>} />
+        <Route path='/admin/results' element={<div>Result Entry Page Loaded</div>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -78,5 +79,14 @@ describe('AdminLandingPage', () => {
     const scheduleRow = screen.getByText('Schedule').closest('div') as HTMLElement;
     const scheduleView = within(scheduleRow).getByRole('link', { name: /view/i });
     expect(scheduleView).toHaveAttribute('href', '/admin/schedules');
+  });
+
+  it('renders the Result Entry row with a View link to /admin/results', () => {
+    renderPage();
+
+    expect(screen.getByText('Result Entry')).toBeInTheDocument();
+    const row = screen.getByText('Result Entry').closest('div') as HTMLElement;
+    const link = within(row).getByRole('link', { name: /view/i });
+    expect(link).toHaveAttribute('href', '/admin/results');
   });
 });

@@ -9,6 +9,7 @@ import DesignationPage from './pages/DesignationPage';
 import TeacherPage from './pages/TeacherPage';
 import CoursePage from './pages/CoursePage';
 import CourseSchedulePage from './pages/CourseSchedulePage';
+import ResultEntryPage from './pages/ResultEntryPage';
 import { AuthProvider } from './components/AuthContext';
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ function App() {
           <Route path='/admin/teachers' element={<TeacherPage />} />
           <Route path='/admin/courses' element={<CoursePage />} />
           <Route path='/admin/schedules' element={<CourseSchedulePage />} />
+          <Route path='/admin/results' element={<ResultEntryPage />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Router>

@@ -38,8 +38,42 @@ type Course = {
   id: number;
   title: string;
   name: string;
+  credit: number;
   departmentCode: string;
 };
+
+type GradeLetter =
+  | 'A_PLUS' | 'A' | 'A_MINUS'
+  | 'B_PLUS' | 'B' | 'B_MINUS'
+  | 'C_PLUS' | 'C' | 'C_MINUS'
+  | 'F';
+
+const GRADE_POINT: Record<GradeLetter, number> = {
+  A_PLUS: 4.0, A: 3.75, A_MINUS: 3.5,
+  B_PLUS: 3.25, B: 3.0, B_MINUS: 2.75,
+  C_PLUS: 2.5, C: 2.25, C_MINUS: 2.0,
+  F: 0.0,
+};
+
+const GRADE_LABEL: Record<GradeLetter, string> = {
+  A_PLUS: 'A+', A: 'A', A_MINUS: 'A-',
+  B_PLUS: 'B+', B: 'B', B_MINUS: 'B-',
+  C_PLUS: 'C+', C: 'C', C_MINUS: 'C-',
+  F: 'F',
+};
+
+function letterFromCgpa(cgpa: number): GradeLetter {
+  if (cgpa >= 3.875) return 'A_PLUS';
+  if (cgpa >= 3.625) return 'A';
+  if (cgpa >= 3.375) return 'A_MINUS';
+  if (cgpa >= 3.125) return 'B_PLUS';
+  if (cgpa >= 2.875) return 'B';
+  if (cgpa >= 2.625) return 'B_MINUS';
+  if (cgpa >= 2.375) return 'C_PLUS';
+  if (cgpa >= 2.125) return 'C';
+  if (cgpa >= 1.0) return 'C_MINUS';
+  return 'F';
+}
 
 type Schedule = {
   id: number;
@@ -52,6 +86,7 @@ type Enrollment = {
   courseScheduleId: number;
   enrollmentDate: string;
   status: 'ON_GOING' | 'PASSED' | 'FAILED' | 'CANCELED';
+  grade: GradeLetter | null;
 };
 
 type EnrollmentPayload = {
@@ -86,6 +121,100 @@ async function fetchEnrollments(): Promise<Enrollment[]> {
 async function createEnrollment(payload: EnrollmentPayload): Promise<void> {
   await axios.post(ENROLLMENT_ENDPOINT, payload);
 }
+
+interface ResultSummaryProps {
+  myEnrollments: Enrollment[];
+  scheduleByCourseId: Map<number, Schedule>;
+  courseById: Map<number, Course>;
+}
+
+const ResultSummary = ({ myEnrollments, scheduleByCourseId, courseById }: ResultSummaryProps) => {
+  const scheduleById = new Map<number, Schedule>();
+  scheduleByCourseId.forEach((s) => scheduleById.set(s.id, s));
+
+  const rows = myEnrollments
+    .filter((e) => e.status !== 'CANCELED')
+    .map((e) => {
+      const schedule = scheduleById.get(e.courseScheduleId);
+      const course = schedule ? courseById.get(schedule.courseId) : undefined;
+      return { enrollment: e, course };
+    });
+
+  const enrolledCount = rows.length;
+  const completed = rows.filter((r) => r.enrollment.grade !== null);
+  const remaining = rows.filter((r) => r.enrollment.grade === null);
+
+  const totalCredit = rows.reduce((sum, r) => sum + (r.course?.credit ?? 0), 0);
+  const completedCredit = completed.reduce((sum, r) => sum + (r.course?.credit ?? 0), 0);
+  const remainingCredit = remaining.reduce((sum, r) => sum + (r.course?.credit ?? 0), 0);
+
+  let cgpa: number | null = null;
+  let cgpaLetter: GradeLetter | null = null;
+  if (completedCredit > 0) {
+    const points = completed.reduce(
+      (sum, r) => sum + (GRADE_POINT[r.enrollment.grade as GradeLetter] * (r.course?.credit ?? 0)),
+      0,
+    );
+    cgpa = Math.round((points / completedCredit) * 100) / 100;
+    cgpaLetter = letterFromCgpa(cgpa);
+  }
+
+  const eligible = enrolledCount > 0 && rows.every((r) => r.enrollment.status === 'PASSED');
+
+  return (
+    <Paper sx={{ p: 2 }}>
+      <Typography variant='body2' sx={{ color: 'text.secondary', mb: 1 }}>
+        Result as of {new Date().toLocaleString()}
+      </Typography>
+      <Stack spacing={0.5} sx={{ mb: 2 }}>
+        <Typography>No of enrolled courses: <strong>{enrolledCount}</strong></Typography>
+        <Typography>No of completed courses: <strong>{completed.length}</strong></Typography>
+        <Typography>No of remaining courses: <strong>{remaining.length}</strong></Typography>
+        <Typography>Total credit of enrolled courses: <strong>{totalCredit}</strong></Typography>
+        <Typography>Completed credit: <strong>{completedCredit}</strong></Typography>
+        <Typography>Remaining credit: <strong>{remainingCredit}</strong></Typography>
+        <Typography>
+          CGPA: <strong>{cgpa === null ? 'N/A' : cgpa.toFixed(2)}</strong>
+          {cgpaLetter && <> &nbsp; Grade Letter: <strong>{GRADE_LABEL[cgpaLetter]}</strong></>}
+        </Typography>
+        {eligible && (
+          <Typography sx={{ color: 'success.main', mt: 1 }}>
+            You are eligible to get the certificate.
+          </Typography>
+        )}
+      </Stack>
+
+      <TableContainer component={Paper} variant='outlined'>
+        <Table size='small'>
+          <TableHead>
+            <TableRow>
+              <TableCell>Sl</TableCell>
+              <TableCell>Course Name</TableCell>
+              <TableCell>Credit</TableCell>
+              <TableCell>Status / Grade</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows.length === 0 ? (
+              <TableRow><TableCell colSpan={4}>No enrollments yet.</TableCell></TableRow>
+            ) : rows.map((r, idx) => (
+              <TableRow key={r.enrollment.id}>
+                <TableCell>{idx + 1}</TableCell>
+                <TableCell>{r.course?.name ?? `#${r.enrollment.courseScheduleId}`}</TableCell>
+                <TableCell>{r.course?.credit ?? ''}</TableCell>
+                <TableCell>
+                  {r.enrollment.grade
+                    ? GRADE_LABEL[r.enrollment.grade]
+                    : r.enrollment.status}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
+};
 
 const StudentLandingPage = () => {
   const queryClient = useQueryClient();
@@ -214,6 +343,13 @@ const StudentLandingPage = () => {
           label='Show all courses of University'
         />
       </Stack>
+
+      <Typography variant='h6' sx={{ mt: 4, mb: 1 }}>Academic Result</Typography>
+      <ResultSummary
+        myEnrollments={myEnrollments}
+        scheduleByCourseId={scheduleByCourseId}
+        courseById={courseById}
+      />
 
       <Typography variant='h6' sx={{ mt: 4, mb: 1 }}>Enrolled Courses</Typography>
       <TableContainer component={Paper}>

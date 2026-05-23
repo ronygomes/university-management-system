@@ -33,10 +33,10 @@ const students = [
 ];
 
 const courses = [
-  { id: 10, title: 'CSE-101', name: 'Intro to Java', departmentCode: 'CSE' },
-  { id: 11, title: 'CSE-201', name: 'Algorithms', departmentCode: 'CSE' },
-  { id: 12, title: 'EEE-101', name: 'Circuits', departmentCode: 'EEE' },
-  { id: 13, title: 'CSE-301', name: 'No Schedule', departmentCode: 'CSE' },
+  { id: 10, title: 'CSE-101', name: 'Intro to Java', departmentCode: 'CSE', credit: 3 },
+  { id: 11, title: 'CSE-201', name: 'Algorithms', departmentCode: 'CSE', credit: 3 },
+  { id: 12, title: 'EEE-101', name: 'Circuits', departmentCode: 'EEE', credit: 3 },
+  { id: 13, title: 'CSE-301', name: 'No Schedule', departmentCode: 'CSE', credit: 3 },
 ];
 
 const schedules = [
@@ -47,7 +47,7 @@ const schedules = [
 ];
 
 const enrollments = [
-  { id: 500, studentId: 1, courseScheduleId: 100, enrollmentDate: '2026-01-01T00:00:00Z', status: 'ON_GOING' },
+  { id: 500, studentId: 1, courseScheduleId: 100, enrollmentDate: '2026-01-01T00:00:00Z', status: 'ON_GOING', grade: null },
 ];
 
 function mockAllGet(opts: { enrollments?: typeof enrollments } = {}) {
@@ -86,8 +86,9 @@ describe('StudentLandingPage', () => {
     mockAllGet();
     renderPage('jane@ums.dev');
 
-    expect(await screen.findByText('CSE-101')).toBeInTheDocument();
-    expect(screen.getByText('Intro to Java')).toBeInTheDocument();
+    // Now appears in both the new Academic Result table and the Enrolled Courses table
+    expect((await screen.findAllByText('CSE-101')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Intro to Java').length).toBeGreaterThan(0);
   });
 
   it('Course dropdown excludes already-enrolled and courses without a schedule, and is restricted to own dept by default', async () => {
@@ -119,6 +120,31 @@ describe('StudentLandingPage', () => {
     await userEvent.click(screen.getByLabelText(/course to enroll/i));
     const listbox = await screen.findByRole('listbox');
     expect(within(listbox).getByText(/EEE-101/)).toBeInTheDocument();
+  });
+
+  it('computes CGPA and shows certificate eligibility when all enrollments are PASSED', async () => {
+    const enrolPassed = [
+      { id: 700, studentId: 1, courseScheduleId: 100, enrollmentDate: '2026-01-01T00:00:00Z', status: 'PASSED', grade: 'A_PLUS' },
+      { id: 701, studentId: 1, courseScheduleId: 101, enrollmentDate: '2026-01-01T00:00:00Z', status: 'PASSED', grade: 'B' },
+    ];
+    mockAllGet({ enrollments: enrolPassed as typeof enrollments });
+    renderPage('jane@ums.dev');
+
+    await screen.findByText('Welcome, Jane Doe');
+
+    // CGPA = (4.00*3 + 3.00*3) / 6 = 3.50
+    expect(await screen.findByText('3.50')).toBeInTheDocument();
+    expect(screen.getByText('You are eligible to get the certificate.')).toBeInTheDocument();
+  });
+
+  it('shows CGPA as N/A and no eligibility while courses are ON_GOING', async () => {
+    mockAllGet();
+    renderPage('jane@ums.dev');
+
+    await screen.findByText('Welcome, Jane Doe');
+
+    expect(await screen.findByText('N/A')).toBeInTheDocument();
+    expect(screen.queryByText('You are eligible to get the certificate.')).not.toBeInTheDocument();
   });
 
   it('POSTs an enrollment with the chosen schedule id and current date', async () => {
