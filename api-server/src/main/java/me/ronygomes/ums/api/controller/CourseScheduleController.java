@@ -59,6 +59,12 @@ public class CourseScheduleController {
     }
 
     @AdminAccess
+    @GetMapping
+    public List<CourseSchedule> findAll() {
+        return courseScheduleRepository.findAll();
+    }
+
+    @AdminAccess
     @GetMapping("/{id}")
     public CourseSchedule findById(@PathVariable Long id) {
         return findByIdOrThrow(id);

@@ -96,6 +96,34 @@ public class CourseScheduleControllerTest {
     }
 
     @Test
+    void testFindAllSuccess() throws Exception {
+        CourseSchedule cs1 = mockCourseSchedule();
+        CourseSchedule cs2 = mockCourseSchedule();
+        cs2.setId(99L);
+        cs2.setRoomNumber("F7-203");
+
+        Mockito.when(courseScheduleRepository.findAll()).thenReturn(List.of(cs1, cs2));
+
+        mockMvc.perform(get("/v1/schedules")
+                        .with(adminJwt()))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.OK.value()))
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(3))
+                .andExpect(jsonPath("$[0].roomNumber").value("F7-102"))
+                .andExpect(jsonPath("$[1].id").value(99))
+                .andExpect(jsonPath("$[1].roomNumber").value("F7-203"));
+
+        mockMvc.perform(get("/v1/schedules")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/schedules")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+    }
+
+    @Test
     void testFindByIdSuccess() throws Exception {
         CourseSchedule cs = mockCourseSchedule();
         Mockito.when(courseScheduleRepository.findById(1L)).thenReturn(Optional.of(cs));

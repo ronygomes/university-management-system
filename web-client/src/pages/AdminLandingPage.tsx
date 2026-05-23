@@ -38,6 +38,14 @@ const AdminLandingPage = () => {
             </Button>
           </Box>
         </Card>
+        <Card sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography>Schedule</Typography>
+            <Button component={RouterLink} to='/admin/schedules' variant='outlined'>
+              View
+            </Button>
+          </Box>
+        </Card>
       </Stack>
     </>
   );
