@@ -304,6 +304,24 @@ describe('CoursePage', () => {
     expect(await screen.findByText('Algorithms')).toBeInTheDocument();
   });
 
+  it('filters the table by Semester (client-side)', async () => {
+    mockAllGet();
+    renderPage();
+
+    expect(await screen.findByText('Intro to Java')).toBeInTheDocument();
+    expect(screen.getByText('Data Structures')).toBeInTheDocument();
+
+    // Find the Semester filter (small variant, label 'Semester') and pick "2nd Year - 1st Semester"
+    const filterStack = screen.getByText('Courses').parentElement!;
+    const semesterFilter = within(filterStack).getAllByLabelText(/semester/i)[0];
+    await userEvent.click(semesterFilter);
+    const listbox = await screen.findByRole('listbox');
+    await userEvent.click(within(listbox).getByText('2nd Year - 1st Semester'));
+
+    expect(screen.queryByText('Intro to Java')).not.toBeInTheDocument();
+    expect(screen.getByText('Data Structures')).toBeInTheDocument();
+  });
+
   it('shows error snackbar when DELETE fails', async () => {
     mockAllGet();
     vi.spyOn(axios, 'delete').mockRejectedValue(new Error('boom'));

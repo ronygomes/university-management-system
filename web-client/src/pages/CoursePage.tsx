@@ -326,10 +326,23 @@ const CoursePage = () => {
   const [successOpen, setSuccessOpen] = useState(false);
   const [errorOpen, setErrorOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState<string>('');
+  const [semesterFilter, setSemesterFilter] = useState<Semester | ''>('');
 
   const { data: courses = [] } = useQuery({
     queryKey: ['courses'],
     queryFn: fetchCourses,
+  });
+
+  const { data: departmentList = [] } = useQuery({
+    queryKey: ['departments'],
+    queryFn: fetchDepartments,
+  });
+
+  const filteredCourses = courses.filter((c) => {
+    if (departmentFilter && c.departmentCode !== departmentFilter) return false;
+    if (semesterFilter && c.semester !== semesterFilter) return false;
+    return true;
   });
 
   const { mutate: triggerDelete, isPending: isDeletePending } = useMutation({
@@ -356,8 +369,34 @@ const CoursePage = () => {
     <ProtectedPage>
       <ContentWrapper>
         <h1>Courses</h1>
-        <Stack direction='row' justifyContent='flex-end' sx={{ mb: 2 }}>
-          <Button variant='contained' onClick={() => setAddOpen(true)}>
+        <Stack direction='row' spacing={2} alignItems='center' sx={{ mb: 2 }}>
+          <TextField
+            select
+            label='Department'
+            size='small'
+            sx={{ minWidth: 200 }}
+            value={departmentFilter}
+            onChange={(e) => setDepartmentFilter(e.target.value)}
+          >
+            <MenuItem value=''>All</MenuItem>
+            {departmentList.map((d) => (
+              <MenuItem key={d.code} value={d.code}>{d.name}</MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            select
+            label='Semester'
+            size='small'
+            sx={{ minWidth: 220 }}
+            value={semesterFilter}
+            onChange={(e) => setSemesterFilter(e.target.value as Semester | '')}
+          >
+            <MenuItem value=''>All</MenuItem>
+            {SEMESTERS.map((s) => (
+              <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>
+            ))}
+          </TextField>
+          <Button variant='contained' sx={{ ml: 'auto' }} onClick={() => setAddOpen(true)}>
             Add Course
           </Button>
         </Stack>
@@ -372,7 +411,7 @@ const CoursePage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {courses.map((course) => (
+              {filteredCourses.map((course) => (
                 <TableRow key={course.id}>
                   <TableCell>{course.name}</TableCell>
                   <TableCell>{SEMESTER_LABEL[course.semester] ?? course.semester}</TableCell>
