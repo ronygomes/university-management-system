@@ -1,7 +1,7 @@
-import { useState, useContext, createContext, type ReactNode } from 'react';
+import { useState, useEffect, useContext, createContext, type ReactNode } from 'react';
 import axios, { type AxiosResponse } from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { setApiToken } from '../api/authToken';
+import { setApiToken, setUnauthorizedHandler } from '../api/authToken';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -147,6 +147,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setEmail(null);
     setRole(null);
   };
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => logoutHandler());
+    return () => setUnauthorizedHandler(null);
+    // logoutHandler only touches stable setters, safe to omit from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AuthContext.Provider
