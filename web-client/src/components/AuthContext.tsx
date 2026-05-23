@@ -103,10 +103,13 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const initial = loadSession();
-  if (initial) {
-    setApiToken(initial.token.access_token);
-  }
+  const [initial] = useState<HydratedSession | null>(() => {
+    const session = loadSession();
+    if (session) {
+      setApiToken(session.token.access_token);
+    }
+    return session;
+  });
   const [isAuthenticated, setAuthenticated] = useState(initial !== null);
   const [token, setToken] = useState<AccessToken | null>(initial?.token ?? null);
   const [username, setUsername] = useState<string | null>(initial?.username ?? null);
