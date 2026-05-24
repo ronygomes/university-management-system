@@ -23,8 +23,9 @@ import { useAuth } from '../components/AuthContext';
 
 const COURSE_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/courses`;
 const SCHEDULE_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/schedules`;
-const STUDENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/students`;
 const ENROLLMENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/enrollments`;
+const ME_STUDENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/me/student`;
+const ME_ENROLLMENTS_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/me/enrollments`;
 
 type Student = {
   id: number;
@@ -99,9 +100,9 @@ type EnrollmentPayload = {
 
 type ServerErrorMessage = { field: string; message: string };
 
-async function fetchSelfStudent(email: string): Promise<Student | null> {
-  const response = await axios.get<Student[]>(STUDENT_ENDPOINT);
-  return response.data.find((s) => s.email === email) ?? null;
+async function fetchSelfStudent(): Promise<Student | null> {
+  const response = await axios.get<Student>(ME_STUDENT_ENDPOINT);
+  return response.data;
 }
 
 async function fetchCourses(): Promise<Course[]> {
@@ -114,8 +115,8 @@ async function fetchSchedules(): Promise<Schedule[]> {
   return response.data;
 }
 
-async function fetchEnrollments(): Promise<Enrollment[]> {
-  const response = await axios.get<Enrollment[]>(ENROLLMENT_ENDPOINT);
+async function fetchMyEnrollments(): Promise<Enrollment[]> {
+  const response = await axios.get<Enrollment[]>(ME_ENROLLMENTS_ENDPOINT);
   return response.data;
 }
 
@@ -228,13 +229,12 @@ const StudentLandingPage = () => {
   const [successOpen, setSuccessOpen] = useState(false);
 
   const { data: self = null } = useQuery({
-    queryKey: ['self-student', email],
-    queryFn: () => fetchSelfStudent(email as string),
-    enabled: !!email,
+    queryKey: ['me-student'],
+    queryFn: fetchSelfStudent,
   });
   const { data: courses = [] } = useQuery({ queryKey: ['courses'], queryFn: fetchCourses });
   const { data: schedules = [] } = useQuery({ queryKey: ['schedules'], queryFn: fetchSchedules });
-  const { data: enrollments = [] } = useQuery({ queryKey: ['enrollments'], queryFn: fetchEnrollments });
+  const { data: enrollments = [] } = useQuery({ queryKey: ['me-enrollments'], queryFn: fetchMyEnrollments });
 
   const scheduleByCourseId = new Map(schedules.map((s) => [s.courseId, s]));
   const courseById = new Map(courses.map((c) => [c.id, c]));
@@ -257,7 +257,7 @@ const StudentLandingPage = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: createEnrollment,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+      queryClient.invalidateQueries({ queryKey: ['me-enrollments'] });
       setSelectedCourseId('');
       setSuccessOpen(true);
     },

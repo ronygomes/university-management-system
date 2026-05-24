@@ -29,7 +29,7 @@ public class TeacherController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @AdminAccess
     public CollectionModel<TeacherDto> getAll() {
         return teacherModelAssembler.toCollectionModel(teacherService.findAll());
     }

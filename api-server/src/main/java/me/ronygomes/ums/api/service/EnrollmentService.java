@@ -44,6 +44,10 @@ public class EnrollmentService {
         return enrollmentRepository.findAll().stream().map(EnrollmentDto::new).toList();
     }
 
+    public java.util.List<EnrollmentDto> findByStudentId(Long studentId) {
+        return enrollmentRepository.findByStudentId(studentId).stream().map(EnrollmentDto::new).toList();
+    }
+
     public EnrollmentDto findById(long id) {
         return new EnrollmentDto(findByIdOrThrow(id));
     }

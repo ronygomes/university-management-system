@@ -52,6 +52,10 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
+    public java.util.Optional<Student> findByEmail(String email) {
+        return studentRepository.findByEmail(email);
+    }
+
     public Student findById(long id) {
         return findWithEducationOrThrow(id);
     }

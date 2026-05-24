@@ -26,7 +26,7 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','STUDENT')")
+    @AdminAccess
     @GetMapping
     public List<Student> findAll() {
         return studentService.findAll();

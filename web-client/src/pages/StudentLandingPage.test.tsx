@@ -50,13 +50,21 @@ const enrollments = [
   { id: 500, studentId: 1, courseScheduleId: 100, enrollmentDate: '2026-01-01T00:00:00Z', status: 'ON_GOING', grade: null },
 ];
 
-function mockAllGet(opts: { enrollments?: typeof enrollments } = {}) {
+function mockAllGet(opts: { enrollments?: typeof enrollments; selfEmail?: string } = {}) {
   const enrols = opts.enrollments ?? enrollments;
+  const selfEmail = opts.selfEmail ?? 'jane@ums.dev';
+  const self = students.find((s) => s.email === selfEmail);
   return vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
-    if (url.includes('/v1/students')) return { data: students };
+    // Specific endpoints first since /v1/me/enrollments contains /v1/enrollments
+    if (url.includes('/v1/me/student')) {
+      if (!self) throw { isAxiosError: true, response: { status: 403 } };
+      return { data: self };
+    }
+    if (url.includes('/v1/me/enrollments')) {
+      return { data: self ? enrols.filter((e) => e.studentId === self.id) : [] };
+    }
     if (url.includes('/v1/schedules')) return { data: schedules };
     if (url.includes('/v1/courses')) return { data: courses };
-    if (url.includes('/v1/enrollments')) return { data: enrols };
     return { data: {} };
   });
 }
@@ -117,11 +125,12 @@ describe('StudentLandingPage', () => {
       { id: 101, courseId: 11, enrollmentOpen: false },
       { id: 102, courseId: 12, enrollmentOpen: true },
     ];
+    const jane = students.find((s) => s.email === 'jane@ums.dev');
     vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
-      if (url.includes('/v1/students')) return { data: students };
+      if (url.includes('/v1/me/student')) return { data: jane };
+      if (url.includes('/v1/me/enrollments')) return { data: enrollments.filter((e) => e.studentId === jane!.id) };
       if (url.includes('/v1/schedules')) return { data: closedSchedules };
       if (url.includes('/v1/courses')) return { data: courses };
-      if (url.includes('/v1/enrollments')) return { data: enrollments };
       return { data: {} };
     });
     renderPage('jane@ums.dev');

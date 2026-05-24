@@ -23,7 +23,7 @@ public class EnrollmentController {
         this.enrollmentService = enrollmentService;
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','STUDENT')")
+    @AdminAccess
     @GetMapping
     public List<EnrollmentDto> findAll() {
         return enrollmentService.findAll();

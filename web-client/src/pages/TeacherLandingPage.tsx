@@ -11,11 +11,9 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import { useAuth } from '../components/AuthContext';
-
 const COURSE_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/courses`;
 const SCHEDULE_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/schedules`;
-const TEACHER_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/teachers`;
+const ME_TEACHER_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/me/teacher`;
 
 type Semester =
   | 'FIRST_YEAR_FIRST' | 'FIRST_YEAR_SECOND'
@@ -70,24 +68,11 @@ type Schedule = {
   endDate: string;
 };
 
-type TeacherHalItem = {
-  fullName: string;
-  email: string;
-  _links: { self: { href: string } };
-};
-
 type TeacherSelf = { id: number; fullName: string } | null;
 
-function extractIdFromSelfLink(href: string): number {
-  return Number(href.split('/').pop());
-}
-
-async function fetchTeacherByEmail(email: string): Promise<TeacherSelf> {
-  const response = await axios.get(TEACHER_ENDPOINT);
-  const items: TeacherHalItem[] = response.data._embedded?.teachers ?? [];
-  const match = items.find((t) => t.email === email);
-  if (!match) return null;
-  return { id: extractIdFromSelfLink(match._links.self.href), fullName: match.fullName };
+async function fetchSelfTeacher(): Promise<TeacherSelf> {
+  const response = await axios.get<{ id: number; fullName: string }>(ME_TEACHER_ENDPOINT);
+  return response.data;
 }
 
 async function fetchCourses(): Promise<Course[]> {
@@ -106,12 +91,9 @@ function formatDateTime(s: string): string {
 }
 
 const TeacherLandingPage = () => {
-  const { email } = useAuth();
-
   const { data: teacherSelf } = useQuery({
-    queryKey: ['teacher-self', email],
-    queryFn: () => fetchTeacherByEmail(email as string),
-    enabled: !!email,
+    queryKey: ['me-teacher'],
+    queryFn: fetchSelfTeacher,
   });
 
   const { data: courses = [] } = useQuery({

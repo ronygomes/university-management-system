@@ -26,13 +26,9 @@ function renderPage(email: string | null = 'jdoe@ums.dev') {
   );
 }
 
-const teachersHal = {
-  _embedded: {
-    teachers: [
-      { fullName: 'John Doe', email: 'jdoe@ums.dev', _links: { self: { href: 'http://localhost:8100/v1/teachers/7' } } },
-      { fullName: 'Jane Smith', email: 'jane@ums.dev', _links: { self: { href: 'http://localhost:8100/v1/teachers/8' } } },
-    ],
-  },
+const teachersByEmail: Record<string, { id: number; fullName: string; email: string }> = {
+  'jdoe@ums.dev': { id: 7, fullName: 'John Doe', email: 'jdoe@ums.dev' },
+  'jane@ums.dev': { id: 8, fullName: 'Jane Smith', email: 'jane@ums.dev' },
 };
 
 const courses = [
@@ -46,9 +42,13 @@ const schedules = [
   { id: 11, courseId: 3, building: 'BUILDING_2', roomNumber: 'F8-201', days: ['TUESDAY'], startDate: '2026-01-16T11:00:00.000Z', endDate: '2026-01-16T12:30:00.000Z' },
 ];
 
-function mockAllGet() {
+function mockAllGet(selfEmail: string | null = 'jdoe@ums.dev') {
   return vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
-    if (url.includes('/v1/teachers')) return { data: teachersHal };
+    if (url.includes('/v1/me/teacher')) {
+      const self = selfEmail ? teachersByEmail[selfEmail] : undefined;
+      if (!self) throw { isAxiosError: true, response: { status: 403 } };
+      return { data: self };
+    }
     if (url.includes('/v1/schedules')) return { data: schedules };
     if (url.includes('/v1/courses')) return { data: courses };
     return { data: {} };
@@ -82,7 +82,9 @@ describe('TeacherLandingPage', () => {
   });
 
   it('shows the fallback welcome and empty-state rows when the teacher record is not found', async () => {
-    mockAllGet();
+    // Backend returns 403 (UmsDataException → ENTITY_NOT_FOUND maps to FORBIDDEN);
+    // page falls back to "Welcome Teacher" + empty tables.
+    mockAllGet('not-a-teacher@ums.dev');
     renderPage('not-a-teacher@ums.dev');
 
     expect(await screen.findByText('Welcome Teacher')).toBeInTheDocument();

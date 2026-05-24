@@ -60,9 +60,9 @@ describe('LandingPage', () => {
 
   it('renders TeacherLandingPage when role is TEACHER', async () => {
     vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
+      if (url.includes('/v1/me/teacher')) throw { isAxiosError: true, response: { status: 403 } };
       if (url.includes('/v1/courses')) return { data: [] };
       if (url.includes('/v1/schedules')) return { data: [] };
-      if (url.includes('/v1/teachers')) return { data: { _embedded: { teachers: [] } } };
       return { data: {} };
     });
     renderLandingPage({ isAuthenticated: true, role: 'TEACHER' });
@@ -74,10 +74,10 @@ describe('LandingPage', () => {
 
   it('renders StudentLandingPage when role is STUDENT', async () => {
     vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
-      if (url.includes('/v1/students')) return { data: [] };
+      if (url.includes('/v1/me/student')) throw { isAxiosError: true, response: { status: 403 } };
+      if (url.includes('/v1/me/enrollments')) return { data: [] };
       if (url.includes('/v1/courses')) return { data: [] };
       if (url.includes('/v1/schedules')) return { data: [] };
-      if (url.includes('/v1/enrollments')) return { data: [] };
       return { data: {} };
     });
     renderLandingPage({ isAuthenticated: true, role: 'STUDENT' });
