@@ -16,7 +16,7 @@ The project is dividend into 3 sub-projects:
 
 * [authorization-server][1]: Contains configuration related to KeyCloak.
 * [api-server][2]: API backend build using Spring Boot
-* [web-client][3]: (Pending) Web client build using React.js and MUI5
+* [web-client][3]: Web client build using React.js and MUI7
 
 
 [1]: ./authorization-server
