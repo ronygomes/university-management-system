@@ -1,11 +1,12 @@
 package me.ronygomes.ums.api.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
+import me.ronygomes.ums.api.exception.ExceptionType;
 import me.ronygomes.ums.api.exception.UmsDataException;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.net.URI;
@@ -14,9 +15,8 @@ import java.net.URI;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UmsDataException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public Problem handleUmsServiceException(UmsDataException ex, HttpServletRequest request) {
-        return Problem.create()
+    public ResponseEntity<Problem> handleUmsServiceException(UmsDataException ex, HttpServletRequest request) {
+        Problem problem = Problem.create()
                 .withType(ex.getExceptionType().getDocumentationUrl())
                 .withTitle(ex.getExceptionType().getTitle())
                 .withDetail(ex.getErrorDetails())
@@ -26,5 +26,14 @@ public class GlobalExceptionHandler {
                         m.put("errors", ex.getErrors());
                     }
                 });
+
+        return ResponseEntity.status(statusFor(ex.getExceptionType())).body(problem);
+    }
+
+    private static HttpStatus statusFor(ExceptionType type) {
+        return switch (type) {
+            case DATA_VALIDATION_FAILED -> HttpStatus.BAD_REQUEST;
+            case ENTITY_NOT_FOUND -> HttpStatus.NOT_FOUND;
+        };
     }
 }

@@ -103,7 +103,7 @@ public class UploadControllerTest {
 
         mockMvc.perform(multipart("/v1/upload").file(file))
                 .andDo(print())
-                .andExpect(status().is(HttpStatus.FORBIDDEN.value()))
+                .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.type").value("https://documentation.com/errors/data-validation-failed"))
                 .andExpect(jsonPath("$.title").value("Provided data is not valid"))
                 .andExpect(jsonPath("$.detail").value("abc"))

@@ -13,8 +13,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -42,14 +42,11 @@ public class GlobalExceptionHandlerTest {
                 UmsDataException.class, HttpServletRequest.class);
 
         Assertions.assertNotNull(method);
-        Assertions.assertEquals(2, method.getAnnotations().length);
+        Assertions.assertEquals(1, method.getAnnotations().length);
 
         ExceptionHandler anonEx = method.getAnnotation(ExceptionHandler.class);
         Assertions.assertEquals(1, anonEx.value().length);
         Assertions.assertEquals(UmsDataException.class, anonEx.value()[0]);
-
-        ResponseStatus anonRs = method.getAnnotation(ResponseStatus.class);
-        Assertions.assertEquals(HttpStatus.FORBIDDEN, anonRs.value());
     }
 
     @Test
@@ -58,7 +55,10 @@ public class GlobalExceptionHandlerTest {
 
         Mockito.when(request.getRequestURI()).thenReturn("v1/dummy/456");
 
-        Problem.ExtendedProblem<Map<String, Object>> p = (Problem.ExtendedProblem<Map<String, Object>>) handler.handleUmsServiceException(ex, request);
+        ResponseEntity<Problem> response = handler.handleUmsServiceException(ex, request);
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+
+        Problem.ExtendedProblem<Map<String, Object>> p = (Problem.ExtendedProblem<Map<String, Object>>) response.getBody();
 
         Assertions.assertEquals("https://documentation.com/errors/entity-not-found", p.getType().toASCIIString());
         Assertions.assertEquals("Requested object not found", p.getTitle());
@@ -76,7 +76,10 @@ public class GlobalExceptionHandlerTest {
 
         Mockito.when(request.getRequestURI()).thenReturn("v1/dummy/123");
 
-        Problem.ExtendedProblem<Map<String, Object>> p = (Problem.ExtendedProblem<Map<String, Object>>) handler.handleUmsServiceException(ex, request);
+        ResponseEntity<Problem> response = handler.handleUmsServiceException(ex, request);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        Problem.ExtendedProblem<Map<String, Object>> p = (Problem.ExtendedProblem<Map<String, Object>>) response.getBody();
 
         Assertions.assertEquals("https://documentation.com/errors/data-validation-failed", p.getType().toASCIIString());
         Assertions.assertEquals("Provided data is not valid", p.getTitle());

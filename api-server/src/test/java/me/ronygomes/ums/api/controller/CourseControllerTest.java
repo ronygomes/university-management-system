@@ -137,7 +137,7 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$.title").value("Requested object not found"))
                 .andExpect(jsonPath("$.detail").value("abc"))
                 .andExpect(jsonPath("$.instance").value("/v1/courses/1"))
-                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+                .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
     }
 
     @Test
