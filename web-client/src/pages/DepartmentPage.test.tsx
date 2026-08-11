@@ -35,28 +35,70 @@ const initialDepartments = [
   { code: 'EEE', name: 'Electrical Engineering' },
 ];
 
+function pagedData(list: { code: string; name: string }[]) {
+  return {
+    data: {
+      _embedded: { departments: list },
+      page: { size: 5, totalElements: list.length, totalPages: 1, number: 0 },
+    },
+  };
+}
+
 describe('DepartmentPage', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
   it('renders the Departments heading', () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: [] } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData([]));
     renderPage();
 
     expect(screen.getByText('Departments')).toBeInTheDocument();
   });
 
   it('renders department names fetched from the API', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: initialDepartments } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialDepartments));
     renderPage();
 
     expect(await screen.findByText('Computer Science')).toBeInTheDocument();
     expect(screen.getByText('Electrical Engineering')).toBeInTheDocument();
   });
 
+  it('requests the paged endpoint and loads the next page on navigation', async () => {
+    let call = 0;
+    const getSpy = vi.spyOn(axios, 'get').mockImplementation(async () => {
+      call++;
+      const list = call === 1
+        ? [{ code: 'CSE', name: 'Computer Science' }]
+        : [{ code: 'MATH', name: 'Mathematics' }];
+      return {
+        data: {
+          _embedded: { departments: list },
+          page: { size: 5, totalElements: 10, totalPages: 2, number: call - 1 },
+        },
+      };
+    });
+    renderPage();
+
+    await screen.findByText('Computer Science');
+    expect(getSpy).toHaveBeenNthCalledWith(
+      1,
+      expect.stringMatching(/\/v1\/departments\/paged$/),
+      { params: { page: 0, size: 5 } },
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /next page/i }));
+
+    expect(await screen.findByText('Mathematics')).toBeInTheDocument();
+    expect(getSpy).toHaveBeenNthCalledWith(
+      2,
+      expect.stringMatching(/\/v1\/departments\/paged$/),
+      { params: { page: 1, size: 5 } },
+    );
+  });
+
   it('opens the confirmation dialog when Delete is clicked', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: initialDepartments } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialDepartments));
     renderPage();
 
     await screen.findByText('Computer Science');
@@ -69,7 +111,7 @@ describe('DepartmentPage', () => {
   });
 
   it('does not call DELETE when Cancel is clicked', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: initialDepartments } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialDepartments));
     const deleteSpy = vi.spyOn(axios, 'delete').mockResolvedValue({});
     renderPage();
 
@@ -89,7 +131,7 @@ describe('DepartmentPage', () => {
       const list = getCallCount === 1
         ? initialDepartments
         : initialDepartments.filter((d) => d.code !== 'CSE');
-      return { data: { _embedded: { departments: list } } };
+      return pagedData(list);
     });
     const deleteSpy = vi.spyOn(axios, 'delete').mockResolvedValue({});
     renderPage();
@@ -110,7 +152,7 @@ describe('DepartmentPage', () => {
   });
 
   it('opens the edit dialog with prefilled values when Edit is clicked', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: initialDepartments } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialDepartments));
     renderPage();
 
     await screen.findByText('Computer Science');
@@ -129,7 +171,7 @@ describe('DepartmentPage', () => {
       const list = getCallCount === 1
         ? initialDepartments
         : [{ code: 'CSE', name: 'Computer Science Updated' }, initialDepartments[1]];
-      return { data: { _embedded: { departments: list } } };
+      return pagedData(list);
     });
     const putSpy = vi.spyOn(axios, 'put').mockResolvedValue({});
     renderPage();
@@ -154,7 +196,7 @@ describe('DepartmentPage', () => {
   });
 
   it('shows inline validation error when Name is cleared', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: initialDepartments } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialDepartments));
     const putSpy = vi.spyOn(axios, 'put').mockResolvedValue({});
     renderPage();
 
@@ -170,7 +212,7 @@ describe('DepartmentPage', () => {
   });
 
   it('shows server errors in an Alert at top of dialog when PUT fails', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: initialDepartments } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialDepartments));
     vi.spyOn(axios, 'put').mockRejectedValue({
       isAxiosError: true,
       response: {
@@ -196,7 +238,7 @@ describe('DepartmentPage', () => {
   });
 
   it('opens an empty add dialog when Add Department is clicked', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: initialDepartments } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialDepartments));
     renderPage();
 
     await screen.findByText('Computer Science');
@@ -216,7 +258,7 @@ describe('DepartmentPage', () => {
       const list = getCallCount === 1
         ? initialDepartments
         : [...initialDepartments, { code: 'MATH', name: 'Mathematics' }];
-      return { data: { _embedded: { departments: list } } };
+      return pagedData(list);
     });
     const postSpy = vi.spyOn(axios, 'post').mockResolvedValue({});
     renderPage();
@@ -240,7 +282,7 @@ describe('DepartmentPage', () => {
   });
 
   it('shows error snackbar when DELETE fails', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { departments: initialDepartments } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialDepartments));
     vi.spyOn(axios, 'delete').mockRejectedValue(new Error('boom'));
     renderPage();
 

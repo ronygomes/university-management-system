@@ -3,8 +3,12 @@ package me.ronygomes.ums.api.controller;
 import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.dto.DepartmentDto;
 import me.ronygomes.ums.api.service.DepartmentService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.QueryParameter;
 import org.springframework.hateoas.mediatype.Affordances;
@@ -42,6 +46,15 @@ public class DepartmentController {
                 .andAffordance(afford(methodOn(DepartmentController.class).create(new DepartmentDto())));
 
         return CollectionModel.of(models, Collections.singleton(link));
+    }
+
+    @AdminAccess
+    @GetMapping("/paged")
+    public PagedModel<EntityModel<DepartmentDto>> departmentsPaged(Pageable pageable,
+                                                                   PagedResourcesAssembler<DepartmentDto> assembler) {
+        Page<DepartmentDto> departments = departmentService.findPaged(pageable);
+        return assembler.toModel(departments,
+                department -> EntityModel.of(department, createDepartmentLinks(department)));
     }
 
     @AdminAccess

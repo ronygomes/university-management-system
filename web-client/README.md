@@ -26,3 +26,13 @@ $ npm test
 # Create production build
 $ npm run build
 ```
+
+## Docker Compose Profile
+
+Run docker compose with following profile:
+
+* `dev` - Starts postgres, keycloak, api-server images
+
+```
+$ docker compose --profile <name> up
+```

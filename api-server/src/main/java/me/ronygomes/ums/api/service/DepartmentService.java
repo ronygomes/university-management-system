@@ -10,6 +10,8 @@ import me.ronygomes.ums.api.repository.DepartmentRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.annotation.Validated;
@@ -43,6 +45,10 @@ public class DepartmentService {
                 .stream()
                 .map(DepartmentDto::new)
                 .toList();
+    }
+
+    public Page<DepartmentDto> findPaged(Pageable pageable) {
+        return departmentRepository.findAll(pageable).map(DepartmentDto::new);
     }
 
     public DepartmentDto findByCode(@NotNull String code) {

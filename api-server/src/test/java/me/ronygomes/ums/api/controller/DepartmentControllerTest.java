@@ -13,6 +13,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,6 +32,7 @@ import java.util.List;
 import static me.ronygomes.ums.api.testHelper.DataHelper.mockDBDepartments;
 import static me.ronygomes.ums.api.testHelper.DataHelper.validPersistableDepartment1;
 import static me.ronygomes.ums.api.testHelper.RoleHelper.*;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -105,6 +109,39 @@ public class DepartmentControllerTest {
                         .accept("application/prs.hal-forms+json")
                         .with(studentJwt()))
                 .andExpect(status().is(HttpStatus.OK.value()));
+    }
+
+    @Test
+    void testGetDepartmentsPaged() throws Exception {
+        Mockito.when(departmentService.findPaged(Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(mockDBDepartments(), PageRequest.of(0, 20), 2));
+
+        mockMvc.perform(get("/v1/departments/paged")
+                        .accept("application/prs.hal-forms+json")
+                        .with(adminJwt()))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.OK.value()))
+                .andExpect(jsonPath("$._links.self.href", containsString("/v1/departments/paged")))
+                .andExpect(jsonPath("$.page.size").value(20))
+                .andExpect(jsonPath("$.page.number").value(0))
+                .andExpect(jsonPath("$.page.totalElements").value(2))
+                .andExpect(jsonPath("$.page.totalPages").value(1))
+                .andExpect(jsonPath("$._embedded.departments.length()").value(2))
+                .andExpect(jsonPath("$._embedded.departments[0].code").value("CODE-1"))
+                .andExpect(jsonPath("$._embedded.departments[0].name").value("Name-1"))
+                .andExpect(jsonPath("$._embedded.departments[0]._links.department.href").value("http://localhost/v1/departments/CODE-1"))
+                .andExpect(jsonPath("$._embedded.departments[1].code").value("CODE-2"))
+                .andExpect(jsonPath("$._embedded.departments[1].name").value("Name-2"));
+
+        mockMvc.perform(get("/v1/departments/paged")
+                        .accept("application/prs.hal-forms+json")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/departments/paged")
+                        .accept("application/prs.hal-forms+json")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
