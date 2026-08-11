@@ -104,7 +104,8 @@ CREATE TABLE IF NOT EXISTS course_enrollments (
     uuid CHAR(36) NOT NULL UNIQUE,
     version INTEGER DEFAULT 0,
     CONSTRAINT fk_course_enrollments_student_id FOREIGN KEY (student_id) REFERENCES students(id),
-    CONSTRAINT fk_course_enrollments_course_schedule_id FOREIGN KEY (course_schedule_id) REFERENCES course_schedules(id)
+    CONSTRAINT fk_course_enrollments_course_schedule_id FOREIGN KEY (course_schedule_id) REFERENCES course_schedules(id),
+    CONSTRAINT uq_course_enrollments_student_schedule UNIQUE (student_id, course_schedule_id)
 );
 
 CREATE TABLE IF NOT EXISTS registration_number_bounds (

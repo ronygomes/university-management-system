@@ -218,6 +218,19 @@ public class EnrollmentRepositoryTest {
         repository.delete(enrollment);
     }
 
+    @Test
+    void testUniqueStudentScheduleConstraint() {
+        Enrollment first = validPersistableEnrollment1(student, courseSchedule);
+        first.setStatus(EnrollmentStatus.ON_GOING);
+        repository.save(first);
+
+        Enrollment duplicate = validPersistableEnrollment1(student, courseSchedule);
+        duplicate.setStatus(EnrollmentStatus.ON_GOING);
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> repository.save(duplicate));
+
+        repository.delete(first);
+    }
+
     private void assertEnrolmentEquals(Enrollment enrollment1, Enrollment enrollment2) {
         Assertions.assertEquals(enrollment1.getStudent(), enrollment2.getStudent());
         Assertions.assertEquals(enrollment1.getCourseSchedule(), enrollment2.getCourseSchedule());
