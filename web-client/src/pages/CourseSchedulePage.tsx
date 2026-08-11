@@ -14,7 +14,6 @@ import {
   ListItemText,
   MenuItem,
   Paper,
-  Select,
   Snackbar,
   Stack,
   Table,
@@ -112,7 +111,6 @@ type SchedulePayload = {
   days: Day[];
   startDate: string;
   endDate: string;
-  enrollmentOpen: boolean;
 };
 
 async function fetchSchedules(): Promise<Schedule[]> {

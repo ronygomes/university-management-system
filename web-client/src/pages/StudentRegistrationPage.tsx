@@ -20,7 +20,8 @@ import {
 import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
-import { ChangeEvent, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import ContentWrapper from '../components/ContentWrapper';
 
 const DEPARTMENTS_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/departments`;

@@ -159,7 +159,7 @@ describe('StudentLandingPage', () => {
       { id: 700, studentId: 1, courseScheduleId: 100, enrollmentDate: '2026-01-01T00:00:00Z', status: 'PASSED', grade: 'A_PLUS' },
       { id: 701, studentId: 1, courseScheduleId: 101, enrollmentDate: '2026-01-01T00:00:00Z', status: 'PASSED', grade: 'B' },
     ];
-    mockAllGet({ enrollments: enrolPassed as typeof enrollments });
+    mockAllGet({ enrollments: enrolPassed as unknown as typeof enrollments });
     renderPage('jane@ums.dev');
 
     await screen.findByText('Welcome, Jane Doe');
