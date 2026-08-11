@@ -1,0 +1,19 @@
+# Build output and caches (rebuilt inside the image)
+build/
+.gradle/
+
+# VCS and IDE
+.git/
+.gitignore
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Local tooling / docs not needed in the image
+HELP.md
+README.md
+compose.yml
+.sdkmanrc
