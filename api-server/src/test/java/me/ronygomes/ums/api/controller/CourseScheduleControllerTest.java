@@ -19,7 +19,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
@@ -64,22 +64,22 @@ public class CourseScheduleControllerTest {
             }
             """;
 
-    @MockBean
+    @MockitoBean
     private CourseScheduleRepository courseScheduleRepository;
 
-    @MockBean
+    @MockitoBean
     private DepartmentRepository departmentRepository;
 
-    @MockBean
+    @MockitoBean
     private CourseRepository courseRepository;
 
-    @MockBean
+    @MockitoBean
     private ExceptionHelper exceptionHelper;
 
-    @MockBean
+    @MockitoBean
     private CourseScheduleValidator courseScheduleValidator;
 
-    @MockBean
+    @MockitoBean
     private Validator validator;
 
     @Autowired

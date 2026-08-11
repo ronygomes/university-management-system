@@ -15,8 +15,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -49,10 +49,10 @@ public class TeacherControllerTest {
             }
             """;
 
-    @MockBean
+    @MockitoBean
     private TeacherService teacherService;
 
-    @SpyBean
+    @MockitoSpyBean
     private TeacherModelHelper teacherModelAssembler;
 
     @Autowired

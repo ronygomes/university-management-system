@@ -13,7 +13,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -45,7 +45,7 @@ public class DepartmentControllerTest {
             }
             """;
 
-    @MockBean
+    @MockitoBean
     private DepartmentService departmentService;
 
     @Autowired
@@ -75,18 +75,18 @@ public class DepartmentControllerTest {
 
                 .andExpect(jsonPath("$._links.self.href").value("http://localhost/v1/departments"))
 
-                .andExpect(jsonPath("$._templates.default.method").value("POST"))
-                .andExpect(jsonPath("$._templates.default.properties.length()").value(2))
-                .andExpect(jsonPath("$._templates.default.properties[0].name").value("code"))
-                .andExpect(jsonPath("$._templates.default.properties[0].required").value("true"))
-                .andExpect(jsonPath("$._templates.default.properties[0].min").value("1"))
-                .andExpect(jsonPath("$._templates.default.properties[0].max").value("10"))
-                .andExpect(jsonPath("$._templates.default.properties[0].type").value("range"))
-                .andExpect(jsonPath("$._templates.default.properties[1].name").value("name"))
-                .andExpect(jsonPath("$._templates.default.properties[1].required").value("true"))
-                .andExpect(jsonPath("$._templates.default.properties[1].min").value("1"))
-                .andExpect(jsonPath("$._templates.default.properties[1].max").value("100"))
-                .andExpect(jsonPath("$._templates.default.properties[1].type").value("range"))
+                .andExpect(jsonPath("$._templates.create.method").value("POST"))
+                .andExpect(jsonPath("$._templates.create.properties.length()").value(2))
+                .andExpect(jsonPath("$._templates.create.properties[0].name").value("code"))
+                .andExpect(jsonPath("$._templates.create.properties[0].required").value("true"))
+                .andExpect(jsonPath("$._templates.create.properties[0].min").value("1"))
+                .andExpect(jsonPath("$._templates.create.properties[0].max").value("10"))
+                .andExpect(jsonPath("$._templates.create.properties[0].type").value("range"))
+                .andExpect(jsonPath("$._templates.create.properties[1].name").value("name"))
+                .andExpect(jsonPath("$._templates.create.properties[1].required").value("true"))
+                .andExpect(jsonPath("$._templates.create.properties[1].min").value("1"))
+                .andExpect(jsonPath("$._templates.create.properties[1].max").value("100"))
+                .andExpect(jsonPath("$._templates.create.properties[1].type").value("range"))
 
                 .andExpect(jsonPath("$._embedded.departments.length()").value(2))
                 .andExpect(jsonPath("$._embedded.departments[0].code").value("CODE-1"))
@@ -326,16 +326,16 @@ public class DepartmentControllerTest {
     private ResultMatcher[] templateMatchers() {
         return new ResultMatcher[]{
                 jsonPath("$._templates.length()").value(2),
-                jsonPath("$._templates.default.properties[0].name").value("code"),
-                jsonPath("$._templates.default.properties[0].required").value("true"),
-                jsonPath("$._templates.default.properties[0].min").value("1"),
-                jsonPath("$._templates.default.properties[0].max").value("10"),
-                jsonPath("$._templates.default.properties[0].type").value("range"),
-                jsonPath("$._templates.default.properties[1].name").value("name"),
-                jsonPath("$._templates.default.properties[1].required").value("true"),
-                jsonPath("$._templates.default.properties[1].min").value("1"),
-                jsonPath("$._templates.default.properties[1].max").value("100"),
-                jsonPath("$._templates.default.properties[1].type").value("range"),
+                jsonPath("$._templates.updateAll.properties[0].name").value("code"),
+                jsonPath("$._templates.updateAll.properties[0].required").value("true"),
+                jsonPath("$._templates.updateAll.properties[0].min").value("1"),
+                jsonPath("$._templates.updateAll.properties[0].max").value("10"),
+                jsonPath("$._templates.updateAll.properties[0].type").value("range"),
+                jsonPath("$._templates.updateAll.properties[1].name").value("name"),
+                jsonPath("$._templates.updateAll.properties[1].required").value("true"),
+                jsonPath("$._templates.updateAll.properties[1].min").value("1"),
+                jsonPath("$._templates.updateAll.properties[1].max").value("100"),
+                jsonPath("$._templates.updateAll.properties[1].type").value("range"),
 
                 jsonPath("$._templates.patchDepartment.method").value("PATCH"),
                 jsonPath("$._templates.patchDepartment.properties.length()").value(2),

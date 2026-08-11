@@ -306,9 +306,10 @@ public class TeacherRepositoryTest {
             Assertions.assertEquals(0, Float.compare(-1f, (float) v.getInvalidValue()));
         });
 
-        teacherAssignedCredit.setAssignedCredit(101);
+        Teacher teacherMaxCredit = DataHelper.validPersistableTeacher1(designation, department);
+        teacherMaxCredit.setAssignedCredit(101);
 
-        Throwable exceptionMaxCredit = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(teacherAssignedCredit));
+        Throwable exceptionMaxCredit = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(teacherMaxCredit));
         Set<ConstraintViolation<?>> assignedMaxCreditViolations = extractConstraintViolation(exceptionMaxCredit);
         Assertions.assertEquals(1, assignedMaxCreditViolations.size());
         assignedMaxCreditViolations.forEach(v -> {

@@ -220,8 +220,9 @@ public class CourseScheduleRepositoryTest {
             Assertions.assertNull(v.getInvalidValue());
         });
 
-        cs.setDays(Collections.emptyList());
-        exNull = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(cs));
+        CourseSchedule csEmpty = DataHelper.validPersistableCourseSchedule1(department, course);
+        csEmpty.setDays(Collections.emptyList());
+        exNull = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(csEmpty));
         Set<ConstraintViolation<?>> emptyViolations = extractConstraintViolation(exNull);
         Assertions.assertEquals(1, emptyViolations.size());
         nullViolations.forEach(v -> {

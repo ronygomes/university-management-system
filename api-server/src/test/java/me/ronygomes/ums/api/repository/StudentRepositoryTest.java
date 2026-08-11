@@ -183,8 +183,9 @@ public class StudentRepositoryTest {
             Assertions.assertNull(v.getInvalidValue());
         });
 
-        student.setFullName("a".repeat(201));
-        Throwable exMaxLength = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(student));
+        Student studentMaxLen = validPersistableStudent1(cseDepartment);
+        studentMaxLen.setFullName("a".repeat(201));
+        Throwable exMaxLength = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(studentMaxLen));
         Set<ConstraintViolation<?>> maxLenViolations = extractConstraintViolation(exMaxLength);
         Assertions.assertEquals(1, maxLenViolations.size());
         maxLenViolations.forEach(v -> {
@@ -193,8 +194,9 @@ public class StudentRepositoryTest {
             Assertions.assertEquals(201, v.getInvalidValue().toString().length());
         });
 
-        student.setFullName("");
-        Throwable exMinLength = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(student));
+        Student studentMinLen = validPersistableStudent1(cseDepartment);
+        studentMinLen.setFullName("");
+        Throwable exMinLength = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(studentMinLen));
         Set<ConstraintViolation<?>> minLenViolations = extractConstraintViolation(exMinLength);
         Assertions.assertEquals(1, minLenViolations.size());
         minLenViolations.forEach(v -> {
