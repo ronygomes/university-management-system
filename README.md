@@ -18,6 +18,15 @@ The project is dividend into 3 sub-projects:
 * [api-server][2]: API backend build using Spring Boot
 * [web-client][3]: Web client build using React.js and MUI7
 
+## Docker Compose Profile
+
+Run docker compose with following profile:
+
+* `dev` - Starts postgres, keycloak, api-server images
+
+```
+$ docker compose --profile <name> up
+```
 
 [1]: ./authorization-server
 [2]: ./api-server

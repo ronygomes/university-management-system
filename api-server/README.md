@@ -4,6 +4,19 @@ Primary api-server, data is consumed by web clients.
 
 **Port**: 8100
 
+## Build a Docker Image
+
+A multi-stage [`Dockerfile`](./Dockerfile) builds the executable jar inside the
+image (Amazon Corretto 25 and Gradle 9.6.0 wrapper), so no local JDK or Gradle
+is required.
+
+```shell
+$ docker build -t ronygomes/ums-api-server .
+
+$ docker tag ronygomes/ums-api-server:latest ronygomes/ums-api-server:0.1.0
+$ docker push ronygomes/ums-api-server:0.1.0
+```
+
 ## Get Access Token and Query API
 
 ```shell
@@ -43,4 +56,16 @@ ums=# \quit
 # Can't use regular redirect (>) for password input
 $ docker exec -it ums_postgres \
      pg_dump -h ums_postgres -U postgres ums | tee ums_dump.sql
+```
+
+## Docker Compose Profile
+
+Run docker compose with following profile:
+
+* `dev` - Starts postgres, keycloak images
+* `dev-auth-local` - postgres only, expects a Keycloak server running locally on :8000
+* `standalone`- Runs postgres, keycloak, api-server docker images
+
+```
+$ docker compose --profile <name> up
 ```

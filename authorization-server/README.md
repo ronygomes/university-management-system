@@ -20,6 +20,16 @@ Following command will start the server in development mode:
 $ docker compose up -d
 ```
 
+## Build Image
+
+A self-contained [`Dockerfile`](./Dockerfile) copies `ums-realm.json` into a
+Keycloak image and imports the realm on startup:
+
+```shell
+$ docker build -t ronygomes/ums-authorization-server:0.1.0 .
+$ docker push ronygomes/ums-authorization-server:0.1.0
+```
+
 ## Export KeyCloak Configuration
 
 ```shell

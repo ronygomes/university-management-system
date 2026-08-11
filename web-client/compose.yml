@@ -4,18 +4,17 @@ services:
   postgres:
     container_name: ums_postgres
     image: postgres:16.0
-    profiles: [dev, dev-auth-local, standalone]
+    profiles: [dev]
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345}
       POSTGRES_DB: ${POSTGRES_DATABASE_NAME:-ums}
       PGDATA: /data/postgres
-      # TZ is for GNU/Linux and PGTZ is for PostgreSQL
       TZ: 'UTC'
       PGTZ: 'UTC'
     volumes:
       - postgres:/data/postgres
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../api-server/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - '5432:5432'
     healthcheck:
@@ -27,7 +26,7 @@ services:
   authorization-server:
     container_name: ums_keycloak
     image: ronygomes/ums-authorization-server:0.1.0
-    profiles: [dev, standalone]
+    profiles: [dev]
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
@@ -37,7 +36,7 @@ services:
   api-server:
     container_name: ums_api_server
     image: ronygomes/ums-api-server:0.1.0
-    profiles: [standalone]
+    profiles: [dev]
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,7 +46,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DATABASE_NAME:-ums}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-12345}
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://authorization-server:8000/realms/ums
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8000/realms/ums
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://authorization-server:8000/realms/ums/protocol/openid-connect/certs
 
       UMS_KEYCLOAK_SERVER_URL: http://authorization-server:8000
       UMS_KEYCLOAK_ADMIN_CLIENT_ID: ${UMS_KEYCLOAK_ADMIN_CLIENT_ID:-<TBD>}
