@@ -1,0 +1,47 @@
+name: api-server
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'api-server/**'
+      - '.github/workflows/api-server.yml'
+  pull_request:
+    paths:
+      - 'api-server/**'
+      - '.github/workflows/api-server.yml'
+
+concurrency:
+  group: api-server-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api-server
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25 (Corretto)
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # ubuntu-latest ships with Docker, which Testcontainers requires
+      - name: Build and test
+        run: ./gradlew build --no-daemon
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-server-test-reports
+          path: api-server/build/reports/tests/
+          if-no-files-found: ignore
