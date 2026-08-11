@@ -1,8 +1,12 @@
 package me.ronygomes.ums.api.service;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import me.ronygomes.ums.api.dto.KeycloakUserCreateInputDto;
+import me.ronygomes.ums.api.dto.KeycloakUserDto;
 import me.ronygomes.ums.api.dto.KeycloakUserUpdateInputDto;
+import me.ronygomes.ums.api.exception.ExceptionType;
+import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.model.Role;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
@@ -82,6 +86,23 @@ public class KeycloakUserService {
         userResource.update(user);
     }
 
+    public List<KeycloakUserDto> findByRole(Role role) {
+        String clientUuid = resolveClientUuid();
+        ClientResource clientResource = keycloak.realm(targetRealm).clients().get(clientUuid);
+        return clientResource.roles().get(role.name().toLowerCase()).getUserMembers().stream()
+                .map(KeycloakUserDto::new)
+                .toList();
+    }
+
+    public KeycloakUserDto findById(String id) {
+        try {
+            UserRepresentation user = keycloak.realm(targetRealm).users().get(id).toRepresentation();
+            return new KeycloakUserDto(user);
+        } catch (NotFoundException e) {
+            throw new UmsDataException(ExceptionType.ENTITY_NOT_FOUND, "User with id=" + id + " not found");
+        }
+    }
+
     private CredentialRepresentation passwordCredential(String password) {
         CredentialRepresentation cred = new CredentialRepresentation();
         cred.setType(CredentialRepresentation.PASSWORD);
@@ -90,15 +111,19 @@ public class KeycloakUserService {
         return cred;
     }
 
-    private void assignClientRoles(String userId, List<Role> roles) {
-        if (roles == null || roles.isEmpty()) {
-            return;
-        }
+    private String resolveClientUuid() {
         List<ClientRepresentation> clients = keycloak.realm(targetRealm).clients().findByClientId(appClientId);
         if (clients.isEmpty()) {
             throw new IllegalStateException("Keycloak client not found: " + appClientId);
         }
-        String clientUuid = clients.get(0).getId();
+        return clients.getFirst().getId();
+    }
+
+    private void assignClientRoles(String userId, List<Role> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return;
+        }
+        String clientUuid = resolveClientUuid();
         ClientResource clientResource = keycloak.realm(targetRealm).clients().get(clientUuid);
         List<RoleRepresentation> rolesToAssign = roles.stream()
                 .map(role -> clientResource.roles().get(role.name().toLowerCase()).toRepresentation())

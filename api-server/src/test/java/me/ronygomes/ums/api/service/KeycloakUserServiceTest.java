@@ -1,8 +1,12 @@
 package me.ronygomes.ums.api.service;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import me.ronygomes.ums.api.dto.KeycloakUserCreateInputDto;
+import me.ronygomes.ums.api.dto.KeycloakUserDto;
 import me.ronygomes.ums.api.dto.KeycloakUserUpdateInputDto;
+import me.ronygomes.ums.api.exception.ExceptionType;
+import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.model.Role;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -222,5 +226,64 @@ public class KeycloakUserServiceTest {
         ArgumentCaptor<UserRepresentation> ac = ArgumentCaptor.forClass(UserRepresentation.class);
         Mockito.verify(userResource).update(ac.capture());
         Assertions.assertFalse(ac.getValue().isEnabled());
+    }
+
+    @Test
+    void testFindByRoleReturnsUsersWithThatClientRoleMapped() {
+        UserRepresentation u1 = new UserRepresentation();
+        u1.setId("id-1");
+        u1.setUsername("admin1");
+        u1.setEmail("a1@ums.dev");
+        u1.setFirstName("A");
+        u1.setLastName("One");
+        u1.setEnabled(true);
+
+        UserRepresentation u2 = new UserRepresentation();
+        u2.setId("id-2");
+        u2.setUsername("admin2");
+        u2.setEnabled(false);
+
+        Mockito.when(adminRoleResource.getUserMembers()).thenReturn(List.of(u1, u2));
+
+        List<KeycloakUserDto> admins = service.findByRole(Role.ADMIN);
+
+        // role name is looked up lowercased against the app client
+        Mockito.verify(rolesResource).get("admin");
+        Assertions.assertEquals(2, admins.size());
+        Assertions.assertEquals("id-1", admins.get(0).getId());
+        Assertions.assertEquals("admin1", admins.get(0).getUsername());
+        Assertions.assertEquals("a1@ums.dev", admins.get(0).getEmail());
+        Assertions.assertEquals("A", admins.get(0).getFirstName());
+        Assertions.assertTrue(admins.get(0).isEnabled());
+        Assertions.assertFalse(admins.get(1).isEnabled());
+    }
+
+    @Test
+    void testFindByIdReturnsMappedUser() {
+        UserRepresentation u = new UserRepresentation();
+        u.setId("user-42");
+        u.setUsername("jane.doe");
+        u.setEmail("jane@ums.dev");
+        u.setFirstName("Jane");
+        u.setLastName("Doe");
+        u.setEnabled(true);
+        Mockito.when(userResource.toRepresentation()).thenReturn(u);
+
+        KeycloakUserDto dto = service.findById("user-42");
+
+        Assertions.assertEquals("user-42", dto.getId());
+        Assertions.assertEquals("jane.doe", dto.getUsername());
+        Assertions.assertEquals("jane@ums.dev", dto.getEmail());
+        Assertions.assertEquals("Jane", dto.getFirstName());
+        Assertions.assertEquals("Doe", dto.getLastName());
+        Assertions.assertTrue(dto.isEnabled());
+    }
+
+    @Test
+    void testFindByIdThrowsEntityNotFoundWhenUserMissing() {
+        Mockito.when(userResource.toRepresentation()).thenThrow(new NotFoundException());
+
+        UmsDataException ex = Assertions.assertThrows(UmsDataException.class, () -> service.findById("missing"));
+        Assertions.assertEquals(ExceptionType.ENTITY_NOT_FOUND, ex.getExceptionType());
     }
 }
