@@ -10,11 +10,14 @@ import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.Course;
 import me.ronygomes.ums.api.model.Department;
+import me.ronygomes.ums.api.model.Semester;
 import me.ronygomes.ums.api.model.Teacher;
 import me.ronygomes.ums.api.repository.CourseRepository;
 import me.ronygomes.ums.api.repository.DepartmentRepository;
 import me.ronygomes.ums.api.repository.TeacherRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 
@@ -53,6 +56,10 @@ public class CourseService {
 
     public List<CourseDto> findAll() {
         return courseRepository.findAll().stream().map(CourseDto::toDto).toList();
+    }
+
+    public Page<CourseDto> findPaged(String departmentCode, Semester semester, Pageable pageable) {
+        return courseRepository.findFiltered(departmentCode, semester, pageable).map(CourseDto::toDto);
     }
 
     public CourseDto findById(Long id) {

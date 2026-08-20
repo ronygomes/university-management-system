@@ -3,14 +3,15 @@ package me.ronygomes.ums.api.controller;
 import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.dto.CourseDto;
 import me.ronygomes.ums.api.dto.CoursePatchDto;
+import me.ronygomes.ums.api.dto.PagedResponse;
+import me.ronygomes.ums.api.model.Semester;
 import me.ronygomes.ums.api.service.CourseService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -26,8 +27,10 @@ public class CourseController {
 
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
     @GetMapping
-    public List<CourseDto> findAll() {
-        return courseService.findAll();
+    public PagedResponse<CourseDto> findPaged(@RequestParam(required = false) String departmentCode,
+                                              @RequestParam(required = false) Semester semester,
+                                              Pageable pageable) {
+        return PagedResponse.of(courseService.findPaged(departmentCode, semester, pageable));
     }
 
     @AdminAccess

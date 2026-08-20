@@ -1,5 +1,5 @@
 import axios, { isAxiosError } from 'axios';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
@@ -19,6 +19,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
   TextField,
 } from '@mui/material';
@@ -89,9 +90,26 @@ function extractIdFromSelfLink(href: string): number {
   return Number(href.split('/').pop());
 }
 
-async function fetchCourses(): Promise<Course[]> {
-  const response = await axios.get<Course[]>(COURSE_ENDPOINT);
-  return response.data;
+type PagedCourses = {
+  content: Course[];
+  totalElements: number;
+};
+
+async function fetchCoursesPaged(
+  page: number,
+  size: number,
+  departmentCode: string,
+  semester: Semester | '',
+): Promise<PagedCourses> {
+  const params: Record<string, string | number> = { page, size };
+  if (departmentCode) params.departmentCode = departmentCode;
+  if (semester) params.semester = semester;
+
+  const response = await axios.get(COURSE_ENDPOINT, { params });
+  return {
+    content: response.data.content ?? [],
+    totalElements: response.data.totalElements ?? 0,
+  };
 }
 
 async function fetchDepartments(): Promise<Department[]> {
@@ -328,21 +346,20 @@ const CoursePage = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState<string>('');
   const [semesterFilter, setSemesterFilter] = useState<Semester | ''>('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const { data: courses = [] } = useQuery({
-    queryKey: ['courses'],
-    queryFn: fetchCourses,
+  const { data } = useQuery({
+    queryKey: ['courses', 'paged', page, rowsPerPage, departmentFilter, semesterFilter],
+    queryFn: () => fetchCoursesPaged(page, rowsPerPage, departmentFilter, semesterFilter),
+    placeholderData: keepPreviousData,
   });
+  const courses = data?.content ?? [];
+  const totalElements = data?.totalElements ?? 0;
 
   const { data: departmentList = [] } = useQuery({
     queryKey: ['departments'],
     queryFn: fetchDepartments,
-  });
-
-  const filteredCourses = courses.filter((c) => {
-    if (departmentFilter && c.departmentCode !== departmentFilter) return false;
-    if (semesterFilter && c.semester !== semesterFilter) return false;
-    return true;
   });
 
   const { mutate: triggerDelete, isPending: isDeletePending } = useMutation({
@@ -376,7 +393,10 @@ const CoursePage = () => {
             size='small'
             sx={{ minWidth: 200 }}
             value={departmentFilter}
-            onChange={(e) => setDepartmentFilter(e.target.value)}
+            onChange={(e) => {
+              setDepartmentFilter(e.target.value);
+              setPage(0);
+            }}
           >
             <MenuItem value=''>All</MenuItem>
             {departmentList.map((d) => (
@@ -389,7 +409,10 @@ const CoursePage = () => {
             size='small'
             sx={{ minWidth: 220 }}
             value={semesterFilter}
-            onChange={(e) => setSemesterFilter(e.target.value as Semester | '')}
+            onChange={(e) => {
+              setSemesterFilter(e.target.value as Semester | '');
+              setPage(0);
+            }}
           >
             <MenuItem value=''>All</MenuItem>
             {SEMESTERS.map((s) => (
@@ -411,7 +434,7 @@ const CoursePage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredCourses.map((course) => (
+              {courses.map((course) => (
                 <TableRow key={course.id}>
                   <TableCell>{course.name}</TableCell>
                   <TableCell>{SEMESTER_LABEL[course.semester] ?? course.semester}</TableCell>
@@ -439,6 +462,18 @@ const CoursePage = () => {
             </TableBody>
           </Table>
         </TableContainer>
+        <TablePagination
+          component='div'
+          count={totalElements}
+          page={page}
+          onPageChange={(_, newPage) => setPage(newPage)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[5, 10, 25]}
+        />
 
         <Dialog open={pendingDelete !== null} onClose={() => setPendingDelete(null)}>
           <DialogTitle>Delete course?</DialogTitle>

@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.TransactionSystemException;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -57,6 +59,31 @@ public class CourseRepositoryTest {
     @Test
     void testDepartmentRepositoryIsNotNull() {
         Assertions.assertNotNull(repository);
+    }
+
+    @Test
+    void testFindFiltered() {
+        Department cse = departmentRepository.findByCode("CSE").orElseThrow();
+
+        Course c1 = DataHelper.validPersistableCourse1(cse, teacher);
+        Course c2 = DataHelper.validPersistableCourse2(cse, null);
+        repository.save(c1);
+        repository.save(c2);
+
+        Pageable page = PageRequest.of(0, 10);
+
+        Assertions.assertEquals(2, repository.findFiltered(null, null, page).getTotalElements());
+        Assertions.assertEquals(2, repository.findFiltered("CSE", null, page).getTotalElements());
+        Assertions.assertEquals(0, repository.findFiltered("EEE", null, page).getTotalElements());
+        Assertions.assertEquals(1, repository.findFiltered("CSE", Semester.FIRST_YEAR_FIRST, page).getTotalElements());
+        Assertions.assertEquals(1, repository.findFiltered(null, Semester.SECOND_YEAR_FIRST, page).getTotalElements());
+        Assertions.assertEquals(0, repository.findFiltered("CSE", Semester.THIRD_YEAR_FIRST, page).getTotalElements());
+
+        var firstYear = repository.findFiltered(null, Semester.FIRST_YEAR_FIRST, page);
+        Assertions.assertEquals("CSE-101", firstYear.getContent().getFirst().getTitle());
+
+        repository.delete(c1);
+        repository.delete(c2);
     }
 
     @Test

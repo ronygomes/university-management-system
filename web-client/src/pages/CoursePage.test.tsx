@@ -65,9 +65,13 @@ const initialCourses = [
   },
 ];
 
+function coursesEnvelope(list: typeof initialCourses) {
+  return { content: list, page: 0, size: 5, totalElements: list.length, totalPages: 1 };
+}
+
 function mockAllGet(courses = initialCourses) {
   return vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
-    if (url.includes('/v1/courses')) return { data: courses };
+    if (url.includes('/v1/courses')) return { data: coursesEnvelope(courses) };
     if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
     if (url.includes('/v1/teachers')) return { data: { _embedded: { teachers: mockTeachersHal } } };
     return { data: {} };
@@ -112,7 +116,7 @@ describe('CoursePage', () => {
         const list = coursesCallCount === 1
           ? initialCourses
           : initialCourses.filter((c) => c.id !== 1);
-        return { data: list };
+        return { data: coursesEnvelope(list) };
       }
       if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
       if (url.includes('/v1/teachers')) return { data: { _embedded: { teachers: mockTeachersHal } } };
@@ -157,7 +161,7 @@ describe('CoursePage', () => {
         const list = coursesCallCount === 1
           ? initialCourses
           : [{ ...initialCourses[0], name: 'Java Updated' }, initialCourses[1]];
-        return { data: list };
+        return { data: coursesEnvelope(list) };
       }
       if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
       if (url.includes('/v1/teachers')) return { data: { _embedded: { teachers: mockTeachersHal } } };
@@ -259,7 +263,7 @@ describe('CoursePage', () => {
               semester: 'THIRD_YEAR_FIRST',
               instructorId: null,
             }];
-        return { data: list };
+        return { data: coursesEnvelope(list) };
       }
       if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
       if (url.includes('/v1/teachers')) return { data: { _embedded: { teachers: mockTeachersHal } } };
@@ -304,22 +308,36 @@ describe('CoursePage', () => {
     expect(await screen.findByText('Algorithms')).toBeInTheDocument();
   });
 
-  it('filters the table by Semester (client-side)', async () => {
-    mockAllGet();
+  it('filters the table by Semester server-side', async () => {
+    const getSpy = vi.spyOn(axios, 'get').mockImplementation(
+      async (url: string, config?: { params?: Record<string, unknown> }) => {
+        if (url.includes('/v1/courses')) {
+          const list = config?.params?.semester === 'SECOND_YEAR_FIRST'
+            ? initialCourses.filter((c) => c.semester === 'SECOND_YEAR_FIRST')
+            : initialCourses;
+          return { data: coursesEnvelope(list) };
+        }
+        if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
+        if (url.includes('/v1/teachers')) return { data: { _embedded: { teachers: mockTeachersHal } } };
+        return { data: {} };
+      },
+    );
     renderPage();
 
     expect(await screen.findByText('Intro to Java')).toBeInTheDocument();
     expect(screen.getByText('Data Structures')).toBeInTheDocument();
 
-    // Find the Semester filter (small variant, label 'Semester') and pick "2nd Year - 1st Semester"
     const filterStack = screen.getByText('Courses').parentElement!;
     const semesterFilter = within(filterStack).getAllByLabelText(/semester/i)[0];
     await userEvent.click(semesterFilter);
     const listbox = await screen.findByRole('listbox');
     await userEvent.click(within(listbox).getByText('2nd Year - 1st Semester'));
 
-    expect(screen.queryByText('Intro to Java')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText('Intro to Java')).not.toBeInTheDocument());
     expect(screen.getByText('Data Structures')).toBeInTheDocument();
+
+    const coursesCalls = getSpy.mock.calls.filter((c) => String(c[0]).endsWith('/v1/courses'));
+    expect(coursesCalls.at(-1)![1]).toEqual({ params: { page: 0, size: 5, semester: 'SECOND_YEAR_FIRST' } });
   });
 
   it('shows error snackbar when DELETE fails', async () => {

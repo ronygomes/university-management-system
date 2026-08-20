@@ -18,6 +18,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -70,31 +73,39 @@ public class CourseControllerTest {
     }
 
     @Test
-    void testFindAllSuccess() throws Exception {
+    void testFindPagedSuccess() throws Exception {
         CourseDto dto1 = CourseDto.toDto(createMockDBCourse());
         dto1.setId(1L);
         CourseDto dto2 = CourseDto.toDto(createMockDBCourse());
         dto2.setId(2L);
         dto2.setTitle("CSE-102");
 
-        Mockito.when(courseService.findAll()).thenReturn(List.of(dto1, dto2));
+        Mockito.when(courseService.findPaged(Mockito.any(), Mockito.any(), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(dto1, dto2), PageRequest.of(0, 20), 2));
 
         mockMvc.perform(get("/v1/courses")
+                        .param("departmentCode", "CSE")
+                        .param("semester", "FIRST_YEAR_FIRST")
                         .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.OK.value()))
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].title").value("CSE-101"))
-                .andExpect(jsonPath("$[1].id").value(2))
-                .andExpect(jsonPath("$[1].title").value("CSE-102"));
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].id").value(1))
+                .andExpect(jsonPath("$.content[0].title").value("CSE-101"))
+                .andExpect(jsonPath("$.content[1].id").value(2))
+                .andExpect(jsonPath("$.content[1].title").value("CSE-102"));
 
-        mockMvc.perform(get("/v1/courses")
-                        .with(teacherJwt()))
+        Mockito.verify(courseService, Mockito.times(1))
+                .findPaged(Mockito.eq("CSE"), Mockito.eq(Semester.FIRST_YEAR_FIRST), Mockito.any(Pageable.class));
+
+        mockMvc.perform(get("/v1/courses").with(teacherJwt()))
                 .andExpect(status().is(HttpStatus.OK.value()));
 
-        mockMvc.perform(get("/v1/courses")
-                        .with(studentJwt()))
+        mockMvc.perform(get("/v1/courses").with(studentJwt()))
                 .andExpect(status().is(HttpStatus.OK.value()));
     }
 
