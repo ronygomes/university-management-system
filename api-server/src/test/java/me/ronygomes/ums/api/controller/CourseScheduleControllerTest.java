@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -97,23 +100,28 @@ public class CourseScheduleControllerTest {
     }
 
     @Test
-    void testFindAllSuccess() throws Exception {
+    void testFindPagedSuccess() throws Exception {
         CourseSchedule cs1 = mockCourseSchedule();
         CourseSchedule cs2 = mockCourseSchedule();
         cs2.setId(99L);
         cs2.setRoomNumber("F7-203");
 
-        Mockito.when(courseScheduleRepository.findAll()).thenReturn(List.of(cs1, cs2));
+        Mockito.when(courseScheduleRepository.findAll(Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(cs1, cs2), PageRequest.of(0, 20), 2));
 
         mockMvc.perform(get("/v1/schedules")
                         .with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.OK.value()))
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id").value(3))
-                .andExpect(jsonPath("$[0].roomNumber").value("F7-102"))
-                .andExpect(jsonPath("$[1].id").value(99))
-                .andExpect(jsonPath("$[1].roomNumber").value("F7-203"));
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].id").value(3))
+                .andExpect(jsonPath("$.content[0].roomNumber").value("F7-102"))
+                .andExpect(jsonPath("$.content[1].id").value(99))
+                .andExpect(jsonPath("$.content[1].roomNumber").value("F7-203"));
 
         mockMvc.perform(get("/v1/schedules")
                         .with(teacherJwt()))

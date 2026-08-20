@@ -3,6 +3,7 @@ package me.ronygomes.ums.api.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import me.ronygomes.ums.api.config.annotation.AdminAccess;
+import me.ronygomes.ums.api.dto.PagedResponse;
 import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.CourseSchedule;
@@ -10,6 +11,7 @@ import me.ronygomes.ums.api.repository.CourseRepository;
 import me.ronygomes.ums.api.repository.CourseScheduleRepository;
 import me.ronygomes.ums.api.repository.DepartmentRepository;
 import me.ronygomes.ums.api.validator.CourseScheduleValidator;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,8 +63,8 @@ public class CourseScheduleController {
 
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','STUDENT')")
     @GetMapping
-    public List<CourseSchedule> findAll() {
-        return courseScheduleRepository.findAll();
+    public PagedResponse<CourseSchedule> findPaged(Pageable pageable) {
+        return PagedResponse.of(courseScheduleRepository.findAll(pageable));
     }
 
     @AdminAccess
