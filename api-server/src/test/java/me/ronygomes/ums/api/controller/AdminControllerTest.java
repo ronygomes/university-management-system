@@ -17,6 +17,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -80,20 +83,26 @@ public class AdminControllerTest {
 
     @Test
     void testListAdmins() throws Exception {
-        Mockito.when(keycloakUserService.findByRole(Role.ADMIN)).thenReturn(List.of(
-                admin("id-1", "admin1", "a1@ums.dev", true),
-                admin("id-2", "admin2", "a2@ums.dev", false)));
+        Mockito.when(keycloakUserService.findByRole(Mockito.eq(Role.ADMIN), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(
+                        admin("id-1", "admin1", "a1@ums.dev", true),
+                        admin("id-2", "admin2", "a2@ums.dev", false)),
+                        PageRequest.of(0, 20), 2));
 
         mockMvc.perform(get("/v1/admins").with(adminJwt()))
                 .andDo(print())
                 .andExpect(status().is(HttpStatus.OK.value()))
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id").value("id-1"))
-                .andExpect(jsonPath("$[0].username").value("admin1"))
-                .andExpect(jsonPath("$[0].email").value("a1@ums.dev"))
-                .andExpect(jsonPath("$[0].enabled").value(true))
-                .andExpect(jsonPath("$[1].id").value("id-2"))
-                .andExpect(jsonPath("$[1].enabled").value(false));
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].id").value("id-1"))
+                .andExpect(jsonPath("$.content[0].username").value("admin1"))
+                .andExpect(jsonPath("$.content[0].email").value("a1@ums.dev"))
+                .andExpect(jsonPath("$.content[0].enabled").value(true))
+                .andExpect(jsonPath("$.content[1].id").value("id-2"))
+                .andExpect(jsonPath("$.content[1].enabled").value(false));
 
         mockMvc.perform(get("/v1/admins").with(teacherJwt()))
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()));

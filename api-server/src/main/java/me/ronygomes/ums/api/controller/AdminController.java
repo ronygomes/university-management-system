@@ -6,9 +6,11 @@ import me.ronygomes.ums.api.dto.AdminCreateInputDto;
 import me.ronygomes.ums.api.dto.KeycloakUserCreateInputDto;
 import me.ronygomes.ums.api.dto.KeycloakUserDto;
 import me.ronygomes.ums.api.dto.KeycloakUserUpdateInputDto;
+import me.ronygomes.ums.api.dto.PagedResponse;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.Role;
 import me.ronygomes.ums.api.service.KeycloakUserService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
@@ -46,8 +48,8 @@ public class AdminController {
 
     @AdminAccess
     @GetMapping
-    public List<KeycloakUserDto> admins() {
-        return keycloakUserService.findByRole(Role.ADMIN);
+    public PagedResponse<KeycloakUserDto> admins(Pageable pageable) {
+        return PagedResponse.of(keycloakUserService.findByRole(Role.ADMIN, pageable));
     }
 
     @AdminAccess

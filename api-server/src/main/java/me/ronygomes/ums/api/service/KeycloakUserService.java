@@ -18,6 +18,9 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -92,6 +95,13 @@ public class KeycloakUserService {
         return clientResource.roles().get(role.name().toLowerCase()).getUserMembers().stream()
                 .map(KeycloakUserDto::new)
                 .toList();
+    }
+
+    public Page<KeycloakUserDto> findByRole(Role role, Pageable pageable) {
+        List<KeycloakUserDto> members = findByRole(role);
+        int start = (int) Math.min(pageable.getOffset(), members.size());
+        int end = Math.min(start + pageable.getPageSize(), members.size());
+        return new PageImpl<>(members.subList(start, end), pageable, members.size());
     }
 
     public KeycloakUserDto findById(String id) {
