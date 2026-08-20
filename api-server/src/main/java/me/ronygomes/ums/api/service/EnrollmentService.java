@@ -9,6 +9,8 @@ import me.ronygomes.ums.api.repository.CourseScheduleRepository;
 import me.ronygomes.ums.api.repository.EnrollmentRepository;
 import me.ronygomes.ums.api.repository.StudentRepository;
 import me.ronygomes.ums.api.validator.EnrollmentValidator;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
@@ -40,8 +42,8 @@ public class EnrollmentService {
         this.exceptionHelper = exceptionHelper;
     }
 
-    public java.util.List<EnrollmentDto> findAll() {
-        return enrollmentRepository.findAll().stream().map(EnrollmentDto::new).toList();
+    public Page<EnrollmentDto> findPaged(Pageable pageable) {
+        return enrollmentRepository.findAll(pageable).map(EnrollmentDto::new);
     }
 
     public java.util.List<EnrollmentDto> findByStudentId(Long studentId) {

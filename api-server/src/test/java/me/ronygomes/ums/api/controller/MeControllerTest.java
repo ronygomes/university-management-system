@@ -147,7 +147,7 @@ public class MeControllerTest {
                 .andExpect(jsonPath("$[0].studentId").value(42));
 
         Mockito.verify(enrollmentService, Mockito.times(1)).findByStudentId(42L);
-        Mockito.verify(enrollmentService, Mockito.never()).findAll();
+        Mockito.verify(enrollmentService, Mockito.never()).findPaged(Mockito.any());
     }
 
     @Test

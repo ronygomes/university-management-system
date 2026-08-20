@@ -15,6 +15,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -92,6 +95,35 @@ public class EnrollmentControllerTest {
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
 
         mockMvc.perform(get("/v1/enrollments/1")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+    }
+
+    @Test
+    void testFindPaged() throws Exception {
+        Mockito.when(enrollmentService.findPaged(Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(java.util.List.of(createMockDBEnrollment(new Date())),
+                        PageRequest.of(0, 20), 1));
+
+        mockMvc.perform(get("/v1/enrollments")
+                        .with(adminJwt()))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.OK.value()))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].id").value("1"))
+                .andExpect(jsonPath("$.content[0].courseScheduleId").value("2"))
+                .andExpect(jsonPath("$.content[0].studentId").value("3"))
+                .andExpect(jsonPath("$.content[0].status").value("FAILED"));
+
+        mockMvc.perform(get("/v1/enrollments")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/enrollments")
                         .with(studentJwt()))
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }

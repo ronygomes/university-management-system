@@ -2,14 +2,14 @@ package me.ronygomes.ums.api.controller;
 
 import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.dto.EnrollmentDto;
+import me.ronygomes.ums.api.dto.PagedResponse;
 import me.ronygomes.ums.api.service.EnrollmentService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -25,8 +25,8 @@ public class EnrollmentController {
 
     @AdminAccess
     @GetMapping
-    public List<EnrollmentDto> findAll() {
-        return enrollmentService.findAll();
+    public PagedResponse<EnrollmentDto> findPaged(Pageable pageable) {
+        return PagedResponse.of(enrollmentService.findPaged(pageable));
     }
 
     @AdminAccess
