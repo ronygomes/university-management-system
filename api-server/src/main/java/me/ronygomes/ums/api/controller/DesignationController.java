@@ -7,7 +7,11 @@ import me.ronygomes.ums.api.exception.ExceptionType;
 import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.model.Designation;
 import me.ronygomes.ums.api.repository.DesignationRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +41,14 @@ public class DesignationController {
     public CollectionModel<DesignationModel> designations() {
         List<Designation> designations = designationRepository.findAll();
         return designationModelAssembler.toCollectionModel(designations);
+    }
+
+    @AdminAccess
+    @GetMapping("/paged")
+    public PagedModel<DesignationModel> designationsPaged(Pageable pageable,
+                                                          PagedResourcesAssembler<Designation> assembler) {
+        Page<Designation> designations = designationRepository.findAll(pageable);
+        return assembler.toModel(designations, designationModelAssembler);
     }
 
     @AdminAccess

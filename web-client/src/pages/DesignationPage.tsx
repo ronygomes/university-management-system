@@ -1,5 +1,5 @@
 import axios, { isAxiosError } from 'axios';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
@@ -18,6 +18,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
   TextField,
 } from '@mui/material';
@@ -45,10 +46,18 @@ function extractIdFromSelfLink(item: DesignationHalItem): number {
   return Number(href.split('/').pop());
 }
 
-async function fetchDesignations(): Promise<Designation[]> {
-  const response = await axios.get(DESIGNATION_ENDPOINT);
+type PagedDesignations = {
+  content: Designation[];
+  totalElements: number;
+};
+
+async function fetchDesignationsPaged(page: number, size: number): Promise<PagedDesignations> {
+  const response = await axios.get(`${DESIGNATION_ENDPOINT}/paged`, { params: { page, size } });
   const items: DesignationHalItem[] = response.data._embedded?.designations ?? [];
-  return items.map((item) => ({ id: extractIdFromSelfLink(item), title: item.title }));
+  return {
+    content: items.map((item) => ({ id: extractIdFromSelfLink(item), title: item.title })),
+    totalElements: response.data.page?.totalElements ?? 0,
+  };
 }
 
 async function deleteDesignation(id: number): Promise<void> {
@@ -158,10 +167,16 @@ const DesignationPage = () => {
   const [errorOpen, setErrorOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
-  const { data: designations = [] } = useQuery({
-    queryKey: ['designations'],
-    queryFn: fetchDesignations,
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const { data } = useQuery({
+    queryKey: ['designations', 'paged', page, rowsPerPage],
+    queryFn: () => fetchDesignationsPaged(page, rowsPerPage),
+    placeholderData: keepPreviousData,
   });
+  const designations = data?.content ?? [];
+  const totalElements = data?.totalElements ?? 0;
 
   const { mutate: triggerDelete, isPending: isDeletePending } = useMutation({
     mutationFn: deleteDesignation,
@@ -227,6 +242,18 @@ const DesignationPage = () => {
             </TableBody>
           </Table>
         </TableContainer>
+        <TablePagination
+          component='div'
+          count={totalElements}
+          page={page}
+          onPageChange={(_, newPage) => setPage(newPage)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[5, 10, 25]}
+        />
 
         <Dialog open={pendingDelete !== null} onClose={() => setPendingDelete(null)}>
           <DialogTitle>Delete designation?</DialogTitle>

@@ -16,7 +16,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -52,6 +58,22 @@ public class DesignationControllerTest {
         Assertions.assertSame(col, controller.designations());
         Mockito.verify(designationRepository, Mockito.times(1)).findAll();
         Mockito.verify(designationModelAssembler, Mockito.times(1)).toCollectionModel(dummyDesignations);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testDesignationsPaged() {
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Designation> page = new PageImpl<>(new ArrayList<>(), pageable, 0);
+        Mockito.when(designationRepository.findAll(pageable)).thenReturn(page);
+
+        PagedResourcesAssembler<Designation> pagedAssembler = Mockito.mock(PagedResourcesAssembler.class);
+        PagedModel<DesignationModel> pagedModel = PagedModel.empty();
+        Mockito.when(pagedAssembler.toModel(page, designationModelAssembler)).thenReturn(pagedModel);
+
+        Assertions.assertSame(pagedModel, controller.designationsPaged(pageable, pagedAssembler));
+        Mockito.verify(designationRepository, Mockito.times(1)).findAll(pageable);
+        Mockito.verify(pagedAssembler, Mockito.times(1)).toModel(page, designationModelAssembler);
     }
 
     @Test
@@ -182,7 +204,7 @@ public class DesignationControllerTest {
     void testAccessCheck() {
         Method[] publicMethods = TestHelper.getPublicMethods(DesignationController.class);
 
-        Assertions.assertEquals(5, publicMethods.length);
+        Assertions.assertEquals(6, publicMethods.length);
         for (Method method : publicMethods) {
             Assertions.assertTrue(method.isAnnotationPresent(AdminAccess.class));
         }

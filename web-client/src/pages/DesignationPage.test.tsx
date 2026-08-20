@@ -42,20 +42,60 @@ const initialHalDesignations = [
   halItem(2, 'Assistant Professor'),
 ];
 
+function pagedData(list: ReturnType<typeof halItem>[]) {
+  return {
+    data: {
+      _embedded: { designations: list },
+      page: { size: 5, totalElements: list.length, totalPages: 1, number: 0 },
+    },
+  };
+}
+
 describe('DesignationPage', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
   it('renders the Designations heading', () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { designations: [] } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData([]));
     renderPage();
 
     expect(screen.getByText('Designations')).toBeInTheDocument();
   });
 
+  it('requests the paged endpoint and loads the next page on navigation', async () => {
+    let call = 0;
+    const getSpy = vi.spyOn(axios, 'get').mockImplementation(async () => {
+      call++;
+      const list = call === 1 ? [halItem(1, 'Lecturer')] : [halItem(2, 'Professor')];
+      return {
+        data: {
+          _embedded: { designations: list },
+          page: { size: 5, totalElements: 10, totalPages: 2, number: call - 1 },
+        },
+      };
+    });
+    renderPage();
+
+    await screen.findByText('Lecturer');
+    expect(getSpy).toHaveBeenNthCalledWith(
+      1,
+      expect.stringMatching(/\/v1\/designations\/paged$/),
+      { params: { page: 0, size: 5 } },
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /next page/i }));
+
+    expect(await screen.findByText('Professor')).toBeInTheDocument();
+    expect(getSpy).toHaveBeenNthCalledWith(
+      2,
+      expect.stringMatching(/\/v1\/designations\/paged$/),
+      { params: { page: 1, size: 5 } },
+    );
+  });
+
   it('renders designation titles fetched from the API', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { designations: initialHalDesignations } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialHalDesignations));
     renderPage();
 
     expect(await screen.findByText('Lecturer')).toBeInTheDocument();
@@ -63,7 +103,7 @@ describe('DesignationPage', () => {
   });
 
   it('opens the confirmation dialog when Delete is clicked', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { designations: initialHalDesignations } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialHalDesignations));
     renderPage();
 
     await screen.findByText('Lecturer');
@@ -75,7 +115,7 @@ describe('DesignationPage', () => {
   });
 
   it('does not call DELETE when Cancel is clicked', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { designations: initialHalDesignations } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialHalDesignations));
     const deleteSpy = vi.spyOn(axios, 'delete').mockResolvedValue({});
     renderPage();
 
@@ -95,7 +135,7 @@ describe('DesignationPage', () => {
       const list = getCallCount === 1
         ? initialHalDesignations
         : initialHalDesignations.filter((d) => d.title !== 'Lecturer');
-      return { data: { _embedded: { designations: list } } };
+      return pagedData(list);
     });
     const deleteSpy = vi.spyOn(axios, 'delete').mockResolvedValue({});
     renderPage();
@@ -115,7 +155,7 @@ describe('DesignationPage', () => {
   });
 
   it('opens the edit dialog with prefilled value when Edit is clicked', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { designations: initialHalDesignations } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialHalDesignations));
     renderPage();
 
     await screen.findByText('Lecturer');
@@ -133,7 +173,7 @@ describe('DesignationPage', () => {
       const list = getCallCount === 1
         ? initialHalDesignations
         : [halItem(1, 'Senior Lecturer'), initialHalDesignations[1]];
-      return { data: { _embedded: { designations: list } } };
+      return pagedData(list);
     });
     const putSpy = vi.spyOn(axios, 'put').mockResolvedValue({});
     renderPage();
@@ -158,7 +198,7 @@ describe('DesignationPage', () => {
   });
 
   it('shows inline validation error when Title is cleared', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { designations: initialHalDesignations } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialHalDesignations));
     const putSpy = vi.spyOn(axios, 'put').mockResolvedValue({});
     renderPage();
 
@@ -174,7 +214,7 @@ describe('DesignationPage', () => {
   });
 
   it('shows server errors in an Alert at top of dialog when PUT fails', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { designations: initialHalDesignations } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialHalDesignations));
     vi.spyOn(axios, 'put').mockRejectedValue({
       isAxiosError: true,
       response: {
@@ -196,7 +236,7 @@ describe('DesignationPage', () => {
   });
 
   it('opens an empty add dialog when Add Designation is clicked', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { designations: initialHalDesignations } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialHalDesignations));
     renderPage();
 
     await screen.findByText('Lecturer');
@@ -215,7 +255,7 @@ describe('DesignationPage', () => {
       const list = getCallCount === 1
         ? initialHalDesignations
         : [...initialHalDesignations, halItem(99, 'Professor')];
-      return { data: { _embedded: { designations: list } } };
+      return pagedData(list);
     });
     const postSpy = vi.spyOn(axios, 'post').mockResolvedValue({});
     renderPage();
@@ -238,7 +278,7 @@ describe('DesignationPage', () => {
   });
 
   it('shows error snackbar when DELETE fails', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: { _embedded: { designations: initialHalDesignations } } });
+    vi.spyOn(axios, 'get').mockResolvedValue(pagedData(initialHalDesignations));
     vi.spyOn(axios, 'delete').mockRejectedValue(new Error('boom'));
     renderPage();
 
