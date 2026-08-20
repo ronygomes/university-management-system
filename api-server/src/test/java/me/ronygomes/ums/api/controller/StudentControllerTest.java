@@ -13,6 +13,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -72,6 +75,33 @@ public class StudentControllerTest {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @Test
+    void testFindPaged() throws Exception {
+        Mockito.when(studentService.findPaged(Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(java.util.List.of(mockDBStudent()), PageRequest.of(0, 20), 1));
+
+        mockMvc.perform(get("/v1/students")
+                        .with(adminJwt()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].id").value(1))
+                .andExpect(jsonPath("$.content[0].fullName").value("Student 1"))
+                .andExpect(jsonPath("$.content[0].registrationNumber").value("2024-CSE-0001"));
+
+        mockMvc.perform(get("/v1/students")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/students")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test

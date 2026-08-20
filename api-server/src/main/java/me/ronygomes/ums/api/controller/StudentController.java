@@ -1,9 +1,11 @@
 package me.ronygomes.ums.api.controller;
 
 import me.ronygomes.ums.api.config.annotation.AdminAccess;
+import me.ronygomes.ums.api.dto.PagedResponse;
 import me.ronygomes.ums.api.model.Education;
 import me.ronygomes.ums.api.model.Student;
 import me.ronygomes.ums.api.service.StudentService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -28,8 +29,8 @@ public class StudentController {
 
     @AdminAccess
     @GetMapping
-    public List<Student> findAll() {
-        return studentService.findAll();
+    public PagedResponse<Student> findPaged(Pageable pageable) {
+        return PagedResponse.of(studentService.findPaged(pageable));
     }
 
     @AdminAccess

@@ -10,6 +10,8 @@ import me.ronygomes.ums.api.repository.RegistrationNumberRepository;
 import me.ronygomes.ums.api.repository.StudentRepository;
 import me.ronygomes.ums.api.validator.EducationValidator;
 import me.ronygomes.ums.api.validator.StudentValidator;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
@@ -48,8 +50,8 @@ public class StudentService {
         this.exceptionHelper = exceptionHelper;
     }
 
-    public java.util.List<Student> findAll() {
-        return studentRepository.findAll();
+    public Page<Student> findPaged(Pageable pageable) {
+        return studentRepository.findAll(pageable);
     }
 
     public java.util.Optional<Student> findByEmail(String email) {
