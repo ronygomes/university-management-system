@@ -44,15 +44,19 @@ public class TeacherModelHelper {
                 .build();
     }
 
+    public TeacherDto toEmbeddedModel(Teacher entity) {
+        TeacherDto dto = convertToOutputDto(entity, HalDataOutputType.EMBEDDED);
+        dto.add(linkTo(departmentController.department(dto.getDepartmentCode())).withRel("department"));
+        dto.add(linkTo(designationController.designation(entity.getDesignation().getId())).withRel("designation"));
+        dto.add(linkTo(teacherController.getById(entity.getId())).withSelfRel());
+
+        return dto;
+    }
+
     public CollectionModel<TeacherDto> toCollectionModel(Iterable<? extends Teacher> entities) {
         List<TeacherDto> teachers = new ArrayList<>();
         for (Teacher entity : entities) {
-            TeacherDto dto = convertToOutputDto(entity, HalDataOutputType.EMBEDDED);
-            dto.add(linkTo(departmentController.department(dto.getDepartmentCode())).withRel("department"));
-            dto.add(linkTo(designationController.designation(entity.getDesignation().getId())).withRel("designation"));
-            dto.add(linkTo(teacherController.getById(entity.getId())).withSelfRel());
-
-            teachers.add(dto);
+            teachers.add(toEmbeddedModel(entity));
         }
 
         CollectionModel<TeacherDto> col = CollectionModel.of(teachers);

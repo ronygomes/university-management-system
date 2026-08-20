@@ -1,5 +1,5 @@
 import axios, { isAxiosError } from 'axios';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
@@ -22,6 +22,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
   TextField,
 } from '@mui/material';
@@ -79,16 +80,24 @@ function extractIdFromSelfLink(href: string): number {
   return Number(href.split('/').pop());
 }
 
-async function fetchTeachers(): Promise<TeacherListItem[]> {
-  const response = await axios.get(TEACHER_ENDPOINT);
+type PagedTeachers = {
+  content: TeacherListItem[];
+  totalElements: number;
+};
+
+async function fetchTeachersPaged(page: number, size: number): Promise<PagedTeachers> {
+  const response = await axios.get(`${TEACHER_ENDPOINT}/paged`, { params: { page, size } });
   const items: TeacherHalItem[] = response.data._embedded?.teachers ?? [];
-  return items.map((item) => ({
-    id: extractIdFromSelfLink(item._links.self.href),
-    fullName: item.fullName,
-    title: item.title,
-    email: item.email,
-    departmentCode: item.departmentCode,
-  }));
+  return {
+    content: items.map((item) => ({
+      id: extractIdFromSelfLink(item._links.self.href),
+      fullName: item.fullName,
+      title: item.title,
+      email: item.email,
+      departmentCode: item.departmentCode,
+    })),
+    totalElements: response.data.page?.totalElements ?? 0,
+  };
 }
 
 async function fetchTeacher(id: number): Promise<FullTeacher> {
@@ -379,10 +388,16 @@ const TeacherPage = () => {
   const [errorOpen, setErrorOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
-  const { data: teachers = [] } = useQuery({
-    queryKey: ['teachers'],
-    queryFn: fetchTeachers,
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const { data } = useQuery({
+    queryKey: ['teachers', 'paged', page, rowsPerPage],
+    queryFn: () => fetchTeachersPaged(page, rowsPerPage),
+    placeholderData: keepPreviousData,
   });
+  const teachers = data?.content ?? [];
+  const totalElements = data?.totalElements ?? 0;
 
   const { mutate: triggerDelete, isPending: isDeletePending } = useMutation({
     mutationFn: deleteTeacher,
@@ -450,6 +465,18 @@ const TeacherPage = () => {
             </TableBody>
           </Table>
         </TableContainer>
+        <TablePagination
+          component='div'
+          count={totalElements}
+          page={page}
+          onPageChange={(_, newPage) => setPage(newPage)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPageOptions={[5, 10, 25]}
+        />
 
         <Dialog open={pendingDelete !== null} onClose={() => setPendingDelete(null)}>
           <DialogTitle>Delete teacher?</DialogTitle>

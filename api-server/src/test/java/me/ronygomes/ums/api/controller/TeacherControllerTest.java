@@ -15,6 +15,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +31,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.List;
 
 import static me.ronygomes.ums.api.testHelper.RoleHelper.*;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -97,6 +101,42 @@ public class TeacherControllerTest {
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
 
         mockMvc.perform(get("/v1/teachers")
+                        .with(studentJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+    }
+
+    @Test
+    void testGetPagedTeacherSuccess() throws Exception {
+        Teacher mockDBTeacher = createMockDBTeacher();
+        Mockito.when(teacherService.findPaged(Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(mockDBTeacher), PageRequest.of(0, 20), 1));
+
+        mockMvc.perform(get("/v1/teachers/paged")
+                        .with(adminJwt()))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.OK.value()))
+                .andExpect(jsonPath("$._links.self.href", containsString("/v1/teachers/paged")))
+                .andExpect(jsonPath("$.page.size").value(20))
+                .andExpect(jsonPath("$.page.number").value(0))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.page.totalPages").value(1))
+                .andExpect(jsonPath("$._embedded.teachers.length()").value(1))
+                .andExpect(jsonPath("$._embedded.teachers[0].fullName").value("John Doe"))
+                .andExpect(jsonPath("$._embedded.teachers[0].email").value("john@example.com"))
+                .andExpect(jsonPath("$._embedded.teachers[0].title").value("Sample Title"))
+                .andExpect(jsonPath("$._embedded.teachers[0].departmentCode").value("CODE-1"))
+                .andExpect(jsonPath("$._embedded.teachers[0]._links.self.href")
+                        .value("http://localhost/v1/teachers/3"))
+                .andExpect(jsonPath("$._embedded.teachers[0]._links.department.href")
+                        .value("http://localhost/v1/departments/CODE-1"))
+                .andExpect(jsonPath("$._embedded.teachers[0]._links.designation.href")
+                        .value("http://localhost/v1/designations/1"));
+
+        mockMvc.perform(get("/v1/teachers/paged")
+                        .with(teacherJwt()))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+
+        mockMvc.perform(get("/v1/teachers/paged")
                         .with(studentJwt()))
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
     }

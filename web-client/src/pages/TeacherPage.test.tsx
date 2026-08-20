@@ -55,6 +55,13 @@ const initialTeachers = [
   teacherHal(2, 'Jane Smith', 'Professor'),
 ];
 
+function teachersPage(list: ReturnType<typeof teacherHal>[]) {
+  return {
+    _embedded: { teachers: list },
+    page: { size: 5, totalElements: list.length, totalPages: 1, number: 0 },
+  };
+}
+
 const fullTeacher1 = {
   fullName: 'John Doe',
   email: '1@u.edu',
@@ -81,7 +88,7 @@ describe('TeacherPage', () => {
 
   it('renders the Teachers heading and the list', async () => {
     mockGetByUrl({
-      '/v1/teachers': { _embedded: { teachers: initialTeachers } },
+      '/v1/teachers': teachersPage(initialTeachers),
       '/v1/departments': { _embedded: { departments: mockDepartments } },
       '/v1/designations': { _embedded: { designations: mockDesignations } },
     });
@@ -93,9 +100,31 @@ describe('TeacherPage', () => {
     expect(screen.getAllByText('Lecturer').length).toBeGreaterThan(0);
   });
 
+  it('requests the paged teachers endpoint and loads the next page on navigation', async () => {
+    let call = 0;
+    const getSpy = vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
+      if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
+      if (url.includes('/v1/designations')) return { data: { _embedded: { designations: mockDesignations } } };
+      call++;
+      const list = call === 1
+        ? [teacherHal(1, 'John Doe', 'Lecturer')]
+        : [teacherHal(9, 'Zed Nine', 'Professor')];
+      return { data: { _embedded: { teachers: list }, page: { size: 5, totalElements: 10, totalPages: 2, number: call - 1 } } };
+    });
+    renderPage();
+
+    await screen.findByText('John Doe');
+    await userEvent.click(screen.getByRole('button', { name: /next page/i }));
+    expect(await screen.findByText('Zed Nine')).toBeInTheDocument();
+
+    const pagedCalls = getSpy.mock.calls.filter((c) => String(c[0]).includes('/v1/teachers/paged'));
+    expect(pagedCalls[0][1]).toEqual({ params: { page: 0, size: 5 } });
+    expect(pagedCalls[1][1]).toEqual({ params: { page: 1, size: 5 } });
+  });
+
   it('opens delete confirmation and does not call DELETE on Cancel', async () => {
     mockGetByUrl({
-      '/v1/teachers': { _embedded: { teachers: initialTeachers } },
+      '/v1/teachers': teachersPage(initialTeachers),
       '/v1/departments': { _embedded: { departments: mockDepartments } },
       '/v1/designations': { _embedded: { designations: mockDesignations } },
     });
@@ -119,7 +148,7 @@ describe('TeacherPage', () => {
         const list = teachersCallCount === 1
           ? initialTeachers
           : initialTeachers.filter((t) => t.fullName !== 'John Doe');
-        return { data: { _embedded: { teachers: list } } };
+        return { data: teachersPage(list) };
       }
       if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
       if (url.includes('/v1/designations')) return { data: { _embedded: { designations: mockDesignations } } };
@@ -145,7 +174,7 @@ describe('TeacherPage', () => {
   it('opens the edit dialog with prefilled values from the full GET', async () => {
     vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
       if (url.match(/\/v1\/teachers\/\d+$/)) return { data: fullTeacher1 };
-      if (url.includes('/v1/teachers')) return { data: { _embedded: { teachers: initialTeachers } } };
+      if (url.includes('/v1/teachers')) return { data: teachersPage(initialTeachers) };
       if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
       if (url.includes('/v1/designations')) return { data: { _embedded: { designations: mockDesignations } } };
       return { data: {} };
@@ -173,7 +202,7 @@ describe('TeacherPage', () => {
         const list = teachersCallCount === 1
           ? initialTeachers
           : [teacherHal(1, 'John Doe Updated', 'Lecturer'), initialTeachers[1]];
-        return { data: { _embedded: { teachers: list } } };
+        return { data: teachersPage(list) };
       }
       if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
       if (url.includes('/v1/designations')) return { data: { _embedded: { designations: mockDesignations } } };
@@ -214,7 +243,7 @@ describe('TeacherPage', () => {
   it('shows inline validation when required field is cleared', async () => {
     vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
       if (url.match(/\/v1\/teachers\/\d+$/)) return { data: fullTeacher1 };
-      if (url.includes('/v1/teachers')) return { data: { _embedded: { teachers: initialTeachers } } };
+      if (url.includes('/v1/teachers')) return { data: teachersPage(initialTeachers) };
       if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
       if (url.includes('/v1/designations')) return { data: { _embedded: { designations: mockDesignations } } };
       return { data: {} };
@@ -237,7 +266,7 @@ describe('TeacherPage', () => {
   it('shows server errors in an Alert at top of dialog when PUT fails', async () => {
     vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
       if (url.match(/\/v1\/teachers\/\d+$/)) return { data: fullTeacher1 };
-      if (url.includes('/v1/teachers')) return { data: { _embedded: { teachers: initialTeachers } } };
+      if (url.includes('/v1/teachers')) return { data: teachersPage(initialTeachers) };
       if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
       if (url.includes('/v1/designations')) return { data: { _embedded: { designations: mockDesignations } } };
       return { data: {} };
@@ -265,7 +294,7 @@ describe('TeacherPage', () => {
 
   it('opens an empty add dialog when Add Teacher is clicked', async () => {
     mockGetByUrl({
-      '/v1/teachers': { _embedded: { teachers: initialTeachers } },
+      '/v1/teachers': teachersPage(initialTeachers),
       '/v1/departments': { _embedded: { departments: mockDepartments } },
       '/v1/designations': { _embedded: { designations: mockDesignations } },
     });
@@ -288,7 +317,7 @@ describe('TeacherPage', () => {
         const list = teachersCallCount === 1
           ? initialTeachers
           : [...initialTeachers, teacherHal(99, 'New Guy', 'Professor')];
-        return { data: { _embedded: { teachers: list } } };
+        return { data: teachersPage(list) };
       }
       if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
       if (url.includes('/v1/designations')) return { data: { _embedded: { designations: mockDesignations } } };
@@ -337,7 +366,7 @@ describe('TeacherPage', () => {
 
   it('shows error snackbar when DELETE fails', async () => {
     mockGetByUrl({
-      '/v1/teachers': { _embedded: { teachers: initialTeachers } },
+      '/v1/teachers': teachersPage(initialTeachers),
       '/v1/departments': { _embedded: { departments: mockDepartments } },
       '/v1/designations': { _embedded: { designations: mockDesignations } },
     });

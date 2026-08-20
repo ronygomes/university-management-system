@@ -5,8 +5,13 @@ import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.dto.TeacherDto;
 import me.ronygomes.ums.api.dto.TeacherPatchInputDto;
 import me.ronygomes.ums.api.service.TeacherService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.RepresentationModel;
+import me.ronygomes.ums.api.model.Teacher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +37,14 @@ public class TeacherController {
     @AdminAccess
     public CollectionModel<TeacherDto> getAll() {
         return teacherModelAssembler.toCollectionModel(teacherService.findAll());
+    }
+
+    @AdminAccess
+    @GetMapping("/paged")
+    public PagedModel<TeacherDto> getPaged(Pageable pageable,
+                                           PagedResourcesAssembler<Teacher> assembler) {
+        Page<Teacher> teachers = teacherService.findPaged(pageable);
+        return assembler.toModel(teachers, teacherModelAssembler::toEmbeddedModel);
     }
 
     @AdminAccess

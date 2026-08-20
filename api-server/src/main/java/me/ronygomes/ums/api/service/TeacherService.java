@@ -15,6 +15,8 @@ import me.ronygomes.ums.api.repository.DepartmentRepository;
 import me.ronygomes.ums.api.repository.DesignationRepository;
 import me.ronygomes.ums.api.repository.TeacherRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 
@@ -52,6 +54,10 @@ public class TeacherService {
 
     public List<Teacher> findAll() {
         return teacherRepository.findAll();
+    }
+
+    public Page<Teacher> findPaged(Pageable pageable) {
+        return teacherRepository.findAll(pageable);
     }
 
     public java.util.Optional<Teacher> findByEmail(String email) {
