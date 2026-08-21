@@ -59,7 +59,6 @@ public class Student extends AbstractEntity {
 
     @NotNull
     @PastOrPresent
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date registrationDate;

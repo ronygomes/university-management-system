@@ -60,10 +60,8 @@ public class CourseSchedule extends AbstractEntity {
     @Convert(converter = WeekOfDayListStringAttributeConverter.class)
     private List<DayOfWeek> days;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date startDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

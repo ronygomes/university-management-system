@@ -31,7 +31,6 @@ public class Enrollment extends AbstractEntity {
 
     @NotNull
     @PastOrPresent
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date enrollmentDate;
 
