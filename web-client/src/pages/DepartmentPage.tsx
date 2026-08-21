@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 import ContentWrapper from '../components/ContentWrapper';
 import ProtectedPage from '../components/ProtectedPage';
+import { DEFAULT_ROWS_PER_PAGE, ROWS_PER_PAGE_OPTIONS, tableHeadRowSx } from '../components/tableStyles';
 
 const DEPARTMENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/departments`;
 
@@ -169,7 +170,7 @@ const DepartmentPage = () => {
   const [successMessage, setSuccessMessage] = useState('');
 
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
 
   const { data } = useQuery({
     queryKey: ['departments', 'paged', page, rowsPerPage],
@@ -211,7 +212,7 @@ const DepartmentPage = () => {
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
-              <TableRow>
+              <TableRow sx={tableHeadRowSx}>
                 <TableCell>Code</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell align='right'>Action</TableCell>
@@ -255,7 +256,7 @@ const DepartmentPage = () => {
             setRowsPerPage(parseInt(e.target.value, 10));
             setPage(0);
           }}
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
         />
 
         <Dialog open={pendingDelete !== null} onClose={() => setPendingDelete(null)}>

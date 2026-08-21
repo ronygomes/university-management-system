@@ -337,7 +337,7 @@ describe('CoursePage', () => {
     expect(screen.getByText('Data Structures')).toBeInTheDocument();
 
     const coursesCalls = getSpy.mock.calls.filter((c) => String(c[0]).endsWith('/v1/courses'));
-    expect(coursesCalls.at(-1)![1]).toEqual({ params: { page: 0, size: 5, semester: 'SECOND_YEAR_FIRST' } });
+    expect(coursesCalls.at(-1)![1]).toEqual({ params: { page: 0, size: 10, semester: 'SECOND_YEAR_FIRST' } });
   });
 
   it('shows error snackbar when DELETE fails', async () => {

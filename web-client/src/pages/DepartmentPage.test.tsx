@@ -74,7 +74,7 @@ describe('DepartmentPage', () => {
       return {
         data: {
           _embedded: { departments: list },
-          page: { size: 5, totalElements: 10, totalPages: 2, number: call - 1 },
+          page: { size: 10, totalElements: 20, totalPages: 2, number: call - 1 },
         },
       };
     });
@@ -84,7 +84,7 @@ describe('DepartmentPage', () => {
     expect(getSpy).toHaveBeenNthCalledWith(
       1,
       expect.stringMatching(/\/v1\/departments\/paged$/),
-      { params: { page: 0, size: 5 } },
+      { params: { page: 0, size: 10 } },
     );
 
     await userEvent.click(screen.getByRole('button', { name: /next page/i }));
@@ -93,7 +93,7 @@ describe('DepartmentPage', () => {
     expect(getSpy).toHaveBeenNthCalledWith(
       2,
       expect.stringMatching(/\/v1\/departments\/paged$/),
-      { params: { page: 1, size: 5 } },
+      { params: { page: 1, size: 10 } },
     );
   });
 

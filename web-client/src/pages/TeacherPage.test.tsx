@@ -109,7 +109,7 @@ describe('TeacherPage', () => {
       const list = call === 1
         ? [teacherHal(1, 'John Doe', 'Lecturer')]
         : [teacherHal(9, 'Zed Nine', 'Professor')];
-      return { data: { _embedded: { teachers: list }, page: { size: 5, totalElements: 10, totalPages: 2, number: call - 1 } } };
+      return { data: { _embedded: { teachers: list }, page: { size: 10, totalElements: 20, totalPages: 2, number: call - 1 } } };
     });
     renderPage();
 
@@ -118,8 +118,8 @@ describe('TeacherPage', () => {
     expect(await screen.findByText('Zed Nine')).toBeInTheDocument();
 
     const pagedCalls = getSpy.mock.calls.filter((c) => String(c[0]).includes('/v1/teachers/paged'));
-    expect(pagedCalls[0][1]).toEqual({ params: { page: 0, size: 5 } });
-    expect(pagedCalls[1][1]).toEqual({ params: { page: 1, size: 5 } });
+    expect(pagedCalls[0][1]).toEqual({ params: { page: 0, size: 10 } });
+    expect(pagedCalls[1][1]).toEqual({ params: { page: 1, size: 10 } });
   });
 
   it('opens delete confirmation and does not call DELETE on Cancel', async () => {

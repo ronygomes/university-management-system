@@ -22,9 +22,12 @@ import {
   TablePagination,
   TableRow,
   TextField,
+  Typography,
 } from '@mui/material';
+import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import ContentWrapper from '../components/ContentWrapper';
 import ProtectedPage from '../components/ProtectedPage';
+import { DEFAULT_ROWS_PER_PAGE, ROWS_PER_PAGE_OPTIONS, tableHeadRowSx } from '../components/tableStyles';
 
 const COURSE_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/courses`;
 const DEPARTMENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/departments`;
@@ -347,7 +350,7 @@ const CoursePage = () => {
   const [departmentFilter, setDepartmentFilter] = useState<string>('');
   const [semesterFilter, setSemesterFilter] = useState<Semester | ''>('');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
 
   const { data } = useQuery({
     queryKey: ['courses', 'paged', page, rowsPerPage, departmentFilter, semesterFilter],
@@ -386,7 +389,16 @@ const CoursePage = () => {
     <ProtectedPage>
       <ContentWrapper>
         <h1>Courses</h1>
+        <Stack direction='row' justifyContent='flex-end' sx={{ mb: 2 }}>
+          <Button variant='contained' onClick={() => setAddOpen(true)}>
+            Add Course
+          </Button>
+        </Stack>
         <Stack direction='row' spacing={2} alignItems='center' sx={{ mb: 2 }}>
+          <Stack direction='row' spacing={0.5} alignItems='center' sx={{ color: 'text.secondary' }}>
+            <FilterAltOutlinedIcon fontSize='small' />
+            <Typography variant='body2'>Filters</Typography>
+          </Stack>
           <TextField
             select
             label='Department'
@@ -419,14 +431,11 @@ const CoursePage = () => {
               <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>
             ))}
           </TextField>
-          <Button variant='contained' sx={{ ml: 'auto' }} onClick={() => setAddOpen(true)}>
-            Add Course
-          </Button>
         </Stack>
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
-              <TableRow>
+              <TableRow sx={tableHeadRowSx}>
                 <TableCell>Name</TableCell>
                 <TableCell>Semester</TableCell>
                 <TableCell>Credit</TableCell>
@@ -472,7 +481,7 @@ const CoursePage = () => {
             setRowsPerPage(parseInt(e.target.value, 10));
             setPage(0);
           }}
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
         />
 
         <Dialog open={pendingDelete !== null} onClose={() => setPendingDelete(null)}>

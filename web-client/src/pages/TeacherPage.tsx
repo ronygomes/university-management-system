@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 import ContentWrapper from '../components/ContentWrapper';
 import ProtectedPage from '../components/ProtectedPage';
+import { DEFAULT_ROWS_PER_PAGE, ROWS_PER_PAGE_OPTIONS, tableHeadRowSx } from '../components/tableStyles';
 
 const TEACHER_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/teachers`;
 const DEPARTMENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/departments`;
@@ -389,7 +390,7 @@ const TeacherPage = () => {
   const [successMessage, setSuccessMessage] = useState('');
 
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
 
   const { data } = useQuery({
     queryKey: ['teachers', 'paged', page, rowsPerPage],
@@ -431,7 +432,7 @@ const TeacherPage = () => {
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
-              <TableRow>
+              <TableRow sx={tableHeadRowSx}>
                 <TableCell>Name</TableCell>
                 <TableCell>Title</TableCell>
                 <TableCell align='right'>Action</TableCell>
@@ -475,7 +476,7 @@ const TeacherPage = () => {
             setRowsPerPage(parseInt(e.target.value, 10));
             setPage(0);
           }}
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
         />
 
         <Dialog open={pendingDelete !== null} onClose={() => setPendingDelete(null)}>
