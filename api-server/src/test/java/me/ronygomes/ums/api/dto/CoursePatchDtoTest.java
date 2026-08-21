@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class CoursePatchDtoTest {
 
@@ -71,11 +72,11 @@ public class CoursePatchDtoTest {
     }
 
     @Test
-    void testCoursePatchDto_instructorId() {
-        dto.setInstructorId(1000L);
+    void testCoursePatchDto_instructorIds() {
+        dto.setInstructorIds(List.of(1000L));
         CourseDto idto = dto.toInputDto(mockDBCourse);
-        assertEqualsExcept(mockDBCourse, idto, "instructorId");
-        Assertions.assertEquals(1000L, idto.getInstructorId());
+        assertEqualsExcept(mockDBCourse, idto, "instructorIds");
+        Assertions.assertEquals(List.of(1000L), idto.getInstructorIds());
     }
 
     private void assertEqualsExcept(Course mockDBCourse, CourseDto idto, String field) {
@@ -103,8 +104,10 @@ public class CoursePatchDtoTest {
             Assertions.assertEquals(mockDBCourse.getSemester(), idto.getSemester());
         }
 
-        if (!"instructorId".equals(field)) {
-            Assertions.assertEquals(mockDBCourse.getInstructor().getId(), idto.getInstructorId());
+        if (!"instructorIds".equals(field)) {
+            Assertions.assertEquals(
+                    mockDBCourse.getInstructors().stream().map(Teacher::getId).sorted().toList(),
+                    idto.getInstructorIds());
         }
     }
 

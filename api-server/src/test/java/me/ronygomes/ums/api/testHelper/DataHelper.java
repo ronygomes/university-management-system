@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class DataHelper {
@@ -172,7 +173,9 @@ public class DataHelper {
         c.setDescription("Java Description");
         c.setDepartment(department);
         c.setSemester(Semester.FIRST_YEAR_FIRST);
-        c.setInstructor(teacher);
+        if (teacher != null) {
+            c.setInstructors(new LinkedHashSet<>(List.of(teacher)));
+        }
 
         return c;
     }
@@ -185,7 +188,9 @@ public class DataHelper {
         c.setDescription("Algorithm Description");
         c.setDepartment(department);
         c.setSemester(Semester.SECOND_YEAR_FIRST);
-        c.setInstructor(teacher);
+        if (teacher != null) {
+            c.setInstructors(new LinkedHashSet<>(List.of(teacher)));
+        }
 
         return c;
     }

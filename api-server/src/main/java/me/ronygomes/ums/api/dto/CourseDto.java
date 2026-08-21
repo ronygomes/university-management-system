@@ -13,7 +13,9 @@ import me.ronygomes.ums.api.model.Teacher;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 import static jakarta.persistence.EnumType.STRING;
 
@@ -47,7 +49,7 @@ public class CourseDto implements Serializable {
     @Enumerated(STRING)
     private Semester semester;
 
-    private Long instructorId;
+    private List<Long> instructorIds = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -105,12 +107,12 @@ public class CourseDto implements Serializable {
         this.semester = semester;
     }
 
-    public Long getInstructorId() {
-        return instructorId;
+    public List<Long> getInstructorIds() {
+        return instructorIds;
     }
 
-    public void setInstructorId(Long instructorId) {
-        this.instructorId = instructorId;
+    public void setInstructorIds(List<Long> instructorIds) {
+        this.instructorIds = instructorIds;
     }
 
     public static CourseDto toDto(Course entity) {
@@ -122,21 +124,21 @@ public class CourseDto implements Serializable {
         dto.setDescription(entity.getDescription());
         dto.setDepartmentCode(entity.getDepartment().getCode());
         dto.setSemester(entity.getSemester());
-
-        if (Objects.nonNull(entity.getInstructor())) {
-            dto.setInstructorId(entity.getInstructor().getId());
-        }
+        dto.setInstructorIds(entity.getInstructors().stream()
+                .map(Teacher::getId)
+                .sorted()
+                .toList());
 
         return dto;
     }
 
-    public void copy(Course to, Department department, Teacher instructor) {
+    public void copy(Course to, Department department, List<Teacher> instructors) {
         to.setCode(getCode());
         to.setName(getName());
         to.setCredit(getCredit().floatValue());
         to.setDescription(getDescription());
         to.setDepartment(department);
         to.setSemester(getSemester());
-        to.setInstructor(instructor);
+        to.setInstructors(new LinkedHashSet<>(instructors));
     }
 }

@@ -324,7 +324,7 @@ public class CourseRepositoryTest {
         Course nullTeacher = DataHelper.validPersistableCourse1(d1, null);
 
         repository.save(nullTeacher);
-        Assertions.assertNull(repository.findById(nullTeacher.getId()).orElseThrow().getInstructor());
+        Assertions.assertTrue(repository.findById(nullTeacher.getId()).orElseThrow().getInstructors().isEmpty());
         repository.delete(nullTeacher);
 
         Teacher t = new Teacher();
@@ -341,6 +341,6 @@ public class CourseRepositoryTest {
         Assertions.assertEquals(course1.getDescription(), course2.getDescription());
         Assertions.assertEquals(course1.getDepartment(), course2.getDepartment());
         Assertions.assertEquals(course1.getSemester(), course2.getSemester());
-        Assertions.assertEquals(course1.getInstructor(), course2.getInstructor());
+        Assertions.assertEquals(course1.getInstructors(), course2.getInstructors());
     }
 }

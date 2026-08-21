@@ -123,11 +123,15 @@ public class CourseService {
             errors.add(new ErrorMessage("departmentCode", "Department code not found"));
         }
 
-        Optional<Teacher> instructor = Optional.empty();
-        if (Objects.nonNull(from.getInstructorId())) {
-            instructor = teacherRepository.findById(from.getInstructorId());
-            if (instructor.isEmpty()) {
-                errors.add(new ErrorMessage("instructorId", "Teacher not found"));
+        List<Teacher> instructors = new ArrayList<>();
+        if (Objects.nonNull(from.getInstructorIds())) {
+            for (Long instructorId : from.getInstructorIds()) {
+                Optional<Teacher> instructor = teacherRepository.findById(instructorId);
+                if (instructor.isEmpty()) {
+                    errors.add(new ErrorMessage("instructorIds", "Teacher not found: " + instructorId));
+                } else {
+                    instructors.add(instructor.get());
+                }
             }
         }
 
@@ -136,6 +140,6 @@ public class CourseService {
                     DATA_VALIDATION_ERROR_DETAILS_TEMPLATE, errors);
         }
 
-        from.copy(to, department.orElseThrow(), instructor.orElse(null));
+        from.copy(to, department.orElseThrow(), instructors);
     }
 }

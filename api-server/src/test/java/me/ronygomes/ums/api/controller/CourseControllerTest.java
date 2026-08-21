@@ -51,7 +51,7 @@ public class CourseControllerTest {
               "description": "Awesome",
               "semester": "FOURTH_YEAR_SECOND",
               "departmentCode": "CSE",
-              "instructorId": 30
+              "instructorIds": [30]
             }
             """;
 
@@ -123,7 +123,7 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$.description").value("Java Description"))
                 .andExpect(jsonPath("$.departmentCode").value("CODE-1"))
                 .andExpect(jsonPath("$.semester").value("FIRST_YEAR_FIRST"))
-                .andExpect(jsonPath("$.instructorId").value("3"))
+                .andExpect(jsonPath("$.instructorIds[0]").value(3))
                 .andExpect(status().is(HttpStatus.OK.value()));
 
         mockMvc.perform(get("/v1/courses/1")
@@ -172,7 +172,7 @@ public class CourseControllerTest {
         Assertions.assertEquals("Awesome", received.getDescription());
         Assertions.assertEquals(Semester.FOURTH_YEAR_SECOND, received.getSemester());
         Assertions.assertEquals("CSE", received.getDepartmentCode());
-        Assertions.assertEquals(30L, received.getInstructorId());
+        Assertions.assertEquals(List.of(30L), received.getInstructorIds());
 
         mockMvc.perform(post("/v1/courses")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -197,7 +197,7 @@ public class CourseControllerTest {
                   "description": "Awesome 4",
                   "semester": "FOURTH_YEAR_FIRST",
                   "departmentCode": "EEE",
-                  "instructorId": 31
+                  "instructorIds": [31]
                 }
                 """;
 
@@ -220,7 +220,7 @@ public class CourseControllerTest {
         Assertions.assertEquals("Awesome 4", received.getDescription());
         Assertions.assertEquals(Semester.FOURTH_YEAR_FIRST, received.getSemester());
         Assertions.assertEquals("EEE", received.getDepartmentCode());
-        Assertions.assertEquals(31L, received.getInstructorId());
+        Assertions.assertEquals(List.of(31L), received.getInstructorIds());
 
         mockMvc.perform(put("/v1/courses/5")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -263,7 +263,7 @@ public class CourseControllerTest {
         Assertions.assertNull(received.getDescription());
         Assertions.assertNull(received.getSemester());
         Assertions.assertEquals("EEE", received.getDepartmentCode());
-        Assertions.assertNull(received.getInstructorId());
+        Assertions.assertNull(received.getInstructorIds());
 
         mockMvc.perform(patch("/v1/courses/5")
                         .contentType(MediaType.APPLICATION_JSON)

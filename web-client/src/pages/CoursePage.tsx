@@ -1,15 +1,17 @@
 import axios, { isAxiosError } from 'axios';
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import {
   Alert,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  ListItemText,
   MenuItem,
   Paper,
   Snackbar,
@@ -64,7 +66,7 @@ type Course = {
   description: string;
   departmentCode: string;
   semester: Semester;
-  instructorId: number | null;
+  instructorIds: number[];
 };
 
 type CourseFormData = {
@@ -74,12 +76,11 @@ type CourseFormData = {
   description: string;
   departmentCode: string;
   semester: Semester | '';
-  instructorId: number | '';
+  instructorIds: number[];
 };
 
-type CoursePayload = Omit<CourseFormData, 'instructorId' | 'semester'> & {
+type CoursePayload = Omit<CourseFormData, 'semester'> & {
   semester: Semester;
-  instructorId: number | null;
 };
 
 type Department = { code: string; name: string };
@@ -166,6 +167,7 @@ const CourseFormDialogBody = ({ course, onCancel, onSuccess }: CourseFormDialogB
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -178,7 +180,7 @@ const CourseFormDialogBody = ({ course, onCancel, onSuccess }: CourseFormDialogB
       description: course?.description ?? '',
       departmentCode: course?.departmentCode ?? '',
       semester: course?.semester ?? '',
-      instructorId: course?.instructorId ?? '',
+      instructorIds: course?.instructorIds ?? [],
     },
   });
 
@@ -209,7 +211,7 @@ const CourseFormDialogBody = ({ course, onCancel, onSuccess }: CourseFormDialogB
       description: data.description,
       departmentCode: data.departmentCode,
       semester: data.semester as Semester,
-      instructorId: data.instructorId === '' ? null : Number(data.instructorId),
+      instructorIds: data.instructorIds,
     };
     mutate(payload);
   };
@@ -298,22 +300,34 @@ const CourseFormDialogBody = ({ course, onCancel, onSuccess }: CourseFormDialogB
               </MenuItem>
             ))}
           </TextField>
-          <TextField
-            select
-            label='Instructor'
-            fullWidth
-            defaultValue={course?.instructorId ?? ''}
-            error={!!errors.instructorId}
-            helperText={errors.instructorId?.message}
-            {...register('instructorId')}
-          >
-            <MenuItem value=''>None</MenuItem>
-            {teachers.map((t) => (
-              <MenuItem key={t.id} value={t.id}>
-                {t.fullName}
-              </MenuItem>
-            ))}
-          </TextField>
+          <Controller
+            name='instructorIds'
+            control={control}
+            render={({ field }) => (
+              <TextField
+                select
+                label='Instructors'
+                fullWidth
+                value={field.value}
+                onChange={field.onChange}
+                SelectProps={{
+                  multiple: true,
+                  renderValue: (selected) =>
+                    teachers
+                      .filter((t) => (selected as number[]).includes(t.id))
+                      .map((t) => t.fullName)
+                      .join(', '),
+                }}
+              >
+                {teachers.map((t) => (
+                  <MenuItem key={t.id} value={t.id}>
+                    <Checkbox checked={field.value.includes(t.id)} />
+                    <ListItemText primary={t.fullName} />
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
           <TextField
             label='Description'
             fullWidth

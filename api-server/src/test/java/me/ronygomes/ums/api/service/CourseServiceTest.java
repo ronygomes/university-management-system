@@ -137,11 +137,11 @@ public class CourseServiceTest {
 
         Mockito.verify(courseRepository, Mockito.times(1)).flush();
 
-        dto.setInstructorId(null);
+        dto.setInstructorIds(List.of());
         service.create(dto);
         Assertions.assertEquals(100L, id);
-        assertCourseDto(c, dto);
-        Assertions.assertNull(ac.getValue().getInstructor());
+        assertCourseDto(ac.getValue(), dto);
+        Assertions.assertTrue(ac.getValue().getInstructors().isEmpty());
     }
 
     @Test
@@ -211,8 +211,8 @@ public class CourseServiceTest {
         Assertions.assertEquals(ExceptionType.DATA_VALIDATION_FAILED, ex.getExceptionType());
         Assertions.assertEquals("Not a valid Course. See 'error' field for details", ex.getErrorDetails());
         Assertions.assertEquals(1, ex.getErrors().size());
-        Assertions.assertEquals("instructorId", ex.getErrors().get(0).getField());
-        Assertions.assertEquals("Teacher not found", ex.getErrors().get(0).getMessage());
+        Assertions.assertEquals("instructorIds", ex.getErrors().get(0).getField());
+        Assertions.assertEquals("Teacher not found: 500", ex.getErrors().get(0).getMessage());
 
         Mockito.verify(courseRepository, Mockito.never()).save(Mockito.any());
         Mockito.verify(courseRepository, Mockito.never()).flush();
@@ -252,7 +252,7 @@ public class CourseServiceTest {
         CoursePatchDto patchDto = new CoursePatchDto();
         patchDto.setCode("Updated");
         patchDto.setDepartmentCode("QQQ");
-        patchDto.setInstructorId(1000L);
+        patchDto.setInstructorIds(List.of(1000L));
 
         Department d = DataHelper.validPersistableDepartment1();
         Mockito.when(departmentRepository.findByCode(d.getCode())).thenReturn(Optional.of(d));
@@ -286,7 +286,8 @@ public class CourseServiceTest {
         Course arg = ac.getValue();
         Assertions.assertEquals(patchDto.getCode(), arg.getCode());
         Assertions.assertEquals(patchDto.getDepartmentCode(), arg.getDepartment().getCode());
-        Assertions.assertEquals(patchDto.getInstructorId(), arg.getInstructor().getId());
+        Assertions.assertEquals(patchDto.getInstructorIds(),
+                arg.getInstructors().stream().map(Teacher::getId).sorted().toList());
 
         Assertions.assertNull(patchDto.getName());
         Assertions.assertEquals(dbCourse.getName(), arg.getName());
@@ -322,7 +323,7 @@ public class CourseServiceTest {
         dto.setDescription("Description");
         dto.setCredit(BigDecimal.valueOf(3.5f));
         dto.setDepartmentCode("CODE-1");
-        dto.setInstructorId(500L);
+        dto.setInstructorIds(List.of(500L));
 
         return dto;
     }

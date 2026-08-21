@@ -6,10 +6,12 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Size;
 import me.ronygomes.ums.api.model.Course;
 import me.ronygomes.ums.api.model.Semester;
+import me.ronygomes.ums.api.model.Teacher;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 import static jakarta.persistence.EnumType.STRING;
@@ -37,7 +39,7 @@ public class CoursePatchDto implements Serializable {
     @Enumerated(STRING)
     private Semester semester;
 
-    private Long instructorId;
+    private List<Long> instructorIds;
 
     public String getCode() {
         return code;
@@ -87,12 +89,12 @@ public class CoursePatchDto implements Serializable {
         this.semester = semester;
     }
 
-    public Long getInstructorId() {
-        return instructorId;
+    public List<Long> getInstructorIds() {
+        return instructorIds;
     }
 
-    public void setInstructorId(Long instructorId) {
-        this.instructorId = instructorId;
+    public void setInstructorIds(List<Long> instructorIds) {
+        this.instructorIds = instructorIds;
     }
 
     public CourseDto toInputDto(Course dbData) {
@@ -104,10 +106,13 @@ public class CoursePatchDto implements Serializable {
         res.setDepartmentCode(Objects.nonNull(getDepartmentCode()) ? getDepartmentCode() : dbData.getDepartment().getCode());
         res.setSemester(Objects.nonNull(getSemester()) ? getSemester() : dbData.getSemester());
 
-        if (Objects.nonNull(getInstructorId())) {
-            res.setInstructorId(getInstructorId());
-        } else if (Objects.nonNull(dbData.getInstructor())) {
-            res.setInstructorId(dbData.getInstructor().getId());
+        if (Objects.nonNull(getInstructorIds())) {
+            res.setInstructorIds(getInstructorIds());
+        } else {
+            res.setInstructorIds(dbData.getInstructors().stream()
+                    .map(Teacher::getId)
+                    .sorted()
+                    .toList());
         }
 
         return res;

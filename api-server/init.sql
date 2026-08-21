@@ -70,11 +70,17 @@ CREATE TABLE IF NOT EXISTS courses (
     description VARCHAR(2000),
     department_id BIGINT NOT NULL,
     semester VARCHAR(30) NOT NULL CHECK (semester IN ('FIRST_YEAR_FIRST', 'FIRST_YEAR_SECOND', 'SECOND_YEAR_FIRST', 'SECOND_YEAR_SECOND', 'THIRD_YEAR_FIRST', 'THIRD_YEAR_SECOND', 'FOURTH_YEAR_FIRST', 'FOURTH_YEAR_SECOND', 'FIFTH_YEAR_FIRST', 'FIFTH_YEAR_SECOND')),
-    instructor_id BIGINT,
     uuid CHAR(36) NOT NULL UNIQUE,
     version INTEGER DEFAULT 0,
-    CONSTRAINT fk_courses_department_id FOREIGN KEY (department_id) REFERENCES departments(id),
-    CONSTRAINT fk_courses_instructor_id FOREIGN KEY (instructor_id) REFERENCES teachers(id)
+    CONSTRAINT fk_courses_department_id FOREIGN KEY (department_id) REFERENCES departments(id)
+);
+
+CREATE TABLE IF NOT EXISTS course_instructors (
+    course_id BIGINT NOT NULL,
+    teacher_id BIGINT NOT NULL,
+    PRIMARY KEY (course_id, teacher_id),
+    CONSTRAINT fk_course_instructors_course_id FOREIGN KEY (course_id) REFERENCES courses(id),
+    CONSTRAINT fk_course_instructors_teacher_id FOREIGN KEY (teacher_id) REFERENCES teachers(id)
 );
 
 CREATE TABLE IF NOT EXISTS course_schedules (

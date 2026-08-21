@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.Objects;
+import java.util.List;
 
 public class CourseDtoTest {
 
@@ -40,7 +40,7 @@ public class CourseDtoTest {
         dto.setDescription("4");
         dto.setDepartmentCode("5");
         dto.setSemester(Semester.FIRST_YEAR_FIRST);
-        dto.setInstructorId(500L);
+        dto.setInstructorIds(List.of(500L));
 
         Department d = DataHelper.validPersistableDepartment1();
         d.setId(50L);
@@ -48,7 +48,7 @@ public class CourseDtoTest {
         Teacher t = new Teacher();
         t.setId(100L);
 
-        dto.copy(to, d, t);
+        dto.copy(to, d, List.of(t));
 
         Assertions.assertEquals("1", to.getCode());
         Assertions.assertEquals("2", to.getName());
@@ -56,7 +56,7 @@ public class CourseDtoTest {
         Assertions.assertEquals("4", to.getDescription());
         Assertions.assertSame(d, to.getDepartment());
         Assertions.assertEquals(Semester.FIRST_YEAR_FIRST, to.getSemester());
-        Assertions.assertSame(t, to.getInstructor());
+        Assertions.assertTrue(to.getInstructors().contains(t));
 
         Assertions.assertNull(to.getId());
     }
@@ -70,8 +70,8 @@ public class CourseDtoTest {
         Assertions.assertEquals(c.getDepartment().getCode(), dto.getDepartmentCode());
         Assertions.assertEquals(c.getSemester(), dto.getSemester());
 
-        if (Objects.nonNull(dto.getInstructorId())) {
-            Assertions.assertEquals(c.getInstructor().getId(), dto.getInstructorId());
-        }
+        Assertions.assertEquals(
+                c.getInstructors().stream().map(Teacher::getId).sorted().toList(),
+                dto.getInstructorIds());
     }
 }

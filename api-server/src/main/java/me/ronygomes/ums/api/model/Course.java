@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Size;
 
 import java.io.Serial;
 import java.math.BigDecimal;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import static jakarta.persistence.EnumType.STRING;
 
@@ -53,9 +55,13 @@ public class Course extends AbstractEntity {
     @Column(nullable = false, length = 30)
     private Semester semester;
 
-    @ManyToOne
-    @JoinColumn(name = "instructor_id", foreignKey = @ForeignKey(name = "fk_courses_instructor_id"))
-    private Teacher instructor;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "course_instructors",
+            joinColumns = @JoinColumn(name = "course_id", foreignKey = @ForeignKey(name = "fk_course_instructors_course_id")),
+            inverseJoinColumns = @JoinColumn(name = "teacher_id", foreignKey = @ForeignKey(name = "fk_course_instructors_teacher_id"))
+    )
+    private Set<Teacher> instructors = new LinkedHashSet<>();
 
     public Course() {
         this.credit = new BigDecimal(0);
@@ -118,11 +124,11 @@ public class Course extends AbstractEntity {
         this.semester = semester;
     }
 
-    public Teacher getInstructor() {
-        return instructor;
+    public Set<Teacher> getInstructors() {
+        return instructors;
     }
 
-    public void setInstructor(Teacher instructor) {
-        this.instructor = instructor;
+    public void setInstructors(Set<Teacher> instructors) {
+        this.instructors = instructors;
     }
 }

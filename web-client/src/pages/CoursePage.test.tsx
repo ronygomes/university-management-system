@@ -51,7 +51,7 @@ const initialCourses = [
     description: 'desc',
     departmentCode: 'CSE',
     semester: 'FIRST_YEAR_FIRST',
-    instructorId: 7,
+    instructorIds: [7],
   },
   {
     id: 2,
@@ -61,7 +61,7 @@ const initialCourses = [
     description: '',
     departmentCode: 'CSE',
     semester: 'SECOND_YEAR_FIRST',
-    instructorId: null,
+    instructorIds: [],
   },
 ];
 
@@ -190,7 +190,7 @@ describe('CoursePage', () => {
       description: 'desc',
       departmentCode: 'CSE',
       semester: 'FIRST_YEAR_FIRST',
-      instructorId: 7,
+      instructorIds: [7],
     });
 
     expect(await screen.findByText('Course updated')).toBeInTheDocument();
@@ -246,7 +246,7 @@ describe('CoursePage', () => {
     expect(within(dialog).getByRole('button', { name: /^add$/i })).toBeInTheDocument();
   });
 
-  it('sends POST with payload when adding (instructor None → null)', async () => {
+  it('sends POST with payload when adding (no instructors selected)', async () => {
     let coursesCallCount = 0;
     vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
       if (url.includes('/v1/courses')) {
@@ -261,7 +261,7 @@ describe('CoursePage', () => {
               description: '',
               departmentCode: 'CSE',
               semester: 'THIRD_YEAR_FIRST',
-              instructorId: null,
+              instructorIds: [],
             }];
         return { data: coursesEnvelope(list) };
       }
@@ -301,7 +301,7 @@ describe('CoursePage', () => {
       credit: 3,
       departmentCode: 'CSE',
       semester: 'THIRD_YEAR_FIRST',
-      instructorId: null,
+      instructorIds: [],
     });
 
     expect(await screen.findByText('Course added')).toBeInTheDocument();
