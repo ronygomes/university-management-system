@@ -36,9 +36,9 @@ const mockDepartments = [
 ];
 
 const mockCourses = [
-  { id: 1, title: 'CSE-101', name: 'Intro to Java', departmentCode: 'CSE', semester: 'FIRST_YEAR_FIRST', credit: 3, description: '', instructorId: null },
-  { id: 2, title: 'CSE-102', name: 'Data Structures', departmentCode: 'CSE', semester: 'FIRST_YEAR_FIRST', credit: 3, description: '', instructorId: null },
-  { id: 3, title: 'EEE-101', name: 'Circuits', departmentCode: 'EEE', semester: 'FIRST_YEAR_FIRST', credit: 3, description: '', instructorId: null },
+  { id: 1, code: 'CSE-101', name: 'Intro to Java', departmentCode: 'CSE', semester: 'FIRST_YEAR_FIRST', credit: 3, description: '', instructorId: null },
+  { id: 2, code: 'CSE-102', name: 'Data Structures', departmentCode: 'CSE', semester: 'FIRST_YEAR_FIRST', credit: 3, description: '', instructorId: null },
+  { id: 3, code: 'EEE-101', name: 'Circuits', departmentCode: 'EEE', semester: 'FIRST_YEAR_FIRST', credit: 3, description: '', instructorId: null },
 ];
 
 const initialSchedules = [
@@ -58,8 +58,8 @@ const initialSchedules = [
 
 function mockAllGet(schedules = initialSchedules) {
   return vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
-    if (url.includes('/v1/schedules')) return { data: schedules };
-    if (url.includes('/v1/courses')) return { data: mockCourses };
+    if (url.includes('/v1/schedules')) return { data: { content: schedules } };
+    if (url.includes('/v1/courses')) return { data: { content: mockCourses } };
     if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
     return { data: {} };
   });
@@ -101,9 +101,9 @@ describe('CourseSchedulePage', () => {
     vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
       if (url.includes('/v1/schedules')) {
         schedulesCallCount++;
-        return { data: schedulesCallCount === 1 ? initialSchedules : [] };
+        return { data: { content: schedulesCallCount === 1 ? initialSchedules : [] } };
       }
-      if (url.includes('/v1/courses')) return { data: mockCourses };
+      if (url.includes('/v1/courses')) return { data: { content: mockCourses } };
       if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
       return { data: {} };
     });
@@ -156,7 +156,7 @@ describe('CourseSchedulePage', () => {
     vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
       if (url.includes('/v1/schedules')) {
         schedulesCallCount++;
-        return { data: schedulesCallCount === 1 ? initialSchedules : [
+        return { data: { content: schedulesCallCount === 1 ? initialSchedules : [
           ...initialSchedules,
           {
             id: 11,
@@ -170,9 +170,9 @@ describe('CourseSchedulePage', () => {
             endDate: '2026-02-01T12:30:00.000Z',
             enrollmentOpen: true,
           },
-        ] };
+        ] } };
       }
-      if (url.includes('/v1/courses')) return { data: mockCourses };
+      if (url.includes('/v1/courses')) return { data: { content: mockCourses } };
       if (url.includes('/v1/departments')) return { data: { _embedded: { departments: mockDepartments } } };
       return { data: {} };
     });

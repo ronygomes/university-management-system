@@ -15,6 +15,10 @@ const COURSE_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/courses`;
 const SCHEDULE_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/schedules`;
 const ME_TEACHER_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/me/teacher`;
 
+const ALL_ROWS_SIZE = 1000;
+
+type PagedResponse<T> = { content: T[] };
+
 type Semester =
   | 'FIRST_YEAR_FIRST' | 'FIRST_YEAR_SECOND'
   | 'SECOND_YEAR_FIRST' | 'SECOND_YEAR_SECOND'
@@ -50,12 +54,12 @@ const DAY_SHORT: Record<Day, string> = {
 
 type Course = {
   id: number;
-  title: string;
+  code: string;
   name: string;
   credit: number;
   semester: Semester;
   departmentCode: string;
-  instructorId: number | null;
+  instructorIds: number[];
 };
 
 type Schedule = {
@@ -76,13 +80,17 @@ async function fetchSelfTeacher(): Promise<TeacherSelf> {
 }
 
 async function fetchCourses(): Promise<Course[]> {
-  const response = await axios.get<Course[]>(COURSE_ENDPOINT);
-  return response.data;
+  const response = await axios.get<PagedResponse<Course>>(COURSE_ENDPOINT, {
+    params: { size: ALL_ROWS_SIZE },
+  });
+  return response.data.content;
 }
 
 async function fetchSchedules(): Promise<Schedule[]> {
-  const response = await axios.get<Schedule[]>(SCHEDULE_ENDPOINT);
-  return response.data;
+  const response = await axios.get<PagedResponse<Schedule>>(SCHEDULE_ENDPOINT, {
+    params: { size: ALL_ROWS_SIZE },
+  });
+  return response.data.content;
 }
 
 function formatDateTime(s: string): string {
@@ -108,11 +116,11 @@ const TeacherLandingPage = () => {
 
   const teacherId = teacherSelf?.id ?? null;
   const myCourses = teacherId !== null
-    ? courses.filter((c) => c.instructorId === teacherId)
+    ? courses.filter((c) => c.instructorIds.includes(teacherId))
     : [];
   const myCourseIds = new Set(myCourses.map((c) => c.id));
   const mySchedules = schedules.filter((s) => myCourseIds.has(s.courseId));
-  const courseTitleById = new Map(courses.map((c) => [c.id, c.title]));
+  const courseCodeById = new Map(courses.map((c) => [c.id, c.code]));
 
   return (
     <>
@@ -127,7 +135,7 @@ const TeacherLandingPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Title</TableCell>
+                  <TableCell>Code</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Credit</TableCell>
                   <TableCell>Semester</TableCell>
@@ -140,7 +148,7 @@ const TeacherLandingPage = () => {
                   </TableRow>
                 ) : myCourses.map((c) => (
                   <TableRow key={c.id}>
-                    <TableCell>{c.title}</TableCell>
+                    <TableCell>{c.code}</TableCell>
                     <TableCell>{c.name}</TableCell>
                     <TableCell>{c.credit}</TableCell>
                     <TableCell>{SEMESTER_LABEL[c.semester] ?? c.semester}</TableCell>
@@ -172,7 +180,7 @@ const TeacherLandingPage = () => {
                   </TableRow>
                 ) : mySchedules.map((s) => (
                   <TableRow key={s.id}>
-                    <TableCell>{courseTitleById.get(s.courseId) ?? `#${s.courseId}`}</TableCell>
+                    <TableCell>{courseCodeById.get(s.courseId) ?? `#${s.courseId}`}</TableCell>
                     <TableCell>{BUILDING_LABEL[s.building] ?? s.building}</TableCell>
                     <TableCell>{s.roomNumber}</TableCell>
                     <TableCell>{s.days.map((d) => DAY_SHORT[d]).join(', ')}</TableCell>

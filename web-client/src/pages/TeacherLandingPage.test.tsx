@@ -32,9 +32,9 @@ const teachersByEmail: Record<string, { id: number; fullName: string; email: str
 };
 
 const courses = [
-  { id: 1, title: 'CSE-101', name: 'Intro to Java', credit: 3, semester: 'FIRST_YEAR_FIRST', departmentCode: 'CSE', description: '', instructorId: 7 },
-  { id: 2, title: 'CSE-201', name: 'Algorithms', credit: 3, semester: 'SECOND_YEAR_FIRST', departmentCode: 'CSE', description: '', instructorId: 7 },
-  { id: 3, title: 'CSE-301', name: 'Compilers', credit: 3, semester: 'THIRD_YEAR_FIRST', departmentCode: 'CSE', description: '', instructorId: 8 },
+  { id: 1, code: 'CSE-101', name: 'Intro to Java', credit: 3, semester: 'FIRST_YEAR_FIRST', departmentCode: 'CSE', description: '', instructorIds: [7] },
+  { id: 2, code: 'CSE-201', name: 'Algorithms', credit: 3, semester: 'SECOND_YEAR_FIRST', departmentCode: 'CSE', description: '', instructorIds: [7] },
+  { id: 3, code: 'CSE-301', name: 'Compilers', credit: 3, semester: 'THIRD_YEAR_FIRST', departmentCode: 'CSE', description: '', instructorIds: [8] },
 ];
 
 const schedules = [
@@ -49,8 +49,8 @@ function mockAllGet(selfEmail: string | null = 'jdoe@ums.dev') {
       if (!self) throw { isAxiosError: true, response: { status: 403 } };
       return { data: self };
     }
-    if (url.includes('/v1/schedules')) return { data: schedules };
-    if (url.includes('/v1/courses')) return { data: courses };
+    if (url.includes('/v1/schedules')) return { data: { content: schedules } };
+    if (url.includes('/v1/courses')) return { data: { content: courses } };
     return { data: {} };
   });
 }

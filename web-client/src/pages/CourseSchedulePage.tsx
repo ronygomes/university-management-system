@@ -31,6 +31,10 @@ const SCHEDULE_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/schedules`;
 const COURSE_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/courses`;
 const DEPARTMENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/departments`;
 
+const ALL_ROWS_SIZE = 1000;
+
+type PagedResponse<T> = { content: T[] };
+
 type Semester =
   | 'FIRST_YEAR_FIRST' | 'FIRST_YEAR_SECOND'
   | 'SECOND_YEAR_FIRST' | 'SECOND_YEAR_SECOND'
@@ -72,7 +76,7 @@ const DAY_SHORT: Record<Day, string> = {
 type Department = { code: string; name: string };
 type Course = {
   id: number;
-  title: string;
+  code: string;
   name: string;
   departmentCode: string;
   semester: Semester;
@@ -114,13 +118,17 @@ type SchedulePayload = {
 };
 
 async function fetchSchedules(): Promise<Schedule[]> {
-  const response = await axios.get<Schedule[]>(SCHEDULE_ENDPOINT);
-  return response.data;
+  const response = await axios.get<PagedResponse<Schedule>>(SCHEDULE_ENDPOINT, {
+    params: { size: ALL_ROWS_SIZE },
+  });
+  return response.data.content;
 }
 
 async function fetchCourses(): Promise<Course[]> {
-  const response = await axios.get<Course[]>(COURSE_ENDPOINT);
-  return response.data;
+  const response = await axios.get<PagedResponse<Course>>(COURSE_ENDPOINT, {
+    params: { size: ALL_ROWS_SIZE },
+  });
+  return response.data.content;
 }
 
 async function fetchDepartments(): Promise<Department[]> {
@@ -297,7 +305,7 @@ const ScheduleFormDialogBody = ({ schedule, schedules, onCancel, onSuccess }: Sc
           >
             {availableCourses.map((c) => (
               <MenuItem key={c.id} value={c.id}>
-                {c.title} — {c.name}
+                {c.code} — {c.name}
               </MenuItem>
             ))}
           </TextField>
@@ -418,7 +426,7 @@ const CourseSchedulePage = () => {
     queryFn: fetchCourses,
   });
 
-  const courseTitleById = new Map(courses.map((c) => [c.id, c.title]));
+  const courseCodeById = new Map(courses.map((c) => [c.id, c.code]));
 
   const { mutate: triggerDelete, isPending: isDeletePending } = useMutation({
     mutationFn: deleteSchedule,
@@ -477,7 +485,7 @@ const CourseSchedulePage = () => {
             <TableBody>
               {schedules.map((schedule) => (
                 <TableRow key={schedule.id}>
-                  <TableCell>{courseTitleById.get(schedule.courseId) ?? `#${schedule.courseId}`}</TableCell>
+                  <TableCell>{courseCodeById.get(schedule.courseId) ?? `#${schedule.courseId}`}</TableCell>
                   <TableCell>{schedule.department.code}</TableCell>
                   <TableCell>{SEMESTER_LABEL[schedule.semester] ?? schedule.semester}</TableCell>
                   <TableCell>{BUILDING_LABEL[schedule.building] ?? schedule.building}</TableCell>
@@ -524,7 +532,7 @@ const CourseSchedulePage = () => {
           <DialogContent>
             <DialogContentText>
               Are you sure you want to delete the schedule for &quot;
-              {pendingDelete ? (courseTitleById.get(pendingDelete.courseId) ?? `#${pendingDelete.courseId}`) : ''}
+              {pendingDelete ? (courseCodeById.get(pendingDelete.courseId) ?? `#${pendingDelete.courseId}`) : ''}
               &quot;? This cannot be undone.
             </DialogContentText>
           </DialogContent>

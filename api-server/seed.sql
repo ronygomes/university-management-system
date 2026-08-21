@@ -1,9 +1,3 @@
--- Seed data for the University Management System.
--- Loaded by Postgres AFTER init.sql (docker-entrypoint-initdb.d runs files
--- alphabetically: init.sql -> seed.sql). Departments and teacher_designations
--- come from init.sql and are referenced here by their natural keys.
-
--- 30 teachers spanning every department and all four designations.
 INSERT INTO teachers VALUES(NEXTVAL('teachers_seq'), 'Dr. Anisul Karim', 'House 1, Road 2, Dhaka', 'anisul.karim@ums.edu', '+8801700000001', 6.0, (SELECT id FROM teacher_designations WHERE title = 'Professor'), (SELECT id FROM departments WHERE code = 'CSE'), gen_random_uuid(), 0);
 INSERT INTO teachers VALUES(NEXTVAL('teachers_seq'), 'Dr. Farhana Rahman', 'House 2, Road 3, Dhaka', 'farhana.rahman@ums.edu', '+8801700000002', 9.0, (SELECT id FROM teacher_designations WHERE title = 'Associate Professor'), (SELECT id FROM departments WHERE code = 'CSE'), gen_random_uuid(), 0);
 INSERT INTO teachers VALUES(NEXTVAL('teachers_seq'), 'Sabbir Ahmed', 'House 3, Road 4, Dhaka', 'sabbir.ahmed@ums.edu', '+8801700000003', 12.0, (SELECT id FROM teacher_designations WHERE title = 'Assistant Professor'), (SELECT id FROM departments WHERE code = 'CSE'), gen_random_uuid(), 0);
@@ -35,7 +29,6 @@ INSERT INTO teachers VALUES(NEXTVAL('teachers_seq'), 'Farzana Kabir', 'House 28,
 INSERT INTO teachers VALUES(NEXTVAL('teachers_seq'), 'Dr. Mizanur Rahman', 'House 29, Road 6, Dhaka', 'mizanur.rahman@ums.edu', '+8801700000029', 6.0, (SELECT id FROM teacher_designations WHERE title = 'Professor'), (SELECT id FROM departments WHERE code = 'SoB'), gen_random_uuid(), 0);
 INSERT INTO teachers VALUES(NEXTVAL('teachers_seq'), 'Nabila Haque', 'House 30, Road 7, Dhaka', 'nabila.haque@ums.edu', '+8801700000030', 12.0, (SELECT id FROM teacher_designations WHERE title = 'Assistant Professor'), (SELECT id FROM departments WHERE code = 'SoB'), gen_random_uuid(), 0);
 
--- 100+ courses distributed across departments and semesters.
 -- CSE
 INSERT INTO courses VALUES(NEXTVAL('courses_seq'), 'CSE-1101', 'Introduction to Programming', 3.0, 'Introduction to Programming course offered by the CSE department.', (SELECT id FROM departments WHERE code = 'CSE'), 'FIRST_YEAR_FIRST', gen_random_uuid(), 0);
 INSERT INTO courses VALUES(NEXTVAL('courses_seq'), 'CSE-1102', 'Discrete Mathematics', 3.0, 'Discrete Mathematics course offered by the CSE department.', (SELECT id FROM departments WHERE code = 'CSE'), 'FIRST_YEAR_FIRST', gen_random_uuid(), 0);

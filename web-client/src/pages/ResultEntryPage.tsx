@@ -25,6 +25,10 @@ const STUDENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/students`;
 const ENROLLMENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/enrollments`;
 const DEPARTMENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/departments`;
 
+const ALL_ROWS_SIZE = 1000;
+
+type PagedResponse<T> = { content: T[] };
+
 type GradeLetter =
   | 'A_PLUS' | 'A' | 'A_MINUS'
   | 'B_PLUS' | 'B' | 'B_MINUS'
@@ -45,7 +49,7 @@ const GRADES: { value: GradeLetter; label: string }[] = [
 ];
 
 type Department = { code: string; name: string };
-type Course = { id: number; title: string; name: string; departmentCode: string };
+type Course = { id: number; code: string; name: string; departmentCode: string };
 type Schedule = { id: number; courseId: number };
 type Student = { id: number; fullName: string; email: string; registrationNumber: string };
 type Enrollment = {
@@ -64,16 +68,16 @@ async function fetchDepartments(): Promise<Department[]> {
   return response.data._embedded?.departments ?? [];
 }
 async function fetchCourses(): Promise<Course[]> {
-  return (await axios.get<Course[]>(COURSE_ENDPOINT)).data;
+  return (await axios.get<PagedResponse<Course>>(COURSE_ENDPOINT, { params: { size: ALL_ROWS_SIZE } })).data.content;
 }
 async function fetchSchedules(): Promise<Schedule[]> {
-  return (await axios.get<Schedule[]>(SCHEDULE_ENDPOINT)).data;
+  return (await axios.get<PagedResponse<Schedule>>(SCHEDULE_ENDPOINT, { params: { size: ALL_ROWS_SIZE } })).data.content;
 }
 async function fetchStudents(): Promise<Student[]> {
-  return (await axios.get<Student[]>(STUDENT_ENDPOINT)).data;
+  return (await axios.get<PagedResponse<Student>>(STUDENT_ENDPOINT, { params: { size: ALL_ROWS_SIZE } })).data.content;
 }
 async function fetchEnrollments(): Promise<Enrollment[]> {
-  return (await axios.get<Enrollment[]>(ENROLLMENT_ENDPOINT)).data;
+  return (await axios.get<PagedResponse<Enrollment>>(ENROLLMENT_ENDPOINT, { params: { size: ALL_ROWS_SIZE } })).data.content;
 }
 
 async function patchEnrollment(id: number, payload: { grade: GradeLetter; status: 'PASSED' | 'FAILED' }): Promise<void> {
@@ -190,7 +194,7 @@ const ResultEntryPage = () => {
           >
             <MenuItem value=''>Select</MenuItem>
             {filteredCourses.map((c) => (
-              <MenuItem key={c.id} value={c.id}>{c.title} — {c.name}</MenuItem>
+              <MenuItem key={c.id} value={c.id}>{c.code} — {c.name}</MenuItem>
             ))}
           </TextField>
         </Stack>

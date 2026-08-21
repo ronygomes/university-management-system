@@ -27,6 +27,10 @@ const ENROLLMENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/enrollmen
 const ME_STUDENT_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/me/student`;
 const ME_ENROLLMENTS_ENDPOINT = `${import.meta.env.VITE_API_SERVER_URL}/v1/me/enrollments`;
 
+const ALL_ROWS_SIZE = 1000;
+
+type PagedResponse<T> = { content: T[] };
+
 type Student = {
   id: number;
   fullName: string;
@@ -37,7 +41,7 @@ type Student = {
 
 type Course = {
   id: number;
-  title: string;
+  code: string;
   name: string;
   credit: number;
   departmentCode: string;
@@ -106,13 +110,17 @@ async function fetchSelfStudent(): Promise<Student | null> {
 }
 
 async function fetchCourses(): Promise<Course[]> {
-  const response = await axios.get<Course[]>(COURSE_ENDPOINT);
-  return response.data;
+  const response = await axios.get<PagedResponse<Course>>(COURSE_ENDPOINT, {
+    params: { size: ALL_ROWS_SIZE },
+  });
+  return response.data.content;
 }
 
 async function fetchSchedules(): Promise<Schedule[]> {
-  const response = await axios.get<Schedule[]>(SCHEDULE_ENDPOINT);
-  return response.data;
+  const response = await axios.get<PagedResponse<Schedule>>(SCHEDULE_ENDPOINT, {
+    params: { size: ALL_ROWS_SIZE },
+  });
+  return response.data.content;
 }
 
 async function fetchMyEnrollments(): Promise<Enrollment[]> {
@@ -335,7 +343,7 @@ const StudentLandingPage = () => {
             <MenuItem value='' disabled>No courses available</MenuItem>
           )}
           {availableCourses.map((c) => (
-            <MenuItem key={c.id} value={c.id}>{c.title} — {c.name}</MenuItem>
+            <MenuItem key={c.id} value={c.id}>{c.code} — {c.name}</MenuItem>
           ))}
         </TextField>
         <Button variant='contained' onClick={onEnroll} disabled={selectedCourseId === '' || isPending}>
@@ -360,7 +368,7 @@ const StudentLandingPage = () => {
           <TableHead>
             <TableRow>
               <TableCell>Sl</TableCell>
-              <TableCell>Title</TableCell>
+              <TableCell>Code</TableCell>
               <TableCell>Name</TableCell>
             </TableRow>
           </TableHead>
@@ -375,7 +383,7 @@ const StudentLandingPage = () => {
               return (
                 <TableRow key={e.id}>
                   <TableCell>{idx + 1}</TableCell>
-                  <TableCell>{course?.title ?? `#${e.courseScheduleId}`}</TableCell>
+                  <TableCell>{course?.code ?? `#${e.courseScheduleId}`}</TableCell>
                   <TableCell>{course?.name ?? ''}</TableCell>
                 </TableRow>
               );

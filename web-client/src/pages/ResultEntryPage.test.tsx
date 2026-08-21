@@ -35,8 +35,8 @@ const departments = [
   { code: 'EEE', name: 'Electrical Engineering' },
 ];
 const courses = [
-  { id: 10, title: 'CSE-101', name: 'Intro to Java', departmentCode: 'CSE' },
-  { id: 11, title: 'CSE-201', name: 'Algorithms', departmentCode: 'CSE' },
+  { id: 10, code: 'CSE-101', name: 'Intro to Java', departmentCode: 'CSE' },
+  { id: 11, code: 'CSE-201', name: 'Algorithms', departmentCode: 'CSE' },
 ];
 const schedules = [
   { id: 100, courseId: 10 },
@@ -55,10 +55,10 @@ const enrollments = [
 function mockAllGet() {
   return vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
     if (url.includes('/v1/departments')) return { data: { _embedded: { departments } } };
-    if (url.includes('/v1/students')) return { data: students };
-    if (url.includes('/v1/schedules')) return { data: schedules };
-    if (url.includes('/v1/courses')) return { data: courses };
-    if (url.includes('/v1/enrollments')) return { data: enrollments };
+    if (url.includes('/v1/students')) return { data: { content: students } };
+    if (url.includes('/v1/schedules')) return { data: { content: schedules } };
+    if (url.includes('/v1/courses')) return { data: { content: courses } };
+    if (url.includes('/v1/enrollments')) return { data: { content: enrollments } };
     return { data: {} };
   });
 }

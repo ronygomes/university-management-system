@@ -33,10 +33,10 @@ const students = [
 ];
 
 const courses = [
-  { id: 10, title: 'CSE-101', name: 'Intro to Java', departmentCode: 'CSE', credit: 3 },
-  { id: 11, title: 'CSE-201', name: 'Algorithms', departmentCode: 'CSE', credit: 3 },
-  { id: 12, title: 'EEE-101', name: 'Circuits', departmentCode: 'EEE', credit: 3 },
-  { id: 13, title: 'CSE-301', name: 'No Schedule', departmentCode: 'CSE', credit: 3 },
+  { id: 10, code: 'CSE-101', name: 'Intro to Java', departmentCode: 'CSE', credit: 3 },
+  { id: 11, code: 'CSE-201', name: 'Algorithms', departmentCode: 'CSE', credit: 3 },
+  { id: 12, code: 'EEE-101', name: 'Circuits', departmentCode: 'EEE', credit: 3 },
+  { id: 13, code: 'CSE-301', name: 'No Schedule', departmentCode: 'CSE', credit: 3 },
 ];
 
 const schedules = [
@@ -63,8 +63,8 @@ function mockAllGet(opts: { enrollments?: typeof enrollments; selfEmail?: string
     if (url.includes('/v1/me/enrollments')) {
       return { data: self ? enrols.filter((e) => e.studentId === self.id) : [] };
     }
-    if (url.includes('/v1/schedules')) return { data: schedules };
-    if (url.includes('/v1/courses')) return { data: courses };
+    if (url.includes('/v1/schedules')) return { data: { content: schedules } };
+    if (url.includes('/v1/courses')) return { data: { content: courses } };
     return { data: {} };
   });
 }
@@ -129,8 +129,8 @@ describe('StudentLandingPage', () => {
     vi.spyOn(axios, 'get').mockImplementation(async (url: string) => {
       if (url.includes('/v1/me/student')) return { data: jane };
       if (url.includes('/v1/me/enrollments')) return { data: enrollments.filter((e) => e.studentId === jane!.id) };
-      if (url.includes('/v1/schedules')) return { data: closedSchedules };
-      if (url.includes('/v1/courses')) return { data: courses };
+      if (url.includes('/v1/schedules')) return { data: { content: closedSchedules } };
+      if (url.includes('/v1/courses')) return { data: { content: courses } };
       return { data: {} };
     });
     renderPage('jane@ums.dev');
