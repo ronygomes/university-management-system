@@ -16,6 +16,7 @@ services:
     volumes:
       - postgres:/data/postgres
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
     ports:
       - '5432:5432'
     healthcheck:
