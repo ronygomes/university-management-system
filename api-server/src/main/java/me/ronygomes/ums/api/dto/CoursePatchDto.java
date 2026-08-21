@@ -20,7 +20,7 @@ public class CoursePatchDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Size(min = 1, max = 20)
-    private String title;
+    private String code;
 
     @Size(min = 1, max = 200)
     private String name;
@@ -39,12 +39,12 @@ public class CoursePatchDto implements Serializable {
 
     private Long instructorId;
 
-    public String getTitle() {
-        return title;
+    public String getCode() {
+        return code;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getName() {
@@ -97,7 +97,7 @@ public class CoursePatchDto implements Serializable {
 
     public CourseDto toInputDto(Course dbData) {
         CourseDto res = new CourseDto();
-        res.setTitle(Objects.nonNull(getTitle()) ? getTitle() : dbData.getTitle());
+        res.setCode(Objects.nonNull(getCode()) ? getCode() : dbData.getCode());
         res.setName(Objects.nonNull(getName()) ? getName() : dbData.getName());
         res.setCredit(Objects.nonNull(getCredit()) ? getCredit() : BigDecimal.valueOf(dbData.getCredit()));
         res.setDescription(Objects.nonNull(getDescription()) ? getDescription() : dbData.getDescription());

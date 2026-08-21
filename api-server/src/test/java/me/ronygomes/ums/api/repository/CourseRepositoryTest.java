@@ -80,7 +80,7 @@ public class CourseRepositoryTest {
         Assertions.assertEquals(0, repository.findFiltered("CSE", Semester.THIRD_YEAR_FIRST, page).getTotalElements());
 
         var firstYear = repository.findFiltered(null, Semester.FIRST_YEAR_FIRST, page);
-        Assertions.assertEquals("CSE-101", firstYear.getContent().getFirst().getTitle());
+        Assertions.assertEquals("CSE-101", firstYear.getContent().getFirst().getCode());
 
         repository.delete(c1);
         repository.delete(c2);
@@ -132,39 +132,39 @@ public class CourseRepositoryTest {
     }
 
     @Test
-    void testFieldConstrainsTitle() {
+    void testFieldConstrainsCode() {
         Department d1 = departmentRepository.findByCode("CSE").orElseThrow();
 
         Course nullCourse = DataHelper.validPersistableCourse1(d1, teacher);
-        nullCourse.setTitle(null);
+        nullCourse.setCode(null);
         Throwable exNull = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(nullCourse));
         Set<ConstraintViolation<?>> nullViolations = extractConstraintViolation(exNull);
         Assertions.assertEquals(1, nullViolations.size());
         nullViolations.forEach(v -> {
             Assertions.assertEquals("must not be null", v.getMessage());
-            Assertions.assertEquals("title", v.getPropertyPath().toString());
+            Assertions.assertEquals("code", v.getPropertyPath().toString());
             Assertions.assertNull(v.getInvalidValue());
         });
 
         Course minLen = DataHelper.validPersistableCourse1(d1, teacher);
-        minLen.setTitle("");
+        minLen.setCode("");
         Throwable exMinLength = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(minLen));
         Set<ConstraintViolation<?>> minLenViolations = extractConstraintViolation(exMinLength);
         Assertions.assertEquals(1, minLenViolations.size());
         minLenViolations.forEach(v -> {
             Assertions.assertEquals("size must be between 1 and 20", v.getMessage());
-            Assertions.assertEquals("title", v.getPropertyPath().toString());
+            Assertions.assertEquals("code", v.getPropertyPath().toString());
             Assertions.assertEquals(0, v.getInvalidValue().toString().length());
         });
 
         Course maxLen = DataHelper.validPersistableCourse1(d1, teacher);
-        maxLen.setTitle("a".repeat(21));
+        maxLen.setCode("a".repeat(21));
         Throwable exMaxLength = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(maxLen));
         Set<ConstraintViolation<?>> maxLenViolations = extractConstraintViolation(exMaxLength);
         Assertions.assertEquals(1, maxLenViolations.size());
         maxLenViolations.forEach(v -> {
             Assertions.assertEquals("size must be between 1 and 20", v.getMessage());
-            Assertions.assertEquals("title", v.getPropertyPath().toString());
+            Assertions.assertEquals("code", v.getPropertyPath().toString());
             Assertions.assertEquals("a".repeat(21), v.getInvalidValue().toString());
         });
 
@@ -172,7 +172,7 @@ public class CourseRepositoryTest {
         repository.save(valid1);
 
         Course valid2 = DataHelper.validPersistableCourse1(d1, teacher);
-        valid2.setTitle(valid1.getTitle());
+        valid2.setCode(valid1.getCode());
         Assertions.assertThrows(DataIntegrityViolationException.class, () -> repository.save(valid2));
 
         repository.delete(valid1);
@@ -219,7 +219,7 @@ public class CourseRepositoryTest {
         repository.save(valid1);
 
         Course valid2 = DataHelper.validPersistableCourse1(d1, teacher);
-        valid2.setName(valid1.getTitle());
+        valid2.setName(valid1.getCode());
         Assertions.assertThrows(DataIntegrityViolationException.class, () -> repository.save(valid2));
 
         repository.delete(valid1);
@@ -335,7 +335,7 @@ public class CourseRepositoryTest {
     }
 
     private void assertCourseEqual(Course course1, Course course2) {
-        Assertions.assertEquals(course1.getTitle(), course2.getTitle());
+        Assertions.assertEquals(course1.getCode(), course2.getCode());
         Assertions.assertEquals(course1.getName(), course2.getName());
         Assertions.assertEquals(course1.getCredit(), course2.getCredit());
         Assertions.assertEquals(course1.getDescription(), course2.getDescription());

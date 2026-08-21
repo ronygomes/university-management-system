@@ -23,11 +23,11 @@ public class CoursePatchDtoTest {
     }
 
     @Test
-    void testCoursePatchDto_title() {
-        dto.setTitle("Updated");
+    void testCoursePatchDto_code() {
+        dto.setCode("Updated");
         CourseDto idto = dto.toInputDto(mockDBCourse);
-        assertEqualsExcept(mockDBCourse, idto, "title");
-        Assertions.assertEquals("Updated", idto.getTitle());
+        assertEqualsExcept(mockDBCourse, idto, "code");
+        Assertions.assertEquals("Updated", idto.getCode());
     }
 
     @Test
@@ -79,8 +79,8 @@ public class CoursePatchDtoTest {
     }
 
     private void assertEqualsExcept(Course mockDBCourse, CourseDto idto, String field) {
-        if (!"title".equals(field)) {
-            Assertions.assertEquals(mockDBCourse.getTitle(), idto.getTitle());
+        if (!"code".equals(field)) {
+            Assertions.assertEquals(mockDBCourse.getCode(), idto.getCode());
         }
 
         if (!"name".equals(field)) {

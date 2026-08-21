@@ -166,7 +166,7 @@ public class DataHelper {
 
     public static Course validPersistableCourse1(Department department, Teacher teacher) {
         Course c = new Course();
-        c.setTitle("CSE-101");
+        c.setCode("CSE-101");
         c.setName("Introduction to Programming Language in Java");
         c.setCredit(3.0f);
         c.setDescription("Java Description");
@@ -179,7 +179,7 @@ public class DataHelper {
 
     public static Course validPersistableCourse2(Department department, Teacher teacher) {
         Course c = new Course();
-        c.setTitle("CSE-201");
+        c.setCode("CSE-201");
         c.setName("Introduction to Algorithm");
         c.setCredit(4.0f);
         c.setDescription("Algorithm Description");

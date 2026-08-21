@@ -26,7 +26,7 @@ public class Course extends AbstractEntity {
     @NotNull
     @Size(min = 1, max = 20)
     @Column(nullable = false, unique = true, length = 20)
-    private String title;
+    private String code;
 
     @NotNull
     @Size(min = 1, max = 200)
@@ -70,12 +70,12 @@ public class Course extends AbstractEntity {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public String getCode() {
+        return code;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getName() {

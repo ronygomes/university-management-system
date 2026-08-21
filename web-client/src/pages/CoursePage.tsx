@@ -58,7 +58,7 @@ const SEMESTER_LABEL: Record<Semester, string> =
 
 type Course = {
   id: number;
-  title: string;
+  code: string;
   name: string;
   credit: number;
   description: string;
@@ -68,7 +68,7 @@ type Course = {
 };
 
 type CourseFormData = {
-  title: string;
+  code: string;
   name: string;
   credit: number;
   description: string;
@@ -172,7 +172,7 @@ const CourseFormDialogBody = ({ course, onCancel, onSuccess }: CourseFormDialogB
   } = useForm<CourseFormData>({
     mode: 'onTouched',
     defaultValues: {
-      title: course?.title ?? '',
+      code: course?.code ?? '',
       name: course?.name ?? '',
       credit: course?.credit ?? 0,
       description: course?.description ?? '',
@@ -203,7 +203,7 @@ const CourseFormDialogBody = ({ course, onCancel, onSuccess }: CourseFormDialogB
     setServerErrors(null);
     setFallbackError(null);
     const payload: CoursePayload = {
-      title: data.title,
+      code: data.code,
       name: data.name,
       credit: Number(data.credit),
       description: data.description,
@@ -230,13 +230,13 @@ const CourseFormDialogBody = ({ course, onCancel, onSuccess }: CourseFormDialogB
         )}
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
-            label='Title'
+            label='Code'
             fullWidth
             required
-            error={!!errors.title}
-            helperText={errors.title?.message}
-            {...register('title', {
-              required: 'Title is required',
+            error={!!errors.code}
+            helperText={errors.code?.message}
+            {...register('code', {
+              required: 'Code is required',
               maxLength: { value: 20, message: 'Max 20 characters' },
             })}
           />
@@ -436,6 +436,7 @@ const CoursePage = () => {
           <Table>
             <TableHead>
               <TableRow sx={tableHeadRowSx}>
+                <TableCell>Code</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Semester</TableCell>
                 <TableCell>Credit</TableCell>
@@ -445,6 +446,7 @@ const CoursePage = () => {
             <TableBody>
               {courses.map((course) => (
                 <TableRow key={course.id}>
+                  <TableCell>{course.code}</TableCell>
                   <TableCell>{course.name}</TableCell>
                   <TableCell>{SEMESTER_LABEL[course.semester] ?? course.semester}</TableCell>
                   <TableCell>{course.credit}</TableCell>

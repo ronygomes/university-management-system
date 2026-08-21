@@ -26,7 +26,7 @@ public class CourseDto implements Serializable {
 
     @NotNull
     @Size(min = 1, max = 20)
-    private String title;
+    private String code;
 
     @NotNull
     @Size(min = 1, max = 200)
@@ -57,12 +57,12 @@ public class CourseDto implements Serializable {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public String getCode() {
+        return code;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getName() {
@@ -116,7 +116,7 @@ public class CourseDto implements Serializable {
     public static CourseDto toDto(Course entity) {
         CourseDto dto = new CourseDto();
         dto.setId(entity.getId());
-        dto.setTitle(entity.getTitle());
+        dto.setCode(entity.getCode());
         dto.setName(entity.getName());
         dto.setCredit(BigDecimal.valueOf(entity.getCredit()));
         dto.setDescription(entity.getDescription());
@@ -131,7 +131,7 @@ public class CourseDto implements Serializable {
     }
 
     public void copy(Course to, Department department, Teacher instructor) {
-        to.setTitle(getTitle());
+        to.setCode(getCode());
         to.setName(getName());
         to.setCredit(getCredit().floatValue());
         to.setDescription(getDescription());

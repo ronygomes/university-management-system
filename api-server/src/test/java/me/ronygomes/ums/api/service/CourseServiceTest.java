@@ -150,7 +150,7 @@ public class CourseServiceTest {
                 teacherRepository, exceptionHelper, validator);
 
         CourseDto dto = validCourseDto();
-        dto.setTitle(null);
+        dto.setCode(null);
 
         Department d = DataHelper.validPersistableDepartment1();
         Mockito.when(departmentRepository.findByCode(d.getCode())).thenReturn(Optional.of(d));
@@ -164,7 +164,7 @@ public class CourseServiceTest {
         Assertions.assertEquals(ExceptionType.DATA_VALIDATION_FAILED, ex.getExceptionType());
         Assertions.assertEquals("Not a valid Course. See 'error' field for details", ex.getErrorDetails());
         Assertions.assertEquals(1, ex.getErrors().size());
-        Assertions.assertEquals("title", ex.getErrors().get(0).getField());
+        Assertions.assertEquals("code", ex.getErrors().get(0).getField());
 
         Mockito.verify(courseRepository, Mockito.never()).save(Mockito.any());
         Mockito.verify(courseRepository, Mockito.never()).flush();
@@ -250,7 +250,7 @@ public class CourseServiceTest {
     @Test
     void updateProvidedSuccess() {
         CoursePatchDto patchDto = new CoursePatchDto();
-        patchDto.setTitle("Updated");
+        patchDto.setCode("Updated");
         patchDto.setDepartmentCode("QQQ");
         patchDto.setInstructorId(1000L);
 
@@ -284,7 +284,7 @@ public class CourseServiceTest {
         service.updateProvided(101L, patchDto);
 
         Course arg = ac.getValue();
-        Assertions.assertEquals(patchDto.getTitle(), arg.getTitle());
+        Assertions.assertEquals(patchDto.getCode(), arg.getCode());
         Assertions.assertEquals(patchDto.getDepartmentCode(), arg.getDepartment().getCode());
         Assertions.assertEquals(patchDto.getInstructorId(), arg.getInstructor().getId());
 
@@ -317,7 +317,7 @@ public class CourseServiceTest {
     private CourseDto validCourseDto() {
         CourseDto dto = new CourseDto();
         dto.setName("Course-1");
-        dto.setTitle("Course-Title-1");
+        dto.setCode("Course-Title-1");
         dto.setSemester(Semester.SECOND_YEAR_FIRST);
         dto.setDescription("Description");
         dto.setCredit(BigDecimal.valueOf(3.5f));

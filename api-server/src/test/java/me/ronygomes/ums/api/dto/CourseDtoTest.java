@@ -34,7 +34,7 @@ public class CourseDtoTest {
         Course to = new Course();
         CourseDto dto = new CourseDto();
 
-        dto.setTitle("1");
+        dto.setCode("1");
         dto.setName("2");
         dto.setCredit(BigDecimal.valueOf(3.0));
         dto.setDescription("4");
@@ -50,7 +50,7 @@ public class CourseDtoTest {
 
         dto.copy(to, d, t);
 
-        Assertions.assertEquals("1", to.getTitle());
+        Assertions.assertEquals("1", to.getCode());
         Assertions.assertEquals("2", to.getName());
         Assertions.assertEquals(3.0f, to.getCredit());
         Assertions.assertEquals("4", to.getDescription());
@@ -63,7 +63,7 @@ public class CourseDtoTest {
 
     public static void assertCourseDto(Course c, CourseDto dto) {
 
-        Assertions.assertEquals(c.getTitle(), dto.getTitle());
+        Assertions.assertEquals(c.getCode(), dto.getCode());
         Assertions.assertEquals(c.getName(), dto.getName());
         Assertions.assertEquals(c.getCredit(), dto.getCredit().floatValue());
         Assertions.assertEquals(c.getDescription(), dto.getDescription());

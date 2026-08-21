@@ -45,7 +45,7 @@ public class CourseControllerTest {
 
     private static final String JSON_DATE = """
             {
-              "title": "Title",
+              "code": "Title",
               "name": "Course Name",
               "credit": 3.5,
               "description": "Awesome",
@@ -78,7 +78,7 @@ public class CourseControllerTest {
         dto1.setId(1L);
         CourseDto dto2 = CourseDto.toDto(createMockDBCourse());
         dto2.setId(2L);
-        dto2.setTitle("CSE-102");
+        dto2.setCode("CSE-102");
 
         Mockito.when(courseService.findPaged(Mockito.any(), Mockito.any(), Mockito.any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(dto1, dto2), PageRequest.of(0, 20), 2));
@@ -95,9 +95,9 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$.totalPages").value(1))
                 .andExpect(jsonPath("$.content.length()").value(2))
                 .andExpect(jsonPath("$.content[0].id").value(1))
-                .andExpect(jsonPath("$.content[0].title").value("CSE-101"))
+                .andExpect(jsonPath("$.content[0].code").value("CSE-101"))
                 .andExpect(jsonPath("$.content[1].id").value(2))
-                .andExpect(jsonPath("$.content[1].title").value("CSE-102"));
+                .andExpect(jsonPath("$.content[1].code").value("CSE-102"));
 
         Mockito.verify(courseService, Mockito.times(1))
                 .findPaged(Mockito.eq("CSE"), Mockito.eq(Semester.FIRST_YEAR_FIRST), Mockito.any(Pageable.class));
@@ -117,7 +117,7 @@ public class CourseControllerTest {
         mockMvc.perform(get("/v1/courses/1")
                         .with(adminJwt()))
                 .andDo(print())
-                .andExpect(jsonPath("$.title").value("CSE-101"))
+                .andExpect(jsonPath("$.code").value("CSE-101"))
                 .andExpect(jsonPath("$.name").value("Introduction to Programming Language in Java"))
                 .andExpect(jsonPath("$.credit").value("3.0"))
                 .andExpect(jsonPath("$.description").value("Java Description"))
@@ -166,7 +166,7 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$").doesNotExist());
 
         CourseDto received = ac.getValue();
-        Assertions.assertEquals("Title", received.getTitle());
+        Assertions.assertEquals("Title", received.getCode());
         Assertions.assertEquals("Course Name", received.getName());
         Assertions.assertEquals(BigDecimal.valueOf(3.5), received.getCredit());
         Assertions.assertEquals("Awesome", received.getDescription());
@@ -191,7 +191,7 @@ public class CourseControllerTest {
     void testPutSuccess() throws Exception {
         String updateJson = """
                 {
-                  "title": "Title 1",
+                  "code": "Title 1",
                   "name": "Course Name 2",
                   "credit": 3.3,
                   "description": "Awesome 4",
@@ -214,7 +214,7 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$").doesNotExist());
 
         CourseDto received = ac.getValue();
-        Assertions.assertEquals("Title 1", received.getTitle());
+        Assertions.assertEquals("Title 1", received.getCode());
         Assertions.assertEquals("Course Name 2", received.getName());
         Assertions.assertEquals(BigDecimal.valueOf(3.3), received.getCredit());
         Assertions.assertEquals("Awesome 4", received.getDescription());
@@ -239,7 +239,7 @@ public class CourseControllerTest {
     void testPatchSuccess() throws Exception {
         String updateJson = """
                 {
-                  "title": "Title 1",
+                  "code": "Title 1",
                   "departmentCode": "EEE"
                 }
                 """;
@@ -257,7 +257,7 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$").doesNotExist());
 
         CoursePatchDto received = ac.getValue();
-        Assertions.assertEquals("Title 1", received.getTitle());
+        Assertions.assertEquals("Title 1", received.getCode());
         Assertions.assertNull(received.getName());
         Assertions.assertNull(received.getCredit());
         Assertions.assertNull(received.getDescription());

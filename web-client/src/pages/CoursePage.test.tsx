@@ -45,7 +45,7 @@ const mockTeachersHal = [
 const initialCourses = [
   {
     id: 1,
-    title: 'CSE-101',
+    code: 'CSE-101',
     name: 'Intro to Java',
     credit: 3,
     description: 'desc',
@@ -55,7 +55,7 @@ const initialCourses = [
   },
   {
     id: 2,
-    title: 'CSE-102',
+    code: 'CSE-102',
     name: 'Data Structures',
     credit: 3.5,
     description: '',
@@ -147,7 +147,7 @@ describe('CoursePage', () => {
     await userEvent.click(screen.getAllByRole('button', { name: /edit/i })[0]);
 
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByLabelText(/title/i)).toHaveValue('CSE-101');
+    expect(within(dialog).getByLabelText(/code/i)).toHaveValue('CSE-101');
     expect(within(dialog).getByLabelText(/^name/i)).toHaveValue('Intro to Java');
     expect(within(dialog).getByLabelText(/credit/i)).toHaveValue(3);
     expect(within(dialog).getByLabelText(/description/i)).toHaveValue('desc');
@@ -184,7 +184,7 @@ describe('CoursePage', () => {
     const [putUrl, putBody] = putSpy.mock.calls[0];
     expect(putUrl).toMatch(/\/v1\/courses\/1$/);
     expect(putBody).toMatchObject({
-      title: 'CSE-101',
+      code: 'CSE-101',
       name: 'Java Updated',
       credit: 3,
       description: 'desc',
@@ -218,7 +218,7 @@ describe('CoursePage', () => {
     vi.spyOn(axios, 'put').mockRejectedValue({
       isAxiosError: true,
       response: {
-        data: { errors: [{ field: 'title', message: 'must be unique' }] },
+        data: { errors: [{ field: 'code', message: 'must be unique' }] },
       },
     });
     renderPage();
@@ -230,7 +230,7 @@ describe('CoursePage', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: /update/i }));
 
     const alert = await within(dialog).findByRole('alert');
-    expect(alert).toHaveTextContent('title: must be unique');
+    expect(alert).toHaveTextContent('code: must be unique');
   });
 
   it('opens an empty add dialog when Add Course is clicked', async () => {
@@ -242,7 +242,7 @@ describe('CoursePage', () => {
 
     expect(await screen.findByText('Add course')).toBeInTheDocument();
     const dialog = screen.getByRole('dialog');
-    expect(within(dialog).getByLabelText(/title/i)).toHaveValue('');
+    expect(within(dialog).getByLabelText(/code/i)).toHaveValue('');
     expect(within(dialog).getByRole('button', { name: /^add$/i })).toBeInTheDocument();
   });
 
@@ -255,7 +255,7 @@ describe('CoursePage', () => {
           ? initialCourses
           : [...initialCourses, {
               id: 99,
-              title: 'CSE-201',
+              code: 'CSE-201',
               name: 'Algorithms',
               credit: 3,
               description: '',
@@ -276,7 +276,7 @@ describe('CoursePage', () => {
     await userEvent.click(screen.getByRole('button', { name: /add course/i }));
 
     const dialog = await screen.findByRole('dialog');
-    await userEvent.type(within(dialog).getByLabelText(/title/i), 'CSE-201');
+    await userEvent.type(within(dialog).getByLabelText(/code/i), 'CSE-201');
     await userEvent.type(within(dialog).getByLabelText(/^name/i), 'Algorithms');
     const creditInput = within(dialog).getByLabelText(/credit/i);
     await userEvent.clear(creditInput);
@@ -296,7 +296,7 @@ describe('CoursePage', () => {
     const [postUrl, postBody] = postSpy.mock.calls[0];
     expect(postUrl).toMatch(/\/v1\/courses$/);
     expect(postBody).toMatchObject({
-      title: 'CSE-201',
+      code: 'CSE-201',
       name: 'Algorithms',
       credit: 3,
       departmentCode: 'CSE',
