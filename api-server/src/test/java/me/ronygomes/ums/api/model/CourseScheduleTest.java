@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public class CourseScheduleTest {
@@ -73,7 +73,7 @@ public class CourseScheduleTest {
     void testStartTime() {
         Assertions.assertSame(reference.getStartDate(), target.getStartDate());
 
-        Date date = new Date();
+        LocalDate date = LocalDate.now();
         patch.setStartDate(date);
 
         target.merge(patch);
@@ -85,7 +85,7 @@ public class CourseScheduleTest {
     void testEndTime() {
         Assertions.assertSame(reference.getEndDate(), target.getEndDate());
 
-        Date date = new Date();
+        LocalDate date = LocalDate.now();
         patch.setEndDate(date);
 
         target.merge(patch);

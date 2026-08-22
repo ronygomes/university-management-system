@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -62,8 +63,8 @@ public class CourseScheduleControllerTest {
               "building": "BUILDING_1",
               "roomNumber": "410-B",
               "days": ["FRIDAY", "MONDAY"],
-              "startDate": "2024-09-03T10:16:00.000+00:00",
-              "endDate": "2024-10-03T11:16:17.000+00:00"
+              "startDate": "2024-09-03",
+              "endDate": "2024-10-03"
             }
             """;
 
@@ -226,8 +227,8 @@ public class CourseScheduleControllerTest {
         Assertions.assertEquals("410-B", sc.getRoomNumber());
         Assertions.assertIterableEquals(List.of(DayOfWeek.FRIDAY, DayOfWeek.MONDAY), sc.getDays());
 
-        Assertions.assertEquals(1725358560000L, sc.getStartDate().getTime());
-        Assertions.assertEquals(1727954177000L, sc.getEndDate().getTime());
+        Assertions.assertEquals(LocalDate.of(2024, 9, 3), sc.getStartDate());
+        Assertions.assertEquals(LocalDate.of(2024, 10, 3), sc.getEndDate());
 
         mockMvc.perform(post("/v1/schedules")
                         .contentType("application/json")
@@ -295,8 +296,8 @@ public class CourseScheduleControllerTest {
         Assertions.assertEquals("410-B", sc.getRoomNumber());
         Assertions.assertIterableEquals(List.of(DayOfWeek.FRIDAY, DayOfWeek.MONDAY), sc.getDays());
 
-        Assertions.assertEquals(1725358560000L, sc.getStartDate().getTime());
-        Assertions.assertEquals(1727954177000L, sc.getEndDate().getTime());
+        Assertions.assertEquals(LocalDate.of(2024, 9, 3), sc.getStartDate());
+        Assertions.assertEquals(LocalDate.of(2024, 10, 3), sc.getEndDate());
 
         mockMvc.perform(put("/v1/schedules/1")
                         .contentType("application/json")

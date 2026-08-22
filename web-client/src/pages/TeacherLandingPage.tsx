@@ -93,11 +93,6 @@ async function fetchSchedules(): Promise<Schedule[]> {
   return response.data.content;
 }
 
-function formatDateTime(s: string): string {
-  const d = new Date(s);
-  return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-}
-
 const TeacherLandingPage = () => {
   const { data: teacherSelf } = useQuery({
     queryKey: ['me-teacher'],
@@ -184,8 +179,8 @@ const TeacherLandingPage = () => {
                     <TableCell>{BUILDING_LABEL[s.building] ?? s.building}</TableCell>
                     <TableCell>{s.roomNumber}</TableCell>
                     <TableCell>{s.days.map((d) => DAY_SHORT[d]).join(', ')}</TableCell>
-                    <TableCell>{formatDateTime(s.startDate)}</TableCell>
-                    <TableCell>{formatDateTime(s.endDate)}</TableCell>
+                    <TableCell>{s.startDate}</TableCell>
+                    <TableCell>{s.endDate}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

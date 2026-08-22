@@ -9,7 +9,7 @@ import me.ronygomes.ums.api.converter.WeekOfDayListStringAttributeConverter;
 
 import java.io.Serial;
 import java.time.DayOfWeek;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,9 +60,9 @@ public class CourseSchedule extends AbstractEntity {
     @Convert(converter = WeekOfDayListStringAttributeConverter.class)
     private List<DayOfWeek> days;
 
-    private Date startDate;
+    private LocalDate startDate;
 
-    private Date endDate;
+    private LocalDate endDate;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private boolean enrollmentOpen;
@@ -131,19 +131,19 @@ public class CourseSchedule extends AbstractEntity {
         this.days = days;
     }
 
-    public Date getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
 

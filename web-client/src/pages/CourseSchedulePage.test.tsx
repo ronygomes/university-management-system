@@ -50,8 +50,8 @@ const initialSchedules = [
     building: 'BUILDING_1',
     roomNumber: 'F7-102',
     days: ['MONDAY', 'TUESDAY'],
-    startDate: '2026-01-15T09:00:00.000Z',
-    endDate: '2026-01-15T10:30:00.000Z',
+    startDate: '2026-01-15',
+    endDate: '2026-01-16',
     enrollmentOpen: true,
   },
 ];
@@ -166,8 +166,8 @@ describe('CourseSchedulePage', () => {
             building: 'BUILDING_2',
             roomNumber: 'F8-201',
             days: ['WEDNESDAY'],
-            startDate: '2026-02-01T11:00:00.000Z',
-            endDate: '2026-02-01T12:30:00.000Z',
+            startDate: '2026-02-01',
+            endDate: '2026-02-05',
             enrollmentOpen: true,
           },
         ] } };
@@ -209,8 +209,8 @@ describe('CourseSchedulePage', () => {
     await userEvent.click(within(listbox).getByText('Wednesday'));
     await userEvent.keyboard('{Escape}');
 
-    await userEvent.type(within(dialog).getByLabelText(/start/i), '2026-02-01T11:00');
-    await userEvent.type(within(dialog).getByLabelText(/end/i), '2026-02-01T12:30');
+    await userEvent.type(within(dialog).getByLabelText(/start date/i), '2026-02-01');
+    await userEvent.type(within(dialog).getByLabelText(/end date/i), '2026-02-05');
 
     await userEvent.click(within(dialog).getByRole('button', { name: /^add$/i }));
 
@@ -315,8 +315,8 @@ describe('CourseSchedulePage', () => {
     listbox = await screen.findByRole('listbox');
     await userEvent.click(within(listbox).getByText('Monday'));
     await userEvent.keyboard('{Escape}');
-    await userEvent.type(within(dialog).getByLabelText(/start/i), '2026-03-01T09:00');
-    await userEvent.type(within(dialog).getByLabelText(/end/i), '2026-03-01T10:00');
+    await userEvent.type(within(dialog).getByLabelText(/start date/i), '2026-03-01');
+    await userEvent.type(within(dialog).getByLabelText(/end date/i), '2026-03-10');
 
     await userEvent.click(within(dialog).getByRole('button', { name: /^add$/i }));
 

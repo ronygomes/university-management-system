@@ -5,8 +5,7 @@ import me.ronygomes.ums.api.dto.TeacherDto;
 import me.ronygomes.ums.api.model.*;
 
 import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -214,8 +213,8 @@ public class DataHelper {
         cs.setBuilding(Building.BUILDING_1);
         cs.setRoomNumber("F7-102");
         cs.setDays(Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.TUESDAY));
-        cs.setStartDate(Date.from(Instant.now().plus(Duration.ofDays(1))));
-        cs.setEndDate(Date.from(Instant.now().plus(Duration.ofDays(30 * 3))));
+        cs.setStartDate(LocalDate.now().plusDays(1));
+        cs.setEndDate(LocalDate.now().plusDays(30 * 3));
 
         return cs;
     }
@@ -228,8 +227,8 @@ public class DataHelper {
         cs.setBuilding(Building.BUILDING_2);
         cs.setRoomNumber("F7-202");
         cs.setDays(Arrays.asList(DayOfWeek.FRIDAY, DayOfWeek.TUESDAY));
-        cs.setStartDate(Date.from(Instant.now().plus(Duration.ofDays(10))));
-        cs.setEndDate(Date.from(Instant.now().plus(Duration.ofDays(20))));
+        cs.setStartDate(LocalDate.now().plusDays(10));
+        cs.setEndDate(LocalDate.now().plusDays(20));
 
         return cs;
     }

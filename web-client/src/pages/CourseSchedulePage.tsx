@@ -195,8 +195,8 @@ const ScheduleFormDialogBody = ({ schedule, schedules, presetCourse, onCancel, o
       building: schedule?.building ?? '',
       roomNumber: schedule?.roomNumber ?? '',
       days: schedule?.days ?? [],
-      startDate: schedule ? schedule.startDate.slice(0, 16) : '',
-      endDate: schedule ? schedule.endDate.slice(0, 16) : '',
+      startDate: schedule ? schedule.startDate.slice(0, 10) : '',
+      endDate: schedule ? schedule.endDate.slice(0, 10) : '',
     },
   });
 
@@ -240,8 +240,8 @@ const ScheduleFormDialogBody = ({ schedule, schedules, presetCourse, onCancel, o
       building: data.building as Building,
       roomNumber: data.roomNumber,
       days: data.days,
-      startDate: new Date(data.startDate).toISOString(),
-      endDate: new Date(data.endDate).toISOString(),
+      startDate: data.startDate,
+      endDate: data.endDate,
     };
     mutate(payload);
   };
@@ -345,6 +345,26 @@ const ScheduleFormDialogBody = ({ schedule, schedules, presetCourse, onCancel, o
               maxLength: { value: 100, message: 'Max 100 characters' },
             })}
           />
+          <TextField
+            label='Start Date'
+            type='date'
+            fullWidth
+            required
+            InputLabelProps={{ shrink: true }}
+            error={!!errors.startDate}
+            helperText={errors.startDate?.message}
+            {...register('startDate', { required: 'Start is required' })}
+          />
+          <TextField
+            label='End Date'
+            type='date'
+            fullWidth
+            required
+            InputLabelProps={{ shrink: true }}
+            error={!!errors.endDate}
+            helperText={errors.endDate?.message}
+            {...register('endDate', { required: 'End is required' })}
+          />
           <Controller
             name='days'
             control={control}
@@ -374,26 +394,6 @@ const ScheduleFormDialogBody = ({ schedule, schedules, presetCourse, onCancel, o
               </TextField>
             )}
           />
-          <TextField
-            label='Start (date + class time)'
-            type='datetime-local'
-            fullWidth
-            required
-            InputLabelProps={{ shrink: true }}
-            error={!!errors.startDate}
-            helperText={errors.startDate?.message}
-            {...register('startDate', { required: 'Start is required' })}
-          />
-          <TextField
-            label='End (date + class time)'
-            type='datetime-local'
-            fullWidth
-            required
-            InputLabelProps={{ shrink: true }}
-            error={!!errors.endDate}
-            helperText={errors.endDate?.message}
-            {...register('endDate', { required: 'End is required' })}
-          />
         </Stack>
       </DialogContent>
       <DialogActions>
@@ -409,11 +409,7 @@ const ScheduleFormDialogBody = ({ schedule, schedules, presetCourse, onCancel, o
 };
 
 function formatDateRange(start: string, end: string): string {
-  const s = new Date(start);
-  const e = new Date(end);
-  const fmt = (d: Date) =>
-    `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  return `${fmt(s)} → ${fmt(e)}`;
+  return `${start} → ${end}`;
 }
 
 const CourseSchedulePage = () => {
