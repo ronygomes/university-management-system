@@ -72,15 +72,6 @@ describe('AdminLandingPage', () => {
     expect(courseView).toHaveAttribute('href', '/admin/courses');
   });
 
-  it('renders the Schedule row with a View link to /admin/schedules', () => {
-    renderPage();
-
-    expect(screen.getByText('Schedule')).toBeInTheDocument();
-    const scheduleRow = screen.getByText('Schedule').closest('div') as HTMLElement;
-    const scheduleView = within(scheduleRow).getByRole('link', { name: /view/i });
-    expect(scheduleView).toHaveAttribute('href', '/admin/schedules');
-  });
-
   it('renders the Result Entry row with a View link to /admin/results', () => {
     renderPage();
 

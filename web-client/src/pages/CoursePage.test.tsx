@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import axios from 'axios';
 import CoursePage from './CoursePage';
@@ -353,5 +353,35 @@ describe('CoursePage', () => {
     await userEvent.click(dialogDelete);
 
     expect(await screen.findByText('Failed to delete course')).toBeInTheDocument();
+  });
+
+  it('View Schedule navigates to /admin/schedules scoped to the course', async () => {
+    mockAllGet();
+    vi.spyOn(AuthContext, 'useAuth').mockReturnValue({
+      isAuthenticated: true,
+      token: null,
+      username: null,
+      email: null,
+      role: 'ADMIN',
+      loginHandler: vi.fn(),
+      logoutHandler: vi.fn(),
+    });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const LocationProbe = () => <div>schedules{useLocation().search}</div>;
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/admin/courses']}>
+          <Routes>
+            <Route path='/admin/courses' element={<CoursePage />} />
+            <Route path='/admin/schedules' element={<LocationProbe />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    await screen.findByText('Intro to Java');
+    await userEvent.click(screen.getAllByRole('button', { name: /view schedule/i })[0]);
+
+    expect(await screen.findByText('schedules?courseId=1')).toBeInTheDocument();
   });
 });

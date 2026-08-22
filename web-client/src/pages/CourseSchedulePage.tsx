@@ -23,7 +23,9 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Typography,
 } from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
 import ContentWrapper from '../components/ContentWrapper';
 import ProtectedPage from '../components/ProtectedPage';
 
@@ -157,11 +159,12 @@ type ServerErrorMessage = { field: string; message: string };
 interface ScheduleFormDialogBodyProps {
   schedule: Schedule | null;
   schedules: Schedule[];
+  presetCourse: Course | null;
   onCancel: () => void;
   onSuccess: (mode: 'add' | 'edit') => void;
 }
 
-const ScheduleFormDialogBody = ({ schedule, schedules, onCancel, onSuccess }: ScheduleFormDialogBodyProps) => {
+const ScheduleFormDialogBody = ({ schedule, schedules, presetCourse, onCancel, onSuccess }: ScheduleFormDialogBodyProps) => {
   const queryClient = useQueryClient();
   const [serverErrors, setServerErrors] = useState<ServerErrorMessage[] | null>(null);
   const [fallbackError, setFallbackError] = useState<string | null>(null);
@@ -188,7 +191,7 @@ const ScheduleFormDialogBody = ({ schedule, schedules, onCancel, onSuccess }: Sc
     defaultValues: {
       departmentCode: schedule?.department.code ?? '',
       semester: schedule?.semester ?? '',
-      courseId: schedule?.courseId ?? '',
+      courseId: schedule?.courseId ?? presetCourse?.id ?? '',
       building: schedule?.building ?? '',
       roomNumber: schedule?.roomNumber ?? '',
       days: schedule?.days ?? [],
@@ -258,6 +261,31 @@ const ScheduleFormDialogBody = ({ schedule, schedules, onCancel, onSuccess }: Sc
           <Alert severity='error' sx={{ mb: 2 }}>{fallbackError}</Alert>
         )}
         <Stack spacing={2} sx={{ mt: 1 }}>
+          {presetCourse ? (
+            <Typography>
+              <strong>Course:</strong> {presetCourse.code} — {presetCourse.name}
+            </Typography>
+          ) : (
+            <TextField
+              select
+              label='Course'
+              fullWidth
+              required
+              defaultValue={schedule?.courseId ?? ''}
+              error={!!errors.courseId}
+              helperText={
+                errors.courseId?.message ??
+                (!watchedDept || !watchedSemester ? 'Select Department + Semester first' : '')
+              }
+              {...register('courseId', { required: 'Course is required' })}
+            >
+              {availableCourses.map((c) => (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.code} — {c.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
           <TextField
             select
             label='Department'
@@ -287,25 +315,6 @@ const ScheduleFormDialogBody = ({ schedule, schedules, onCancel, onSuccess }: Sc
             {SEMESTERS.map((s) => (
               <MenuItem key={s.value} value={s.value}>
                 {s.label}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            select
-            label='Course'
-            fullWidth
-            required
-            defaultValue={schedule?.courseId ?? ''}
-            error={!!errors.courseId}
-            helperText={
-              errors.courseId?.message ??
-              (!watchedDept || !watchedSemester ? 'Select Department + Semester first' : '')
-            }
-            {...register('courseId', { required: 'Course is required' })}
-          >
-            {availableCourses.map((c) => (
-              <MenuItem key={c.id} value={c.id}>
-                {c.code} — {c.name}
               </MenuItem>
             ))}
           </TextField>
@@ -409,6 +418,7 @@ function formatDateRange(start: string, end: string): string {
 
 const CourseSchedulePage = () => {
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [pendingDelete, setPendingDelete] = useState<Schedule | null>(null);
   const [pendingEdit, setPendingEdit] = useState<Schedule | null>(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -427,6 +437,12 @@ const CourseSchedulePage = () => {
   });
 
   const courseCodeById = new Map(courses.map((c) => [c.id, c.code]));
+
+  const courseIdParam = searchParams.get('courseId');
+  const focusedCourseId = courseIdParam ? Number(courseIdParam) : null;
+  const visibleSchedules = focusedCourseId !== null
+    ? schedules.filter((s) => s.courseId === focusedCourseId)
+    : schedules;
 
   const { mutate: triggerDelete, isPending: isDeletePending } = useMutation({
     mutationFn: deleteSchedule,
@@ -462,6 +478,11 @@ const CourseSchedulePage = () => {
     <ProtectedPage>
       <ContentWrapper>
         <h1>Schedules</h1>
+        {focusedCourseId !== null && (
+          <Alert severity='info' sx={{ mb: 2 }}>
+            Showing schedules for {courseCodeById.get(focusedCourseId) ?? `#${focusedCourseId}`}
+          </Alert>
+        )}
         <Stack direction='row' justifyContent='flex-end' sx={{ mb: 2 }}>
           <Button variant='contained' onClick={() => setAddOpen(true)}>
             Add Schedule
@@ -483,7 +504,7 @@ const CourseSchedulePage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {schedules.map((schedule) => (
+              {visibleSchedules.map((schedule) => (
                 <TableRow key={schedule.id}>
                   <TableCell>{courseCodeById.get(schedule.courseId) ?? `#${schedule.courseId}`}</TableCell>
                   <TableCell>{schedule.department.code}</TableCell>
@@ -559,6 +580,9 @@ const CourseSchedulePage = () => {
             <ScheduleFormDialogBody
               schedule={pendingEdit}
               schedules={schedules}
+              presetCourse={addOpen && focusedCourseId !== null
+                ? (courses.find((c) => c.id === focusedCourseId) ?? null)
+                : null}
               onCancel={() => {
                 setPendingEdit(null);
                 setAddOpen(false);

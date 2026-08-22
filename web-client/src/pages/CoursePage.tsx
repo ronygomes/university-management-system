@@ -2,6 +2,7 @@ import axios, { isAxiosError } from 'axios';
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Button,
@@ -355,6 +356,7 @@ const CourseFormDialogBody = ({ course, onCancel, onSuccess }: CourseFormDialogB
 
 const CoursePage = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [pendingDelete, setPendingDelete] = useState<Course | null>(null);
   const [pendingEdit, setPendingEdit] = useState<Course | null>(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -480,6 +482,14 @@ const CoursePage = () => {
                       onClick={() => setPendingDelete(course)}
                     >
                       Delete
+                    </Button>
+                    <Button
+                      variant='outlined'
+                      size='small'
+                      sx={{ ml: 1 }}
+                      onClick={() => navigate(`/admin/schedules?courseId=${course.id}`)}
+                    >
+                      View Schedule
                     </Button>
                   </TableCell>
                 </TableRow>

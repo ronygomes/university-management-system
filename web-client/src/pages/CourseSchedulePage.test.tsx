@@ -6,7 +6,7 @@ import axios from 'axios';
 import CourseSchedulePage from './CourseSchedulePage';
 import * as AuthContext from '../components/AuthContext';
 
-function renderPage() {
+function renderPage(initialEntry = '/admin/schedules') {
   vi.spyOn(AuthContext, 'useAuth').mockReturnValue({
     isAuthenticated: true,
     token: null,
@@ -23,7 +23,7 @@ function renderPage() {
 
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[initialEntry]}>
         <CourseSchedulePage />
       </MemoryRouter>
     </QueryClientProvider>,
@@ -278,5 +278,50 @@ describe('CourseSchedulePage', () => {
     await userEvent.click(dialogDelete);
 
     expect(await screen.findByText('Failed to delete schedule')).toBeInTheDocument();
+  });
+
+  it('scopes the table to a single course via ?courseId', async () => {
+    mockAllGet();
+    renderPage('/admin/schedules?courseId=3');
+
+    expect(await screen.findByText(/showing schedules for EEE-101/i)).toBeInTheDocument();
+    expect(screen.queryByText('F7-102')).not.toBeInTheDocument();
+  });
+
+  it('shows the course as label text when adding from a scoped view; department/semester are chosen freely', async () => {
+    mockAllGet();
+    const postSpy = vi.spyOn(axios, 'post').mockResolvedValue({});
+    renderPage('/admin/schedules?courseId=2');
+
+    await screen.findByText(/showing schedules for CSE-102/i);
+    await userEvent.click(screen.getByRole('button', { name: /add schedule/i }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent(/Course:\s*CSE-102 .* Data Structures/);
+    expect(within(dialog).queryByLabelText(/^course$/i)).not.toBeInTheDocument();
+
+    await userEvent.click(within(dialog).getByLabelText(/department/i));
+    let listbox = await screen.findByRole('listbox');
+    await userEvent.click(within(listbox).getByText('Electrical Engineering'));
+    await userEvent.click(within(dialog).getByLabelText(/semester/i));
+    listbox = await screen.findByRole('listbox');
+    await userEvent.click(within(listbox).getByText('4th Year - 1st Semester'));
+
+    await userEvent.type(within(dialog).getByLabelText(/room number/i), 'X-1');
+    await userEvent.click(within(dialog).getByLabelText(/building/i));
+    listbox = await screen.findByRole('listbox');
+    await userEvent.click(within(listbox).getByText('Building 1'));
+    await userEvent.click(within(dialog).getByLabelText(/days/i));
+    listbox = await screen.findByRole('listbox');
+    await userEvent.click(within(listbox).getByText('Monday'));
+    await userEvent.keyboard('{Escape}');
+    await userEvent.type(within(dialog).getByLabelText(/start/i), '2026-03-01T09:00');
+    await userEvent.type(within(dialog).getByLabelText(/end/i), '2026-03-01T10:00');
+
+    await userEvent.click(within(dialog).getByRole('button', { name: /^add$/i }));
+
+    await waitFor(() => expect(postSpy).toHaveBeenCalledTimes(1));
+    const [, postBody] = postSpy.mock.calls[0];
+    expect(postBody).toMatchObject({ courseId: 2, departmentCode: 'EEE', semester: 'FOURTH_YEAR_FIRST' });
   });
 });
