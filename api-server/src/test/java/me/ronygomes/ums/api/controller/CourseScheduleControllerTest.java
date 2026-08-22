@@ -32,6 +32,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +63,10 @@ public class CourseScheduleControllerTest {
               "semester": "FOURTH_YEAR_SECOND",
               "building": "BUILDING_1",
               "roomNumber": "410-B",
-              "days": ["FRIDAY", "MONDAY"],
+              "slots": [
+                { "dayOfWeek": "FRIDAY", "startTime": "10:00", "endTime": "11:30" },
+                { "dayOfWeek": "MONDAY", "startTime": "10:00", "endTime": "11:30" }
+              ],
               "startDate": "2024-09-03",
               "endDate": "2024-10-03"
             }
@@ -148,9 +152,11 @@ public class CourseScheduleControllerTest {
                 .andExpect(jsonPath("$.semester").value("FIRST_YEAR_SECOND"))
                 .andExpect(jsonPath("$.building").value("BUILDING_1"))
                 .andExpect(jsonPath("$.roomNumber").value("F7-102"))
-                .andExpect(jsonPath("$.days").isArray())
-                .andExpect(jsonPath("$.days[0]").value("MONDAY"))
-                .andExpect(jsonPath("$.days[1]").value("TUESDAY"))
+                .andExpect(jsonPath("$.slots").isArray())
+                .andExpect(jsonPath("$.slots[0].dayOfWeek").value("MONDAY"))
+                .andExpect(jsonPath("$.slots[0].startTime").value("09:00"))
+                .andExpect(jsonPath("$.slots[0].endTime").value("10:30"))
+                .andExpect(jsonPath("$.slots[1].dayOfWeek").value("TUESDAY"))
                 .andExpect(jsonPath("$.startDate").exists())
                 .andExpect(jsonPath("$.endDate").exists())
                 .andExpect(jsonPath("$.course").doesNotExist())
@@ -225,7 +231,11 @@ public class CourseScheduleControllerTest {
         Assertions.assertEquals(100L, sc.getCourseId());
         Assertions.assertEquals(Building.BUILDING_1, sc.getBuilding());
         Assertions.assertEquals("410-B", sc.getRoomNumber());
-        Assertions.assertIterableEquals(List.of(DayOfWeek.FRIDAY, DayOfWeek.MONDAY), sc.getDays());
+        Assertions.assertEquals(2, sc.getSlots().size());
+        Assertions.assertEquals(DayOfWeek.FRIDAY, sc.getSlots().get(0).getDayOfWeek());
+        Assertions.assertEquals(LocalTime.of(10, 0), sc.getSlots().get(0).getStartTime());
+        Assertions.assertEquals(LocalTime.of(11, 30), sc.getSlots().get(0).getEndTime());
+        Assertions.assertEquals(DayOfWeek.MONDAY, sc.getSlots().get(1).getDayOfWeek());
 
         Assertions.assertEquals(LocalDate.of(2024, 9, 3), sc.getStartDate());
         Assertions.assertEquals(LocalDate.of(2024, 10, 3), sc.getEndDate());
@@ -294,7 +304,11 @@ public class CourseScheduleControllerTest {
         Assertions.assertEquals(100L, sc.getCourseId());
         Assertions.assertEquals(Building.BUILDING_1, sc.getBuilding());
         Assertions.assertEquals("410-B", sc.getRoomNumber());
-        Assertions.assertIterableEquals(List.of(DayOfWeek.FRIDAY, DayOfWeek.MONDAY), sc.getDays());
+        Assertions.assertEquals(2, sc.getSlots().size());
+        Assertions.assertEquals(DayOfWeek.FRIDAY, sc.getSlots().get(0).getDayOfWeek());
+        Assertions.assertEquals(LocalTime.of(10, 0), sc.getSlots().get(0).getStartTime());
+        Assertions.assertEquals(LocalTime.of(11, 30), sc.getSlots().get(0).getEndTime());
+        Assertions.assertEquals(DayOfWeek.MONDAY, sc.getSlots().get(1).getDayOfWeek());
 
         Assertions.assertEquals(LocalDate.of(2024, 9, 3), sc.getStartDate());
         Assertions.assertEquals(LocalDate.of(2024, 10, 3), sc.getEndDate());
@@ -410,6 +424,35 @@ public class CourseScheduleControllerTest {
                         .param("open", "false")
                         .with(studentJwt()))
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+    }
+
+    @Test
+    void testCreateFailsWhenSlotEndTimeNotAfterStartTime() throws Exception {
+        Mockito.when(courseScheduleValidator.supports(Mockito.any())).thenReturn(true);
+
+        String badJson = """
+                {
+                  "courseId": "100",
+                  "departmentCode": "CSE",
+                  "semester": "FOURTH_YEAR_SECOND",
+                  "building": "BUILDING_1",
+                  "roomNumber": "410-B",
+                  "slots": [
+                    { "dayOfWeek": "MONDAY", "startTime": "10:00", "endTime": "09:00" }
+                  ],
+                  "startDate": "2024-09-03",
+                  "endDate": "2024-10-03"
+                }
+                """;
+
+        mockMvc.perform(post("/v1/schedules")
+                        .contentType("application/json")
+                        .content(badJson)
+                        .with(adminJwt()))
+                .andDo(print())
+                .andExpect(status().is(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.errors[0].field").value("Slot #1 end time"))
+                .andExpect(jsonPath("$.errors[0].message").value("must be after start time"));
     }
 
     private CourseSchedule mockCourseSchedule() {

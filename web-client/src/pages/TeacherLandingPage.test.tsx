@@ -38,8 +38,8 @@ const courses = [
 ];
 
 const schedules = [
-  { id: 10, courseId: 1, building: 'BUILDING_1', roomNumber: 'F7-102', days: ['MONDAY', 'WEDNESDAY'], startDate: '2026-01-15T09:00:00.000Z', endDate: '2026-01-15T10:30:00.000Z' },
-  { id: 11, courseId: 3, building: 'BUILDING_2', roomNumber: 'F8-201', days: ['TUESDAY'], startDate: '2026-01-16T11:00:00.000Z', endDate: '2026-01-16T12:30:00.000Z' },
+  { id: 10, courseId: 1, building: 'BUILDING_1', roomNumber: 'F7-102', slots: [{ dayOfWeek: 'MONDAY', startTime: '09:00', endTime: '10:30' }], startDate: '2026-01-15', endDate: '2026-05-15' },
+  { id: 11, courseId: 3, building: 'BUILDING_2', roomNumber: 'F8-201', slots: [{ dayOfWeek: 'TUESDAY', startTime: '11:00', endTime: '12:30' }], startDate: '2026-01-16', endDate: '2026-05-16' },
 ];
 
 function mockAllGet(selfEmail: string | null = 'jdoe@ums.dev') {

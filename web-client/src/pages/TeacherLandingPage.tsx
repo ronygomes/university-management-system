@@ -62,12 +62,14 @@ type Course = {
   instructorIds: number[];
 };
 
+type TimeSlot = { dayOfWeek: Day; startTime: string; endTime: string };
+
 type Schedule = {
   id: number;
   courseId: number;
   building: Building;
   roomNumber: string;
-  days: Day[];
+  slots: TimeSlot[];
   startDate: string;
   endDate: string;
 };
@@ -163,7 +165,7 @@ const TeacherLandingPage = () => {
                   <TableCell>Course</TableCell>
                   <TableCell>Building</TableCell>
                   <TableCell>Room</TableCell>
-                  <TableCell>Days</TableCell>
+                  <TableCell>Slots</TableCell>
                   <TableCell>Start</TableCell>
                   <TableCell>End</TableCell>
                 </TableRow>
@@ -178,7 +180,7 @@ const TeacherLandingPage = () => {
                     <TableCell>{courseCodeById.get(s.courseId) ?? `#${s.courseId}`}</TableCell>
                     <TableCell>{BUILDING_LABEL[s.building] ?? s.building}</TableCell>
                     <TableCell>{s.roomNumber}</TableCell>
-                    <TableCell>{s.days.map((d) => DAY_SHORT[d]).join(', ')}</TableCell>
+                    <TableCell>{s.slots.map((slot) => `${DAY_SHORT[slot.dayOfWeek]} ${slot.startTime.slice(0, 5)}–${slot.endTime.slice(0, 5)}`).join(', ')}</TableCell>
                     <TableCell>{s.startDate}</TableCell>
                     <TableCell>{s.endDate}</TableCell>
                   </TableRow>

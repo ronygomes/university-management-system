@@ -1,17 +1,17 @@
 import axios, { isAxiosError } from 'axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useFieldArray } from 'react-hook-form';
 import {
   Alert,
+  Box,
   Button,
-  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  ListItemText,
+  FormHelperText,
   MenuItem,
   Paper,
   Snackbar,
@@ -84,6 +84,12 @@ type Course = {
   semester: Semester;
 };
 
+type TimeSlot = {
+  dayOfWeek: Day;
+  startTime: string;
+  endTime: string;
+};
+
 type Schedule = {
   id: number;
   courseId: number;
@@ -91,7 +97,7 @@ type Schedule = {
   semester: Semester;
   building: Building;
   roomNumber: string;
-  days: Day[];
+  slots: TimeSlot[];
   startDate: string;
   endDate: string;
   enrollmentOpen: boolean;
@@ -103,7 +109,7 @@ type ScheduleFormData = {
   courseId: number | '';
   building: Building | '';
   roomNumber: string;
-  days: Day[];
+  slots: TimeSlot[];
   startDate: string;
   endDate: string;
 };
@@ -114,7 +120,7 @@ type SchedulePayload = {
   courseId: number;
   building: Building;
   roomNumber: string;
-  days: Day[];
+  slots: TimeSlot[];
   startDate: string;
   endDate: string;
 };
@@ -194,10 +200,19 @@ const ScheduleFormDialogBody = ({ schedule, schedules, presetCourse, onCancel, o
       courseId: schedule?.courseId ?? presetCourse?.id ?? '',
       building: schedule?.building ?? '',
       roomNumber: schedule?.roomNumber ?? '',
-      days: schedule?.days ?? [],
+      slots: schedule?.slots.map((s) => ({
+        dayOfWeek: s.dayOfWeek,
+        startTime: s.startTime.slice(0, 5),
+        endTime: s.endTime.slice(0, 5),
+      })) ?? [],
       startDate: schedule ? schedule.startDate.slice(0, 10) : '',
       endDate: schedule ? schedule.endDate.slice(0, 10) : '',
     },
+  });
+
+  const { fields: slotFields, append: appendSlot, remove: removeSlot } = useFieldArray({
+    control,
+    name: 'slots',
   });
 
   const watchedDept = watch('departmentCode');
@@ -239,7 +254,7 @@ const ScheduleFormDialogBody = ({ schedule, schedules, presetCourse, onCancel, o
       courseId: Number(data.courseId),
       building: data.building as Building,
       roomNumber: data.roomNumber,
-      days: data.days,
+      slots: data.slots,
       startDate: data.startDate,
       endDate: data.endDate,
     };
@@ -365,35 +380,57 @@ const ScheduleFormDialogBody = ({ schedule, schedules, presetCourse, onCancel, o
             helperText={errors.endDate?.message}
             {...register('endDate', { required: 'End is required' })}
           />
-          <Controller
-            name='days'
-            control={control}
-            rules={{ validate: (v) => v.length > 0 || 'Pick at least one day' }}
-            render={({ field, fieldState }) => (
-              <TextField
-                select
-                label='Days'
-                fullWidth
-                required
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message}
-                SelectProps={{
-                  multiple: true,
-                  value: field.value,
-                  onChange: field.onChange,
-                  renderValue: (selected) =>
-                    (selected as Day[]).map((d) => DAY_SHORT[d]).join(', '),
-                }}
+          <Box>
+            <Stack direction='row' justifyContent='space-between' alignItems='center' sx={{ mb: 1 }}>
+              <Typography variant='subtitle2'>Slots</Typography>
+              <Button
+                size='small'
+                onClick={() => appendSlot({ dayOfWeek: 'MONDAY', startTime: '', endTime: '' })}
               >
-                {DAYS.map((d) => (
-                  <MenuItem key={d} value={d}>
-                    <Checkbox checked={(field.value as Day[]).includes(d)} />
-                    <ListItemText primary={d.charAt(0) + d.slice(1).toLowerCase()} />
-                  </MenuItem>
-                ))}
-              </TextField>
+                Add slot
+              </Button>
+            </Stack>
+            {slotFields.length === 0 && (
+              <FormHelperText error>Add at least one slot.</FormHelperText>
             )}
-          />
+            <Stack spacing={1}>
+              {slotFields.map((slotField, idx) => (
+                <Stack key={slotField.id} direction='row' spacing={1} alignItems='center'>
+                  <Controller
+                    name={`slots.${idx}.dayOfWeek`}
+                    control={control}
+                    render={({ field }) => (
+                      <TextField select label='Day' size='small' sx={{ minWidth: 130 }}
+                        value={field.value} onChange={field.onChange}>
+                        {DAYS.map((d) => (
+                          <MenuItem key={d} value={d}>
+                            {d.charAt(0) + d.slice(1).toLowerCase()}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    )}
+                  />
+                  <TextField
+                    type='time'
+                    label='Start'
+                    size='small'
+                    InputLabelProps={{ shrink: true }}
+                    {...register(`slots.${idx}.startTime`, { required: true })}
+                  />
+                  <TextField
+                    type='time'
+                    label='End'
+                    size='small'
+                    InputLabelProps={{ shrink: true }}
+                    {...register(`slots.${idx}.endTime`, { required: true })}
+                  />
+                  <Button size='small' color='error' onClick={() => removeSlot(idx)}>
+                    Remove
+                  </Button>
+                </Stack>
+              ))}
+            </Stack>
+          </Box>
         </Stack>
       </DialogContent>
       <DialogActions>
@@ -410,6 +447,12 @@ const ScheduleFormDialogBody = ({ schedule, schedules, presetCourse, onCancel, o
 
 function formatDateRange(start: string, end: string): string {
   return `${start} → ${end}`;
+}
+
+function formatSlots(slots: TimeSlot[]): string {
+  return slots
+    .map((s) => `${DAY_SHORT[s.dayOfWeek]} ${s.startTime.slice(0, 5)}–${s.endTime.slice(0, 5)}`)
+    .join(', ');
 }
 
 const CourseSchedulePage = () => {
@@ -493,7 +536,7 @@ const CourseSchedulePage = () => {
                 <TableCell>Semester</TableCell>
                 <TableCell>Building</TableCell>
                 <TableCell>Room</TableCell>
-                <TableCell>Days</TableCell>
+                <TableCell>Slots</TableCell>
                 <TableCell>Date Range</TableCell>
                 <TableCell>Enrollment</TableCell>
                 <TableCell align='right'>Action</TableCell>
@@ -507,7 +550,7 @@ const CourseSchedulePage = () => {
                   <TableCell>{SEMESTER_LABEL[schedule.semester] ?? schedule.semester}</TableCell>
                   <TableCell>{BUILDING_LABEL[schedule.building] ?? schedule.building}</TableCell>
                   <TableCell>{schedule.roomNumber}</TableCell>
-                  <TableCell>{schedule.days.map((d) => DAY_SHORT[d]).join(', ')}</TableCell>
+                  <TableCell>{formatSlots(schedule.slots)}</TableCell>
                   <TableCell>{formatDateRange(schedule.startDate, schedule.endDate)}</TableCell>
                   <TableCell>
                     <Button
@@ -576,9 +619,11 @@ const CourseSchedulePage = () => {
             <ScheduleFormDialogBody
               schedule={pendingEdit}
               schedules={schedules}
-              presetCourse={addOpen && focusedCourseId !== null
-                ? (courses.find((c) => c.id === focusedCourseId) ?? null)
-                : null}
+              presetCourse={pendingEdit !== null
+                ? (courses.find((c) => c.id === pendingEdit.courseId) ?? null)
+                : (addOpen && focusedCourseId !== null
+                    ? (courses.find((c) => c.id === focusedCourseId) ?? null)
+                    : null)}
               onCancel={() => {
                 setPendingEdit(null);
                 setAddOpen(false);

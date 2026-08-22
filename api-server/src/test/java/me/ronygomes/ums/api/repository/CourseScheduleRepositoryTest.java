@@ -1,7 +1,6 @@
 package me.ronygomes.ums.api.repository;
 
 import jakarta.validation.ConstraintViolation;
-import me.ronygomes.ums.api.converter.WeekOfDayListStringAttributeConverter;
 import me.ronygomes.ums.api.model.*;
 import me.ronygomes.ums.api.testHelper.DataHelper;
 import org.junit.jupiter.api.AfterEach;
@@ -199,36 +198,31 @@ public class CourseScheduleRepositoryTest {
     }
 
     @Test
-    void testFieldConstrain_days() {
-        Assertions.assertTrue(isConvertPresent(CourseSchedule.class, "days",
-                WeekOfDayListStringAttributeConverter.class));
-
+    void testFieldConstrain_slots() {
         for (DayOfWeek d : DayOfWeek.values()) {
             Assertions.assertTrue(d.name().length() <= 20);
         }
 
         Department department = departmentRepository.findByCode("EEE").orElseThrow();
         CourseSchedule cs = DataHelper.validPersistableCourseSchedule1(department, course);
-        cs.setDays(null);
+        cs.setSlots(null);
 
         Throwable exNull = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(cs));
         Set<ConstraintViolation<?>> nullViolations = extractConstraintViolation(exNull);
         Assertions.assertEquals(1, nullViolations.size());
         nullViolations.forEach(v -> {
-            Assertions.assertEquals("must not be null", v.getMessage());
-            Assertions.assertEquals("days", v.getPropertyPath().toString());
-            Assertions.assertNull(v.getInvalidValue());
+            Assertions.assertEquals("must not be empty", v.getMessage());
+            Assertions.assertEquals("slots", v.getPropertyPath().toString());
         });
 
         CourseSchedule csEmpty = DataHelper.validPersistableCourseSchedule1(department, course);
-        csEmpty.setDays(Collections.emptyList());
-        exNull = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(csEmpty));
-        Set<ConstraintViolation<?>> emptyViolations = extractConstraintViolation(exNull);
+        csEmpty.setSlots(Collections.emptyList());
+        Throwable exEmpty = Assertions.assertThrows(TransactionSystemException.class, () -> repository.save(csEmpty));
+        Set<ConstraintViolation<?>> emptyViolations = extractConstraintViolation(exEmpty);
         Assertions.assertEquals(1, emptyViolations.size());
-        nullViolations.forEach(v -> {
-            Assertions.assertEquals("must not be null", v.getMessage());
-            Assertions.assertEquals("days", v.getPropertyPath().toString());
-            Assertions.assertNull(v.getInvalidValue());
+        emptyViolations.forEach(v -> {
+            Assertions.assertEquals("must not be empty", v.getMessage());
+            Assertions.assertEquals("slots", v.getPropertyPath().toString());
         });
     }
 
@@ -293,7 +287,7 @@ public class CourseScheduleRepositoryTest {
         Assertions.assertEquals(cs1.getCourse(), cs2.getCourse());
         Assertions.assertEquals(cs1.getBuilding(), cs2.getBuilding());
         Assertions.assertEquals(cs1.getRoomNumber(), cs2.getRoomNumber());
-        Assertions.assertIterableEquals(cs1.getDays(), cs2.getDays());
+        Assertions.assertIterableEquals(cs1.getSlots(), cs2.getSlots());
         Assertions.assertEquals(0, cs1.getStartDate().compareTo(cs2.getStartDate()));
         Assertions.assertEquals(0, cs1.getEndDate().compareTo(cs2.getEndDate()));
         Assertions.assertEquals(cs1.isEnrollmentOpen(), cs2.isEnrollmentOpen());

@@ -49,7 +49,10 @@ const initialSchedules = [
     semester: 'FIRST_YEAR_FIRST',
     building: 'BUILDING_1',
     roomNumber: 'F7-102',
-    days: ['MONDAY', 'TUESDAY'],
+    slots: [
+      { dayOfWeek: 'MONDAY', startTime: '09:00', endTime: '10:30' },
+      { dayOfWeek: 'TUESDAY', startTime: '09:00', endTime: '10:30' },
+    ],
     startDate: '2026-01-15',
     endDate: '2026-01-16',
     enrollmentOpen: true,
@@ -79,7 +82,7 @@ describe('CourseSchedulePage', () => {
     expect(screen.getByText('1st Year - 1st Semester')).toBeInTheDocument();
     expect(screen.getByText('Building 1')).toBeInTheDocument();
     expect(screen.getByText('F7-102')).toBeInTheDocument();
-    expect(screen.getByText('Mon, Tue')).toBeInTheDocument();
+    expect(screen.getByText('Mon 09:00–10:30, Tue 09:00–10:30')).toBeInTheDocument();
   });
 
   it('opens delete confirmation and does not call DELETE on Cancel', async () => {
@@ -133,6 +136,8 @@ describe('CourseSchedulePage', () => {
     expect(await screen.findByText('Edit schedule')).toBeInTheDocument();
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByLabelText(/room number/i)).toHaveValue('F7-102');
+    expect(dialog).toHaveTextContent(/Course:\s*CSE-101 .* Intro to Java/);
+    expect(within(dialog).queryByLabelText(/^course$/i)).not.toBeInTheDocument();
   });
 
   it('shows inline validation when Room Number is cleared', async () => {
@@ -165,7 +170,7 @@ describe('CourseSchedulePage', () => {
             semester: 'FIRST_YEAR_FIRST',
             building: 'BUILDING_2',
             roomNumber: 'F8-201',
-            days: ['WEDNESDAY'],
+            slots: [{ dayOfWeek: 'WEDNESDAY', startTime: '11:00', endTime: '12:30' }],
             startDate: '2026-02-01',
             endDate: '2026-02-05',
             enrollmentOpen: true,
@@ -204,13 +209,15 @@ describe('CourseSchedulePage', () => {
 
     await userEvent.type(within(dialog).getByLabelText(/room number/i), 'F8-201');
 
-    await userEvent.click(within(dialog).getByLabelText(/days/i));
-    listbox = await screen.findByRole('listbox');
-    await userEvent.click(within(listbox).getByText('Wednesday'));
-    await userEvent.keyboard('{Escape}');
-
     await userEvent.type(within(dialog).getByLabelText(/start date/i), '2026-02-01');
     await userEvent.type(within(dialog).getByLabelText(/end date/i), '2026-02-05');
+
+    await userEvent.click(within(dialog).getByRole('button', { name: /add slot/i }));
+    await userEvent.click(within(dialog).getByLabelText(/^day$/i));
+    listbox = await screen.findByRole('listbox');
+    await userEvent.click(within(listbox).getByText('Wednesday'));
+    await userEvent.type(within(dialog).getByLabelText(/^start$/i), '09:00');
+    await userEvent.type(within(dialog).getByLabelText(/^end$/i), '10:30');
 
     await userEvent.click(within(dialog).getByRole('button', { name: /^add$/i }));
 
@@ -223,7 +230,7 @@ describe('CourseSchedulePage', () => {
       courseId: 2,
       building: 'BUILDING_2',
       roomNumber: 'F8-201',
-      days: ['WEDNESDAY'],
+      slots: [{ dayOfWeek: 'WEDNESDAY', startTime: '09:00', endTime: '10:30' }],
     });
 
     expect(await screen.findByText('Schedule added')).toBeInTheDocument();
@@ -311,17 +318,21 @@ describe('CourseSchedulePage', () => {
     await userEvent.click(within(dialog).getByLabelText(/building/i));
     listbox = await screen.findByRole('listbox');
     await userEvent.click(within(listbox).getByText('Building 1'));
-    await userEvent.click(within(dialog).getByLabelText(/days/i));
-    listbox = await screen.findByRole('listbox');
-    await userEvent.click(within(listbox).getByText('Monday'));
-    await userEvent.keyboard('{Escape}');
     await userEvent.type(within(dialog).getByLabelText(/start date/i), '2026-03-01');
     await userEvent.type(within(dialog).getByLabelText(/end date/i), '2026-03-10');
+    await userEvent.click(within(dialog).getByRole('button', { name: /add slot/i }));
+    await userEvent.type(within(dialog).getByLabelText(/^start$/i), '14:00');
+    await userEvent.type(within(dialog).getByLabelText(/^end$/i), '15:30');
 
     await userEvent.click(within(dialog).getByRole('button', { name: /^add$/i }));
 
     await waitFor(() => expect(postSpy).toHaveBeenCalledTimes(1));
     const [, postBody] = postSpy.mock.calls[0];
-    expect(postBody).toMatchObject({ courseId: 2, departmentCode: 'EEE', semester: 'FOURTH_YEAR_FIRST' });
+    expect(postBody).toMatchObject({
+      courseId: 2,
+      departmentCode: 'EEE',
+      semester: 'FOURTH_YEAR_FIRST',
+      slots: [{ dayOfWeek: 'MONDAY', startTime: '14:00', endTime: '15:30' }],
+    });
   });
 });

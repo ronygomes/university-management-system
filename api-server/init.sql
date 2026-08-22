@@ -90,7 +90,6 @@ CREATE TABLE IF NOT EXISTS course_schedules (
     course_id BIGINT NOT NULL,
     building VARCHAR(30) NOT NULL CHECK (building IN ('BUILDING_1', 'BUILDING_2')),
     room_number VARCHAR(100) NOT NULL,
-    days VARCHAR(60) NOT NULL,
     end_date DATE,
     start_date DATE,
     enrollment_open BOOLEAN DEFAULT true,
@@ -98,6 +97,15 @@ CREATE TABLE IF NOT EXISTS course_schedules (
     version INTEGER DEFAULT 0,
     CONSTRAINT fk_course_schedules_department_id FOREIGN KEY (department_id) REFERENCES departments(id),
     CONSTRAINT fk_course_schedules_course_id FOREIGN KEY (course_id) REFERENCES courses(id)
+);
+
+CREATE TABLE IF NOT EXISTS course_schedule_time_slots (
+    course_schedule_id BIGINT NOT NULL,
+    day VARCHAR(20) NOT NULL CHECK (day IN ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY')),
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    PRIMARY KEY (course_schedule_id, day, start_time, end_time),
+    CONSTRAINT fk_cs_time_slots_schedule_id FOREIGN KEY (course_schedule_id) REFERENCES course_schedules(id)
 );
 
 CREATE TABLE IF NOT EXISTS course_enrollments (

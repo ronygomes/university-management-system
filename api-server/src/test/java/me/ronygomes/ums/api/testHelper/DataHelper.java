@@ -6,6 +6,7 @@ import me.ronygomes.ums.api.model.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -212,7 +213,9 @@ public class DataHelper {
         cs.setCourse(course);
         cs.setBuilding(Building.BUILDING_1);
         cs.setRoomNumber("F7-102");
-        cs.setDays(Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.TUESDAY));
+        cs.setSlots(List.of(
+                new TimeSlot(DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(10, 30)),
+                new TimeSlot(DayOfWeek.TUESDAY, LocalTime.of(9, 0), LocalTime.of(10, 30))));
         cs.setStartDate(LocalDate.now().plusDays(1));
         cs.setEndDate(LocalDate.now().plusDays(30 * 3));
 
@@ -226,7 +229,9 @@ public class DataHelper {
         cs.setCourse(course);
         cs.setBuilding(Building.BUILDING_2);
         cs.setRoomNumber("F7-202");
-        cs.setDays(Arrays.asList(DayOfWeek.FRIDAY, DayOfWeek.TUESDAY));
+        cs.setSlots(List.of(
+                new TimeSlot(DayOfWeek.FRIDAY, LocalTime.of(11, 0), LocalTime.of(12, 30)),
+                new TimeSlot(DayOfWeek.TUESDAY, LocalTime.of(11, 0), LocalTime.of(12, 30))));
         cs.setStartDate(LocalDate.now().plusDays(10));
         cs.setEndDate(LocalDate.now().plusDays(20));
 

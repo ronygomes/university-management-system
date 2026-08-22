@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import me.ronygomes.ums.api.config.annotation.AdminAccess;
 import me.ronygomes.ums.api.dto.PagedResponse;
+import me.ronygomes.ums.api.exception.ErrorMessage;
 import me.ronygomes.ums.api.exception.UmsDataException;
 import me.ronygomes.ums.api.helper.ExceptionHelper;
 import me.ronygomes.ums.api.model.CourseSchedule;
+import me.ronygomes.ums.api.model.TimeSlot;
 import me.ronygomes.ums.api.repository.CourseRepository;
 import me.ronygomes.ums.api.repository.CourseScheduleRepository;
 import me.ronygomes.ums.api.repository.DepartmentRepository;
@@ -22,8 +24,10 @@ import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import static me.ronygomes.ums.api.exception.ExceptionType.DATA_VALIDATION_FAILED;
 import static me.ronygomes.ums.api.exception.ExceptionType.ENTITY_NOT_FOUND;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -151,9 +155,26 @@ public class CourseScheduleController {
     }
 
     private void save(CourseSchedule cs) {
+        throwIfInvalidSlotTimes(cs);
         cs.setDepartment(departmentRepository.findByCode(cs.getDepartmentCode()).orElseThrow());
         cs.setCourse(courseRepository.findById(cs.getCourseId()).orElseThrow());
         courseScheduleRepository.save(cs);
+    }
+
+    private void throwIfInvalidSlotTimes(CourseSchedule cs) {
+        List<ErrorMessage> errors = new ArrayList<>();
+        List<TimeSlot> slots = cs.getSlots();
+        for (int i = 0; i < slots.size(); i++) {
+            TimeSlot slot = slots.get(i);
+            if (slot.getStartTime() != null && slot.getEndTime() != null
+                    && !slot.getEndTime().isAfter(slot.getStartTime())) {
+                errors.add(new ErrorMessage("Slot #" + (i + 1) + " end time", "must be after start time"));
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new UmsDataException(DATA_VALIDATION_FAILED, DATA_VALIDATION_ERROR_DETAILS_TEMPLATE, errors);
+        }
     }
 
     private BindingResult validateAndMerge(CourseSchedule dbCs, CourseSchedule cs) {

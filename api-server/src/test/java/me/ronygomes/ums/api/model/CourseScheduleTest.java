@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 public class CourseScheduleTest {
@@ -60,13 +61,14 @@ public class CourseScheduleTest {
     }
 
     @Test
-    void testDay() {
-        Assertions.assertEquals(DayOfWeek.MONDAY, target.getDays().get(0));
-        patch.setDays(List.of(DayOfWeek.FRIDAY));
+    void testSlots() {
+        Assertions.assertEquals(DayOfWeek.MONDAY, target.getSlots().get(0).getDayOfWeek());
+        patch.setSlots(List.of(new TimeSlot(DayOfWeek.FRIDAY, LocalTime.of(8, 0), LocalTime.of(9, 30))));
 
         target.merge(patch);
-        assertCourseExcept(target, "days");
-        Assertions.assertEquals(DayOfWeek.FRIDAY, target.getDays().get(0));
+        assertCourseExcept(target, "slots");
+        Assertions.assertEquals(1, target.getSlots().size());
+        Assertions.assertEquals(DayOfWeek.FRIDAY, target.getSlots().get(0).getDayOfWeek());
     }
 
     @Test
@@ -139,8 +141,8 @@ public class CourseScheduleTest {
             Assertions.assertEquals(reference.getRoomNumber(), merged.getRoomNumber());
         }
 
-        if (!"days".equals(field)) {
-            Assertions.assertIterableEquals(reference.getDays(), merged.getDays());
+        if (!"slots".equals(field)) {
+            Assertions.assertIterableEquals(reference.getSlots(), merged.getSlots());
         }
 
         if (!"startTime".equals(field)) {

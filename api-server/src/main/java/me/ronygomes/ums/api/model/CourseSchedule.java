@@ -3,13 +3,14 @@ package me.ronygomes.ums.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import me.ronygomes.ums.api.converter.WeekOfDayListStringAttributeConverter;
 
 import java.io.Serial;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -54,11 +55,13 @@ public class CourseSchedule extends AbstractEntity {
     @Column(nullable = false, length = 100)
     private String roomNumber;
 
-    @NotNull
-    @Size(min = 1, max = 7)
-    @Column(nullable = false, length = 60)
-    @Convert(converter = WeekOfDayListStringAttributeConverter.class)
-    private List<DayOfWeek> days;
+    @Valid
+    @NotEmpty
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "course_schedule_time_slots",
+            joinColumns = @JoinColumn(name = "course_schedule_id",
+                    foreignKey = @ForeignKey(name = "fk_cs_time_slots_schedule_id")))
+    private List<TimeSlot> slots = new ArrayList<>();
 
     private LocalDate startDate;
 
@@ -123,12 +126,12 @@ public class CourseSchedule extends AbstractEntity {
         this.roomNumber = roomNumber;
     }
 
-    public List<DayOfWeek> getDays() {
-        return days;
+    public List<TimeSlot> getSlots() {
+        return slots;
     }
 
-    public void setDays(List<DayOfWeek> days) {
-        this.days = days;
+    public void setSlots(List<TimeSlot> slots) {
+        this.slots = slots;
     }
 
     public LocalDate getStartDate() {
@@ -187,8 +190,8 @@ public class CourseSchedule extends AbstractEntity {
             setRoomNumber(patchCs.getRoomNumber());
         }
 
-        if (Objects.nonNull(patchCs.getDays())) {
-            setDays(patchCs.getDays());
+        if (Objects.nonNull(patchCs.getSlots()) && !patchCs.getSlots().isEmpty()) {
+            setSlots(patchCs.getSlots());
         }
 
         if (Objects.nonNull(patchCs.getStartDate())) {
